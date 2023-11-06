@@ -247,28 +247,46 @@ nav.navbar.bootsnav .navbar-toggle i{color: #525252;}
 }
 /* .header-text a:hover{ box-shadow: 0 5px 20px rgba(0,0,0,.4);background:#9f00ff;border: 1px solid #9f00ff;}
  */
- 
+ /* ... existing styles ... */
 
-/* Add this to your existing CSS */
+.list-icon ul li a {
+    /* existing styles */
+    transition: transform 0.3s ease; /* ensure this is here for a smooth transition */
+}
 
-.social-icons {
+.list-icon ul li a:hover {
+    transform: rotate(360deg); /* This will spin the icons */
+}
+
+.list-icon{
     display: flex;
-    gap: 20px; /* Space out icons */
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    left: 0px;
+    height: 0px;
+}
+/*.ab-list-icon */
+.list-icon ul {
+    display: flex;
 }
 
-.social-icons a {
+.list-icon ul li a {
+    cursor: pointer;
+    color: #fff;
     display: inline-block;
-    transition: transform 0.3s ease;
-}
+    border: 2px solid;
+    margin-left: 20px;
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    line-height: 28px;
+    text-align: center;
+    padding-right: 22px;
 
-.social-icons a:hover {
-    transform: rotate(360deg); /* Spin effect */
 }
-
-/* Styling for the icons */
-.social-icons img {
-    width: 40px; /* Adjust size as needed */
-    height: 500px;
+.list-icon ul li a i {
+    margin-left: 6px;
 }
 
 /* You may need to adjust the margin-top value for the .header-text h2 if you want more space above the icons */
@@ -305,56 +323,25 @@ nav.navbar.bootsnav .navbar-toggle i{color: #525252;}
 .single-about-add-info p {font-weight:  300;border:  0;padding: 0;margin-top: 3px;}
 /*.single-about-txt*/
 
-/*.single-about-img */
-.single-about-img{position: relative;box-shadow: 0 5px 20px rgba(14,25,80,.30);}
-.single-about-img:before {
-    position:  absolute;
-    content: " ";
-    top: 0;
-    left:  0;
-    width: 109%;
-    height:  100%;
-    background: rgba(31,44,108,.3);
+.single-about-img {
+    display: flex; /* Use flexbox to center the content */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    position: relative;
+    background: #000; /* Or any other background color */
+    padding: 10px; /* Adjust the padding to create the desired border width */
+    margin: auto; /* Additional margin if you want to center the div itself */
+    box-shadow: 0 5px 20px rgba(14,25,80,.30); /* Optional: Adds shadow around the div */
+    width: fit-content; /* This makes the div fit the content size */
 }
+
 .single-about-img img {
-    max-width: 500px;
-    height: 468px;
+    display: block; /* Removes bottom space/line under the image */
+    max-width: 100%; /* Ensures image is responsive and fits the parent */
+    height: auto; /* Keeps image aspect ratio */
+    border: 3px solid #fff; /* Replace with the desired border color and width */
 }
-.about-list-icon{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 109%;
-    height: 90px;
-    background: #1f2c6c;
-}
-/*.ab-list-icon */
-.about-list-icon ul {
-    display: flex;
-}
-.about-list-icon  ul li a {
-    padding-right: 22px;
-    cursor:pointer;
-    color: #fff;
-}
-.about-list-icon ul li a {
-    cursor: pointer;
-    color: #fff;
-    display: inline-block;
-    border: 2px solid;
-    margin-left: 20px;
-    border-radius: 8px;
-    width: 30px;
-    height: 30px;
-    line-height: 28px;
-    text-align: center;
-}
-.about-list-icon ul li a i {
-    margin-left: 6px;
-}
+
 /*.ab-list-icon */
 
 /*.single-about-img */
