@@ -458,7 +458,7 @@ nav.navbar.bootsnav .share ul > li > a{
 /* Transparent
 =================================*/
 nav.navbar.bootsnav.navbar-fixed{
-    position: fixed;
+    /* position: fixed; */
     display: block;
     width: 100%;
 }
