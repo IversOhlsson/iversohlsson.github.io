@@ -42,34 +42,34 @@
 		</header><!-- /.top-area-->
 		<!-- top-area End -->
 	
-<!-- welcome-hero start -->
-<section id="welcome-hero" class="welcome-hero">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <div class="header-text">
-                    <h2>hi<span>,</span> i am <br> Philip <br> Ivers Ohlsson<span>.</span></h2>
-                    <p>Data Science and AI</p>
-				</div>
-						<div class="list-icon">
-							<ul>
-								<!-- ... other li elements ... -->
-								<li>
-									<a href="https://www.linkedin.com/in/philip-ivers-ohlsson-9874a313b/" target="_blank" class="linkedin">
-										<i  class="fa fa-linkedin" aria-hidden="true"></i>
-									</a>
-								</li><!-- / li -->
-								<li>
-									<a href="https://github.com/IversOhlsson" target="_blank" class="github">
-										<i class="fa fa-github" aria-hidden="true"></i>
-									</a>
-								</li><!-- / li -->
-							</ul><!-- / ul -->
-						</div>					
-            </div><!-- /.col -->
-        </div><!-- /.row -->
-    </div><!-- /.container -->
-</section>
+		<!-- welcome-hero start -->
+		<section id="welcome-hero" class="welcome-hero">
+		    <div class="container">
+		        <div class="row align-items-center">
+		            <div class="col-md-6">
+		                <div class="header-text">
+		                    <h2>hi<span>,</span> i am <br> Philip <br> Ivers Ohlsson<span>.</span></h2>
+		                    <p>Data Science and AI</p>
+						</div>
+								<div class="list-icon">
+									<ul>
+										<!-- ... other li elements ... -->
+										<li>
+											<a href="https://www.linkedin.com/in/philip-ivers-ohlsson-9874a313b/" target="_blank" class="linkedin">
+												<i  class="fa fa-linkedin" aria-hidden="true"></i>
+											</a>
+										</li><!-- / li -->
+										<li>
+											<a href="https://github.com/IversOhlsson" target="_blank" class="github">
+												<i class="fa fa-github" aria-hidden="true"></i>
+											</a>
+										</li><!-- / li -->
+									</ul><!-- / ul -->
+								</div>					
+		            </div><!-- /.col -->
+		        </div><!-- /.row -->
+		    </div><!-- /.container -->
+		</section>
 
 		
 		<!--welcome-hero end -->
@@ -77,10 +77,10 @@
 		
 		<div id="about"></div>
 		<div id="education"></div>
-		<div id="skills"></div>
 		<div id="experience"></div>
 		<div id="portfolio"></div>
 		<div id="education"></div>
+		<div id="skills"></div>
 
 
 		<!--contact start -->
@@ -239,7 +239,7 @@
 				const about = await fetch('about.html').then(response => response.text());
 	
 				document.getElementById("header").innerHTML = header;
-				document.getElementById("skills").innerHTML = skills;
+				/* document.getElementById("skills").innerHTML = skills; */
 				document.getElementById("portfolio").innerHTML = portfolio;
 				document.getElementById("experience").innerHTML = experience;
 				document.getElementById("education").innerHTML = education;

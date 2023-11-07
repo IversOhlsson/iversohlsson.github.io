@@ -25,6 +25,11 @@ font-family: 'Poppins', sans-serif;
 /*-------------------------------------
 		1.General css (Reset code)
 --------------------------------------*/
+/*
+d92cf9
+525252
+*/
+
 *{
     padding: 0;
     margin: 0;
@@ -538,6 +543,45 @@ span.single-timeline-horizontal.spacial-horizontal-line {width: 88px;}
 }
 
 .experience-time-responsive{display: none;}
+
+/* Reserch links config */
+.research-links {
+    margin-top: 20px; /* Space above the links section */
+}
+
+.research-links-item {
+    display: flex;
+    align-items: center;
+    height: 100px; /* Set the height as per your requirement */
+    margin-bottom: 15px; /* Space between items */
+    border: 1px solid #525252; /* Set the border as per your requirement */
+    border-radius: 5px; /* Optional: rounds the corners of the border */
+
+}
+
+.research-links-item a {
+    display: flex;
+    align-items: center;
+    text-decoration: none; /* Optional: removes the underline from links */
+    color: inherit; /* Optional: inherits the text color from the parent */
+}
+
+.research-links-item img {
+    width: 100px; /* Fixed width for images */
+    height: auto;
+    margin-right: 10px; /* Space between image and text */
+    border-radius: 5px; /* Optional: rounds the corners of the image */
+    height: 100%;
+    
+}
+
+.research-links-item p {
+    margin: 0; /* Removes the default margin of paragraphs */
+    flex-grow: 1; /* Allows the text to take up the remaining space */
+    text-align: left; /* Aligns the text to the left */
+    font-size: 0.9em; /* Adjust the font size as needed */
+}
+
 /*-------------------------------------
         8. Profiles
 --------------------------------------*/
