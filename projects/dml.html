@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <div id="header"></div>
+    <!-- Start of project detail section -->
+
+    <section id="project-detail" class="project-detail">
+        <div class="container">
+            <div class="section-heading text-center">
+                <h4 style="font-size: 30px;">Deep Learning Image Coloring Project</h4>
+            </div>
+            <div class="description-icon-wrapper">
+                <div class="project-description">
+                <h2 class="text-center mb-3">Project Description</h2> 
+                    <p>
+                        This project addresses the challenge of adding color to grayscale images by using deep learning models. It employs a U-Net architecture, along with an extended version of VGG for feature extraction, enhanced by the power of transfer learning.
+                    </p>
+                    <p>
+                        A custom perceptual loss function was implemented to improve the quality and coherence of the generated colored images. The project was developed in Python, utilizing the PyTorch library to build and train the models.
+                    </p>
+                </div>
+                <div class="tech-icons">
+                    <h2 class="text-center mb-3">Technologies Used</h2>
+                    <div class="tech-icons text-center">
+                        <!-- Add or update icons related to your project here -->
+                        <a href="https://www.python.org/" target="_blank" class="tech-icon">
+                            <i class="fab fa-python" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://pytorch.org/" target="_blank" class="tech-icon">
+                            <i class="fas fa-robot" aria-hidden="true"></i>
+                        </a>
+                        <!-- Additional icons can be added if needed -->
+                    </div>                
+                </div>
+            </div>
+
+            <!-- Link to the GitHub repository -->
+            <div class="github-link">
+                <a href="YOUR_GITHUB_REPO_LINK" target="_blank" title="The code is available on GitHub. Click to view the repository.">
+                    <i class="fab fa-github fa-3x"></i> 
+                </a>
+                <p>The code is available on GitHub. Click the icon to view the repository.</p>
+            </div>
+            <!-- Image result section -->
+
+
+            <a href="../index.html#portfolio" class="back-to-portfolio">Go to Portfolio</a>           </div>
+    </section>
+    <!-- End of project detail section -->
+    <div class="workflow-steps-paper">
+        <h3 class="text-center mb-4">Workflow Visualization</h3>
+        <div class="row text-center">
+            <div class="col-md-2" title="Images are taken from the weather dataset available on Kaggle.">
+                <i class="fas fa-image fa-3x"></i>
+                <h5>Image</h5>
+                <a href="https://www.kaggle.com/datasets/jehanbhathena/weather-dataset" target="_blank">Link to Dataset</a>
+            </div>
+            <div class="col-md-1 my-auto">
+                <i class="fas fa-arrow-right fa-3x"></i>
+            </div>
+            <div class="col-md-2" title="Two types of image processing are performed. One retains the original RGB color space, and the other converts the images to grayscale and then to LAB color space. This is done to better represent the color information in the images.">
+                <i class="fas fa-adjust fa-3x"></i>
+                <h5>Grayscale and LAB Normalization</h5>
+            </div>
+            <div class="col-md-1 my-auto">
+                <i class="fas fa-arrow-right fa-3x"></i>
+            </div>
+            <div class="col-md-2" title="The grayscale images are replicated across three channels to mimic RGB input. This is necessary because the VGG-16 model requires input in the format 224x224x3.">
+                <i class="fas fa-layer-group fa-3x"></i>
+                <h5>VGG-16 Extended Model</h5>
+            </div>
+            <div class="col-md-1 my-auto">
+                <i class="fas fa-arrow-right fa-3x"></i>
+            </div>
+            <div class="col-md-2" title="Perceptual loss calculations are performed by passing the images through a network and comparing the network's output to the true color images. This helps guide the training of the model.">
+                <i class="fas fa-brain fa-3x"></i>
+                <h5>Loss Calculation</h5>
+            </div>
+        </div>
+    </div>
+    <!-- Other sections remain unchanged -->
+    <section id="research-paper" class="research-paper">
+        <div class="paper-title">
+            <h1>Comparing U-Net and VGG-16 Extended</h1>
+        </div>
+    
+        <div class="paper-abstract">
+            <h2>Abstract</h2>
+            <p>
+                This study evaluates U-Net and extended VGG16 architectures for image colorization on the Imagenette dataset, analyzing performance through mean squared error (MSE) and perceptual loss (PL).
+            </p>
+        </div>
+    
+        <div class="paper-section">
+            <h2>Introduction & Background</h2>
+            <p>
+                We explore image colorization—a process enhancing grayscale images with color, aiding in fields such as historical media and astronomical data. Imagenette, a subset of ImageNet, is employed due to its manageability. Focus is given to comparing MSE and PL for their effectiveness in colorization.
+            </p>
+        </div>
+    
+        <div class="paper-section">
+            <h2>Methodology</h2>
+            <p>
+                Grayscale images were resized to 224x224 pixels. U-Net was custom-built, while extended VGG16 was enhanced through transfer learning. We assessed the models' performance using quantitative metrics and visual inspections.
+            </p>
+        </div>
+    
+        <div class="paper-section">
+            <h2>Results & Discussion</h2>
+            <p>
+                The results indicate that PL offers a more nuanced colorization compared to MSE. Challenges such as batch size impact and color accuracy were noted, particularly in the U-Net's performance.
+            </p>
+            <div class="figure-row">
+                <div class="figure">
+                    <img src="../assets/images/dml/unet_predicted_40epok.png" alt="Model Comparison 1">
+                    <p class="caption">Figure 1: U-Net Model Prediction (Image 1).</p>
+                </div>
+                <div class="figure">
+                    <img src="../assets/images/dml/vgg_extended_predicted_image_pp_loss_100.png" alt="Model Comparison 2">
+                    <p class="caption">Figure 2: Extended VGG16 Model Prediction (Image 2).</p>
+                </div>
+            </div>
+        </div>
+    
+        <div class="paper-section">
+            <h2>Conclusion</h2>
+            <p>
+                Perceptual loss outperformed MSE in producing vibrant and detailed colorizations. The study underlines the need for continued advancements in loss function research and model optimization techniques.
+            </p>
+        </div>
+    
+        <div class="paper-formulas">
+            <div class="formula">
+                <p><b>Mean Squared Error (MSE):</b></p>
+                <p class="math">$$MSE = \frac{1}{n} \Sigma_{i=1}^{n} (Y_i - \hat{Y}_i)^2$$</p>
+            </div>
+            <div class="formula">
+                <p><b>Perceptual Loss:</b></p>
+                <p class="math">$$\text{Euclidian distance}(x,\hat{x})^2 = (\hat{x} - x)^2$$</p>
+            </div>
+        
+
+    </section>
+    <!-- Your existing code for other sections -->
+	<!--footer-copyright start-->
+	<footer id="footer-copyright" class="footer-copyright">
+        <div class="container">
+            <div class="hm-footer-copyright text-center">
+                <p>
+                    &copy; copyright Philip Ivers Ohlsson
+                </p><!--/p-->
+            </div><!--/.text-center-->
+        </div><!--/.container-->
+
+        <div id="scroll-Top">
+            <div class="return-to-top">
+                <i class="fa fa-angle-up " id="scroll-top" ></i>
+            </div>
+            
+        </div><!--/.scroll-Top-->
+        
+</footer><!--/.footer-copyright-->
+<!--footer-copyright end-->
+
+<!-- Include all js compiled plugins (below), or include individual files as needed -->
+<script src="../assets/js/jquery.js"></script>
+
+<!--modernizr.min.js-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+
+<!--bootstrap.min.js-->
+<script src="../assets/js/bootstrap.min.js"></script>
+
+<!-- bootsnav js -->
+<script src="../assets/js/bootsnav.js"></script>
+
+<!-- jquery.sticky.js -->
+<script src="../assets/js/jquery.sticky.js"></script>
+
+<!-- for progress bar start-->
+<!-- progressbar js -->
+<script src="../assets/js/progressbar.js"></script>
+<!-- appear js -->
+<script src="../assets/js/jquery.appear.js"></script>
+<!-- for progress bar end -->
+<!--owl.carousel.js-->
+<script src="../assets/js/owl.carousel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<!--Custom JS-->
+<script src="../assets/js/custom.js"></script>
+<script>
+    // Async function to load the HTML content and set it to the div
+    async function includeHTML() {
+        const header = await fetch('header_projects.html').then(response => response.text());
+
+        document.getElementById("header").innerHTML = header;
+        /* document.getElementById("skills").innerHTML = skills; */
+    }
+    
+    // Call the function on page load
+    includeHTML();
+    </script>
+
+
+</html>

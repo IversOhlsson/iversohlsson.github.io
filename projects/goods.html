@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <div id="header"></div>
+    <!-- Start of project detail section -->
+
+    <section id="project-detail" class="project-detail">
+        <div class="container">
+            <div class="section-heading text-center">
+                <h4 style="font-size: 30px;">Comprehensive Inventory Management System</h4>
+            </div>
+            <div class="description-icon-wrapper">
+                <div class="project-description">
+                <h2 class="text-center mb-3">Project Description</h2> 
+                    <p>
+                        This inventory management system streamlines the process of goods reception and management for businesses. It features a robust front-end built with React, and a secure, scalable back-end powered by Django.
+                    </p>
+                    <p>
+                        The system leverages MySQL for data storage, ensuring reliable and efficient management of large datasets. The entire application is containerized using Docker, providing consistency across different development and deployment environments, and is hosted on Microsoft Azure for high availability and global scalability.
+                    </p>
+                    <p>
+                        Users can easily login, register products using a QR scanner that automatically populates relevant product information, and manage their accounts. The system allows for creating and editing user information, offering an intuitive interface for enhanced user experience.
+                    </p>
+                </div>
+                <div class="tech-icons">
+                    <h2 class="text-center mb-3">Technologies Used</h2>
+                    <div class="tech-icons text-center">
+                        <a href="https://reactjs.org/" target="_blank" class="tech-icon">
+                            <i class="fab fa-react" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://www.djangoproject.com/" target="_blank" class="tech-icon">
+                            <i class="fab fa-python" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://www.mysql.com/" target="_blank" class="tech-icon">
+                            <i class="fas fa-database" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://www.docker.com/" target="_blank" class="tech-icon">
+                            <i class="fab fa-docker" aria-hidden="true"></i>
+                        </a>
+                        <a href="https://azure.microsoft.com/en-us/" target="_blank" class="tech-icon">
+                            <i class="fab fa-microsoft" aria-hidden="true"></i>
+                        </a>
+                        <!-- Additional icons can be added if needed -->
+                    </div>                
+                </div>
+            </div>
+
+            <a href="index.html#portfolio" class="back-to-portfolio">Back to Portfolio</a>
+        </div>
+    </section>
+    <!-- End of project detail section -->
+
+    <!-- Other sections remain unchanged -->
+    <!-- Workflow Visualization Section -->
+<section id="project-workflow" class="project-workflow">
+    <div class="container">
+        <h2 class="text-center mb-4">Project Workflow Visualization</h2>
+        <p class="text-center">
+            A step-by-step visualization of the inventory management workflow.
+        </p>
+        <div class="workflow-steps">
+            <div class="row text-center">
+                <div class="col-md-2">
+                    <i class="fas fa-box-open fa-3x"></i>
+                    <h5>Package Received</h5>
+                </div>
+                <div class="col-md-1 my-auto">
+                    <i class="fas fa-arrow-right fa-2x"></i>
+                </div>
+                <div class="col-md-2">
+                    <i class="fas fa-keyboard fa-3x"></i>
+                    <h5>Information Entered</h5>
+                </div>
+                <div class="col-md-1 my-auto">
+                    <i class="fas fa-arrow-right fa-2x"></i>
+                </div>
+                <div class="col-md-2">
+                    <i class="fas fa-barcode fa-3x"></i>
+                    <h5>Products Scanned</h5>
+                </div>
+                <div class="col-md-1 my-auto">
+                    <i class="fas fa-arrow-right fa-2x"></i>
+                </div>
+                <div class="col-md-2">
+                    <i class="fas fa-warehouse fa-3x"></i>
+                    <h5>Products Shelved</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Add some styling to the workflow icons and arrows for better presentation -->
+<style>
+    .project-workflow i {
+        margin-bottom: 20px;
+        color: #333; /* Adjust color as necessary */
+    }
+    .project-workflow .fa-arrow-right {
+        color: #aaa; /* Adjust arrow color as necessary */
+    }
+    .project-workflow h5 {
+        margin-top: 10px;
+        font-size: 1rem; /* Adjust size as necessary */
+    }
+</style>
+
+	<!--footer-copyright start-->
+	<footer id="footer-copyright" class="footer-copyright">
+        <div class="container">
+            <div class="hm-footer-copyright text-center">
+                <p>
+                    &copy; copyright Philip Ivers Ohlsson
+                </p><!--/p-->
+            </div><!--/.text-center-->
+        </div><!--/.container-->
+
+        <div id="scroll-Top">
+            <div class="return-to-top">
+                <i class="fa fa-angle-up " id="scroll-top" ></i>
+            </div>
+            
+        </div><!--/.scroll-Top-->
+        
+</footer><!--/.footer-copyright-->
+<!--footer-copyright end-->
+
+<!-- Include all js compiled plugins (below), or include individual files as needed -->
+<script src="../assets/js/jquery.js"></script>
+
+<!--modernizr.min.js-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+
+<!--bootstrap.min.js-->
+<script src="../assets/js/bootstrap.min.js"></script>
+
+<!-- bootsnav js -->
+<script src="../assets/js/bootsnav.js"></script>
+
+<!-- jquery.sticky.js -->
+<script src="../assets/js/jquery.sticky.js"></script>
+
+<!-- for progress bar start-->
+<!-- progressbar js -->
+<script src="../assets/js/progressbar.js"></script>
+<!-- appear js -->
+<script src="../assets/js/jquery.appear.js"></script>
+<!-- for progress bar end -->
+<!--owl.carousel.js-->
+<script src="../assets/js/owl.carousel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+
+
+<!--Custom JS-->
+<script src="../assets/js/custom.js"></script>
+<script>
+    // Async function to load the HTML content and set it to the div
+    async function includeHTML() {
+        const header = await fetch('header_projects.html').then(response => response.text());
+
+        document.getElementById("header").innerHTML = header;
+        /* document.getElementById("skills").innerHTML = skills; */
+    }
+    
+    // Call the function on page load
+    includeHTML();
+    </script>
+</html>

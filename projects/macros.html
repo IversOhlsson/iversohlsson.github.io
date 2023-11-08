@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <div id="header"></div>
+    <!-- Start of project detail section -->
+    
+    <!-- Trafikverket Macro Project Section -->
+    <section id="trafikverket-macro-project" class="project-detail">
+        <div class="container">
+            <div class="section-heading text-center">
+                <h4 style="font-size: 30px;">Trafikverket Exam Slot Notification System</h4>
+            </div>
+            <div class="project-description">
+                <h2 class="text-center mb-3">Project Description</h2>
+                <p>
+                    During the COVID-19 pandemic, obtaining a driving test slot became challenging due to limited availability. To address this, a macro was designed to scan the Trafikverket website for exam slots. Users could enter a list of potential locations they could travel to for an exam. The macro continuously checked these locations for available exam slots within a given time period and notified users via email when a slot was available. This solution leveraged the flexibility of booking and unbooking up to 24 hours in advance, which meant new slots could become available at any moment.
+                </p>
+            </div>
+            <!-- Workflow for Trafikverket Macro Project -->
+            <div class="workflow-steps mb-3">
+                <h3 class="text-center mb-4">Workflow Visualization</h3>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <i class="fas fa-user fa-3x"></i>
+                        <h5>User Submits Locations</h5>
+                    </div>
+                    <div class="col-md-2 my-auto">
+                        <i class="fas fa-arrow-right fa-2x"></i>
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-search fa-3x"></i>
+                        <h5>Macro Checks Availability</h5>
+                    </div>
+                    <div class="col-md-2 my-auto">
+                        <i class="fas fa-arrow-right fa-2x"></i>
+                    </div>
+                    <div class="col-md-2">
+                        <i class="fas fa-envelope fa-3x"></i>
+                        <h5>Email Notification Sent</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </section>
+    
+    <!-- SL.se Raspberry Pi Smart Mirror Project Section -->
+    <section id="sl-se-smart-mirror-project" class="project-detail">
+        <div class="container">
+            <div class="section-heading text-center">
+                <h4 style="font-size: 30px;">Smart Mirror with RaspberryPi </h4>
+            </div>
+            <div class="project-description">
+                <h2 class="text-center mb-3">Project Description</h2>
+                <p>
+                    A Raspberry Pi was programmed to serve as the brain for a smart mirror, which displayed real-time bus schedules from SL.se, as well as other pertinent information like time and weather updates through various APIs. A macro was used to fetch and update the bus arrival times visually, ensuring users were informed about the next bus arrival while going about their morning routine.
+                </p>
+            </div>
+
+            <!-- Workflow for SL.se Raspberry Pi Smart Mirror Project -->
+<!-- Workflow for SL.se Raspberry Pi Smart Mirror Project -->
+<div class="workflow-steps">
+    <h3 class="text-center mb-4">Workflow Visualization</h3>
+    <div class="row text-center">
+        <div class="col-md-2">
+            <i class="fab fa-raspberry-pi fa-3x"></i>
+            <h5>Raspberry Pi</h5>
+        </div>
+        <div class="col-md-1 my-auto">
+            <i class="fas fa-arrow-right fa-2x"></i>
+        </div>
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-4">
+                    <i class="fas fa-bus fa-3x"></i>
+                    <h5>Real-Time Bus Schedule</h5>
+                </div>
+                <div class="col-md-4">
+                    <i class="fas fa-cloud-sun fa-3x"></i>
+                    <h5>Weather Updates</h5>
+                </div>
+                <div class="col-md-4">
+                    <i class="fas fa-clock fa-3x"></i>
+                    <h5>Time Display</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-1 my-auto">
+            <i class="fas fa-arrow-right fa-2x"></i>
+        </div>
+        <div class="col-md-2">
+            <i class="fas fa-tv fa-3x"></i>
+            <h5>Smart Display</h5>
+        </div>
+    </div>
+</div>
+        </div>
+    </section>
+
+    <!-- Link back to portfolio -->
+    <a href="index.html#portfolio" class="back-to-portfolio">Back to Portfolio</a>
+
+   
+<!--footer-copyright start-->
+<footer id="footer-copyright" class="footer-copyright">
+    <div class="container">
+        <div class="hm-footer-copyright text-center">
+            <p>
+                &copy; copyright Philip Ivers Ohlsson
+            </p><!--/p-->
+        </div><!--/.text-center-->
+    </div><!--/.container-->
+
+    <div id="scroll-Top">
+        <div class="return-to-top">
+            <i class="fa fa-angle-up " id="scroll-top" ></i>
+        </div>
+        
+    </div><!--/.scroll-Top-->
+    
+</footer><!--/.footer-copyright-->
+<!--footer-copyright end-->
+
+<!-- Include all js compiled plugins (below), or include individual files as needed -->
+<script src="../assets/js/jquery.js"></script>
+
+<!--modernizr.min.js-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+
+<!--bootstrap.min.js-->
+<script src="../assets/js/bootstrap.min.js"></script>
+
+<!-- bootsnav js -->
+<script src="../assets/js/bootsnav.js"></script>
+
+<!-- jquery.sticky.js -->
+<script src="../assets/js/jquery.sticky.js"></script>
+
+<!-- for progress bar start-->
+<!-- progressbar js -->
+<script src="../assets/js/progressbar.js"></script>
+<!-- appear js -->
+<script src="../assets/js/jquery.appear.js"></script>
+<!-- for progress bar end -->
+<!--owl.carousel.js-->
+<script src="../assets/js/owl.carousel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+
+
+<!--Custom JS-->
+<script src="../assets/js/custom.js"></script>
+<script>
+// Async function to load the HTML content and set it to the div
+async function includeHTML() {
+    const header = await fetch('header_projects.html').then(response => response.text());
+
+    document.getElementById("header").innerHTML = header;
+    /* document.getElementById("skills").innerHTML = skills; */
+}
+
+// Call the function on page load
+includeHTML();
+</script>
+</html>
