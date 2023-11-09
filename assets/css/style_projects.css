@@ -18,7 +18,7 @@ font-family: 'Poppins', sans-serif;
 6.  Skill
 7.  Experience
 8.  Profiles
-9.  Portfolio
+9.  project
 10. Clients
 11. Contact
 
@@ -288,7 +288,19 @@ section {
 .tech-icon:hover i {
     transform: rotate(360deg);
 }
+.back-to-project {
+    display: inline-block;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    padding: 10px 20px;
+}
 
+.back-to-project:hover {
+    background-color: rgba(207,180,0,0.8);
+    color: #fff;
+    padding: 10px 20px;
+}
 /*-------------------------------------
 Rank Sverige
 --------------------------------------*/

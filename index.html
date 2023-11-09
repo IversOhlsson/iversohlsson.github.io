@@ -34,7 +34,7 @@
 		
 		<!--welcome-hero end -->
 
-		<div id="portfolio"></div>
+		<div id="project"></div>
 		<div id="about"></div>
 		<div id="education"></div>
 		<div id="experience"></div>
@@ -105,14 +105,14 @@
 			async function includeHTML() {
 				const header = await fetch('header.html').then(response => response.text());
 				const skills = await fetch('skills.html').then(response => response.text());
-				const portfolio = await fetch('portfolio.html').then(response => response.text());
+				const project = await fetch('project.html').then(response => response.text());
 				const experience = await fetch('experience.html').then(response => response.text());
 				const education = await fetch('education.html').then(response => response.text());
 				const about = await fetch('about.html').then(response => response.text());
 	
 				document.getElementById("header").innerHTML = header;
 				/* document.getElementById("skills").innerHTML = skills; */
-				document.getElementById("portfolio").innerHTML = portfolio;
+				document.getElementById("project").innerHTML = project;
 				document.getElementById("experience").innerHTML = experience;
 				document.getElementById("education").innerHTML = education;
 				document.getElementById("about").innerHTML = about;
