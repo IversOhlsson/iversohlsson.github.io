@@ -18,13 +18,18 @@ font-family: 'Poppins', sans-serif;
 6.  Skill
 7.  Experience
 8.  Profiles
-9.  Portfolio
+9.  project
 10. Clients
 11. Contact
 
 /*-------------------------------------
 		1.General css (Reset code)
 --------------------------------------*/
+/*
+d92cf9
+525252
+*/
+
 *{
     padding: 0;
     margin: 0;
@@ -119,11 +124,15 @@ nav.navbar.bootsnav {
 /*.navbar-brand*/
 .navbar-header a.navbar-brand,.navbar-header a.navbar-brand:hover,.navbar-header a.navbar-brand:focus {
     display: inline-block;
-    color: #d92cf9;
+    color: #525252;
     font-size: 20px;
     font-weight: 600;
     padding: 33px 0px 57px;
     text-transform: uppercase;
+    /*
+    d92cf9
+    525252
+    */
 }
 /*.navbar-brand*/
 
@@ -139,7 +148,7 @@ nav.navbar.bootsnav ul.nav > li > a {
     transition: 0.3s linear;
 }
 nav.navbar.bootsnav ul.nav > li > a {padding: 35px 20px;}
-nav.navbar.bootsnav ul.nav > li > a:hover,nav.navbar.bootsnav ul.nav > li > a:focus,nav.navbar.bootsnav ul.nav > li.active>a{color: #d92cf9;}
+nav.navbar.bootsnav ul.nav > li > a:hover,nav.navbar.bootsnav ul.nav > li > a:focus,nav.navbar.bootsnav ul.nav > li.active>a{color: #525252;}
 
 nav.navbar.bootsnav ul.nav > li.dropdown > a.dropdown-toggle:after {
     content: "";
@@ -149,7 +158,7 @@ nav.navbar.bootsnav ul.nav > li.dropdown span {
     margin-left: 15px;
 }
 .sticky-wrapper.is-sticky nav.navbar.bootsnav ul.nav > li > a {color:#6a708e;}
-.sticky-wrapper.is-sticky nav.navbar.bootsnav ul.nav > li > a:hover,.sticky-wrapper.is-sticky nav.navbar.bootsnav ul.nav > li > a:focus,.sticky-wrapper.is-sticky nav.navbar.bootsnav ul.nav > li.active>a{color: #d92cf9;}
+.sticky-wrapper.is-sticky nav.navbar.bootsnav ul.nav > li > a:hover,.sticky-wrapper.is-sticky nav.navbar.bootsnav ul.nav > li > a:focus,.sticky-wrapper.is-sticky nav.navbar.bootsnav ul.nav > li.active>a{color: #525252;}
 /*.nav li*/
 
 
@@ -163,7 +172,7 @@ nav.navbar.bootsnav ul.nav > li.dropdown span {
     -webkit-box-shadow: inset 0 0 8px #000;
 }
 .menu-ui-design::-webkit-scrollbar-thumb {
-  background-color: #d92cf9;
+  background-color: #525252;
 }
 /*.menu-ui-design*/
 
@@ -173,11 +182,11 @@ nav.navbar.bootsnav ul.nav > li.dropdown span {
 nav.navbar.bootsnav .navbar-toggle {
     position: relative;
     background-color: transparent;
-    border: 1px solid #d92cf9;
+    border: 1px solid #525252;
     padding: 10px;
     top: 0;
 }
-nav.navbar.bootsnav .navbar-toggle i{color: #d92cf9;}
+nav.navbar.bootsnav .navbar-toggle i{color: #525252;}
 /*.navbar-toggle */
 
 
@@ -185,24 +194,26 @@ nav.navbar.bootsnav .navbar-toggle i{color: #d92cf9;}
 /*-------------------------------------
         3.  Welcome-hero
 --------------------------------------*/
-.welcome-hero{
+.welcome-hero {
     display: flex;
     align-items: center;
     justify-content: center;
-    position:relative;
-    background:url(../images/about/welcome-banner.jpg)no-repeat;
-    background-size:cover;
-    background-position: center;
-    height:890px;
+    position: relative;
+    background-color: black; /* Set a black background */
+    height: 600px;
+    overflow: hidden; /* Ensure no overflow if the image is large */
 }
-.welcome-hero:before{
-    position:absolute;
-    content: " ";
-    top:0;
-    left:0;
-    background:rgba(31,44,108,.65);
-    width:100%;
-    height:100%;
+
+.welcome-hero::before {
+    content: '';
+    position: absolute;
+    right: 5%; /* Adjust this value to move the image to the right */
+    background: url(../images/about/me_writing_black.png) no-repeat;
+    background-size: 90%; /* Use 'auto' to maintain the original image size */
+    background-position: right center;
+    width: 70%;
+    
+    height: 100%;
 }
 
 /*.header-text-area*/
@@ -212,8 +223,9 @@ nav.navbar.bootsnav .navbar-toggle i{color: #d92cf9;}
     font-weight: 700;
     text-transform: uppercase;
     line-height: 1.5;
+    margin-top: 150px;
 }
-.header-text h2 span {color: #d92cf9;}
+.header-text h2 span {color: #525252;}
 .header-text p {
     color: #fff;
     font-size: 20px;
@@ -238,8 +250,54 @@ nav.navbar.bootsnav .navbar-toggle i{color: #d92cf9;}
     -o-transition: 0.3s linear; 
     transition: 0.3s linear;
 }
-.header-text a:hover{ box-shadow: 0 5px 20px rgba(0,0,0,.4);background:#9f00ff;border: 1px solid #9f00ff;}
-/*.header-text-area*/
+/* .header-text a:hover{ box-shadow: 0 5px 20px rgba(0,0,0,.4);background:#9f00ff;border: 1px solid #9f00ff;}
+ */
+ /* ... existing styles ... */
+
+.list-icon ul li a {
+    /* existing styles */
+    transition: transform 0.3s ease; /* ensure this is here for a smooth transition */
+}
+
+.list-icon ul li a:hover {
+    transform: rotate(360deg); /* This will spin the icons */
+}
+
+.list-icon{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    left: 0px;
+    height: 0px;
+}
+/*.ab-list-icon */
+.list-icon ul {
+    display: flex;
+}
+
+.list-icon ul li a {
+    cursor: pointer;
+    color: #fff;
+    display: inline-block;
+    border: 2px solid;
+    margin-left: 20px;
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    line-height: 28px;
+    text-align: center;
+    padding-right: 22px;
+
+}
+.list-icon ul li a i {
+    margin-left: 6px;
+}
+
+/* You may need to adjust the margin-top value for the .header-text h2 if you want more space above the icons */
+
+/*.header-text-area*
+
 
 /*-------------------------------------
         4.  About
@@ -270,56 +328,25 @@ nav.navbar.bootsnav .navbar-toggle i{color: #d92cf9;}
 .single-about-add-info p {font-weight:  300;border:  0;padding: 0;margin-top: 3px;}
 /*.single-about-txt*/
 
-/*.single-about-img */
-.single-about-img{position: relative;box-shadow: 0 5px 20px rgba(14,25,80,.30);}
-.single-about-img:before {
-    position:  absolute;
-    content: " ";
-    top: 0;
-    left:  0;
-    width: 109%;
-    height:  100%;
-    background: rgba(31,44,108,.3);
+.single-about-img {
+    display: flex; /* Use flexbox to center the content */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    position: relative;
+    background: #000; /* Or any other background color */
+    padding: 10px; /* Adjust the padding to create the desired border width */
+    margin: auto; /* Additional margin if you want to center the div itself */
+    box-shadow: 0 5px 20px rgba(14,25,80,.30); /* Optional: Adds shadow around the div */
+    width: fit-content; /* This makes the div fit the content size */
 }
+
 .single-about-img img {
-    max-width: 500px;
-    height: 468px;
+    display: block; /* Removes bottom space/line under the image */
+    max-width: 100%; /* Ensures image is responsive and fits the parent */
+    height: auto; /* Keeps image aspect ratio */
+    border: 3px solid #fff; /* Replace with the desired border color and width */
 }
-.about-list-icon{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 109%;
-    height: 90px;
-    background: #1f2c6c;
-}
-/*.ab-list-icon */
-.about-list-icon ul {
-    display: flex;
-}
-.about-list-icon  ul li a {
-    padding-right: 22px;
-    cursor:pointer;
-    color: #fff;
-}
-.about-list-icon ul li a {
-    cursor: pointer;
-    color: #fff;
-    display: inline-block;
-    border: 2px solid;
-    margin-left: 20px;
-    border-radius: 8px;
-    width: 30px;
-    height: 30px;
-    line-height: 28px;
-    text-align: center;
-}
-.about-list-icon ul li a i {
-    margin-left: 6px;
-}
+
 /*.ab-list-icon */
 
 /*.single-about-img */
@@ -352,7 +379,7 @@ nav.navbar.bootsnav .navbar-toggle i{color: #d92cf9;}
 }
 .timeline-horizontal-border i {
     font-size:  10px;
-    color: #d92cf9;
+    color: #525252;
     margin-right:  5px;
 }
 span.single-timeline-horizontal {
@@ -480,7 +507,7 @@ span.single-timeline-horizontal.spacial-horizontal-line {width: 88px;}
 }
 
 .timeline-content span>i, .experience-time span>i {
-    color: #d92cf9;
+    color: #525252;
     position: absolute;
     font-size: 10px;
     left: -14.5%;
@@ -516,6 +543,45 @@ span.single-timeline-horizontal.spacial-horizontal-line {width: 88px;}
 }
 
 .experience-time-responsive{display: none;}
+
+/* Reserch links config */
+.research-links {
+    margin-top: 20px; /* Space above the links section */
+}
+
+.research-links-item {
+    display: flex;
+    align-items: center;
+    height: 100px; /* Set the height as per your requirement */
+    margin-bottom: 15px; /* Space between items */
+    border: 1px solid #525252; /* Set the border as per your requirement */
+    border-radius: 5px; /* Optional: rounds the corners of the border */
+
+}
+
+.research-links-item a {
+    display: flex;
+    align-items: center;
+    text-decoration: none; /* Optional: removes the underline from links */
+    color: inherit; /* Optional: inherits the text color from the parent */
+}
+
+.research-links-item img {
+    width: 100px; /* Fixed width for images */
+    height: auto;
+    margin-right: 10px; /* Space between image and text */
+    border-radius: 5px; /* Optional: rounds the corners of the image */
+    height: 100%;
+    
+}
+
+.research-links-item p {
+    margin: 0; /* Removes the default margin of paragraphs */
+    flex-grow: 1; /* Allows the text to take up the remaining space */
+    text-align: left; /* Aligns the text to the left */
+    font-size: 0.9em; /* Adjust the font size as needed */
+}
+
 /*-------------------------------------
         8. Profiles
 --------------------------------------*/
@@ -565,11 +631,11 @@ span.single-timeline-horizontal.spacial-horizontal-line {width: 88px;}
     content: " ";
     width:100%;
     height: 100%;
-    background: #d92cf9;
-    background: -moz-linear-gradient(left, #d92cf9 0%, #b636ff 100%);
-    background: -webkit-linear-gradient(left, #d92cf9 0%,#b636ff 100%);
-    background: linear-gradient(to right, #d92cf9 0%,#b636ff 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d92cf9', endColorstr='#b636ff',GradientType=1 );
+    background: #525252;
+    background: -moz-linear-gradient(left, #525252 0%, #b636ff 100%);
+    background: -webkit-linear-gradient(left, #525252 0%,#b636ff 100%);
+    background: linear-gradient(to right, #525252 0%,#b636ff 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#525252', endColorstr='#b636ff',GradientType=1 );
     -webkit-transform:scale(0);
     -moz-transform:scale(0);
     -ms-transform:scale(0);
@@ -592,80 +658,73 @@ span.single-timeline-horizontal.spacial-horizontal-line {width: 88px;}
 .single-profile:hover .profile-icon-name,.single-profile:hover .profile-txt a>i{color: #fff;}
 .single-profile:hover .profile-border {border:transparent;}
 /*-------------------------------------
-        9. Portfolio
+        9. project
 --------------------------------------*/
-.portfolio {
+.project {
     padding:  50px 0 100px;
     border:  1px solid #e5ebf2;
+    align-items: center;
+    background: #f9fbfd;
+}
+.item {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+    border: 3px solid transparent;
 }
 
-.portfolio-content {padding-top: 100px;}
+.item:hover {
+    transform: scale(1.05);
+    background: #f0f0f0;
+    border-color: rgba(207,180,0,1);
+}
 
-/* ---- .item ---- */
-.isotope:after {
-    content: '';
-    display: block;
-    clear: both;
-}
-.isotope .item {
-    position:relative;
-    overflow:hidden;
-    margin-bottom: 30px;
-}
-/*.item img*/
-.isotope .item img{
-    width:100%;
-    height:100%;
-    -webkit-transition: .5s;
-    -moz-transition: .5s;
-    -ms-transition: .5s;
-    -o-transition: .5s;
-    transition: .5s;
-}
-.isotope .item:hover  img{
-    -webkit-transform:scale(1.5);
-    -moz-transform:scale(1.5);
-    -ms-transform:scale(1.5);
-    -o-transform:scale(1.5);
-    transform:scale(1.5);
-}/*.item img*/
-
-/*.isotope-overlay*/
-.isotope-overlay{
-    position:absolute;
-    height:100%;
-    width:100%;
-    background:rgba(31,44,108,.5);
-    display:flex;
-    align-items:center;
+.isotope-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(31,44,108,.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-transform: uppercase;
-    justify-content:center;
-    flex-direction:row;
-    -webkit-transform:scale(0);
-    -moz-transform:scale(0);
-    -ms-transform:scale(0);
-    -o-transform:scale(0);
-    transform:scale(0);
-    -webkit-transition: .5s;
-    -moz-transition: .5s;
-    -ms-transition: .5s;
-    -o-transition: .5s;
-    transition: .5s;
-}
-.isotope-overlay a {
-    display: inline-block;
-    color: #fff;
-    font-size: 14px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s, visibility 0.5s;
     text-align: center;
+
 }
-.isotope .item:hover .isotope-overlay{
-    -webkit-transform:scale(1);
-    -moz-transform:scale(1);
-    -ms-transform:scale(1);
-    -o-transform:scale(1);
-    transform:scale(1);
-    top:0;
-}/*.isotope-overlay*/
+
+.isotope-overlay a{
+    color: #fff;
+    font-size: 20px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-align: center;
+
+
+}
+.small-text {
+    color: #fff;
+    font-size: 12px;
+    transition: color 0.3s ease;
+    max-width: 75%;
+    text-align: center;
+
+}
+
+.isotope-overlay a:hover {
+    color: rgba(207,180,0,1);
+}
+
+.item:hover .isotope-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
 
 /*-------------------------------------
         10. Clients
