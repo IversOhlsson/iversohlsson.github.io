@@ -100,6 +100,8 @@
         <!--Custom JS-->
         <script src="assets/js/custom.js"></script>
 
+
+
 		<script>
 			// Async function to load the HTML content and set it to the div
 			async function includeHTML() {
@@ -117,8 +119,8 @@
 				document.getElementById("education").innerHTML = education;
 				document.getElementById("about").innerHTML = about;
 
-				const ranksv = await fetch('projects/ranksv.html').then(response => response.text());
-				document.getElementById("ranksv").innerHTML = ranksv;
+				/* const ranksv = await fetch('projects/ranksv.html').then(response => response.text());
+				document.getElementById("ranksv").innerHTML = ranksv; */
 			}
 			
 			// Call the function on page load
