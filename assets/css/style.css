@@ -597,7 +597,11 @@ span.single-timeline-horizontal.spacial-horizontal-line {width: 88px;}
     font-size: 0.9em; /* Adjust the font size as needed */
 }
 
+.astra_logo {
+    height: 50%;
+    width: 70%;
 
+}
 
 /*-------------------------------------
         8. Profiles
