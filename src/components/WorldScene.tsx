@@ -5,6 +5,7 @@ import type { SectionItem } from '../content/sections'
 type WorldSceneProps = {
   sections: SectionItem[]
   onActiveSectionChange: (sectionId: string) => void
+  onInteractionChange: (sectionId: string, isNear: boolean) => void
 }
 
 type BoardRef = {
@@ -39,7 +40,7 @@ function makeBoardTexture(text: string): THREE.CanvasTexture {
   return texture
 }
 
-export default function WorldScene({ sections, onActiveSectionChange }: WorldSceneProps) {
+export default function WorldScene({ sections, onActiveSectionChange, onInteractionChange }: WorldSceneProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -84,23 +85,40 @@ export default function WorldScene({ sections, onActiveSectionChange }: WorldSce
     scene.add(grid)
 
     const avatarGroup = new THREE.Group()
+    avatarGroup.position.set(0, 0, 2)
     scene.add(avatarGroup)
 
     const avatarBody = new THREE.Mesh(
       new THREE.CapsuleGeometry(0.35, 1.1, 6, 12),
-      new THREE.MeshStandardMaterial({ color: '#ffffff', metalness: 0.2, roughness: 0.45 }),
+      new THREE.MeshStandardMaterial({ color: '#121419', metalness: 0.12, roughness: 0.72 }),
     )
     avatarBody.position.y = 1.0
     avatarBody.castShadow = true
     avatarGroup.add(avatarBody)
 
     const avatarHead = new THREE.Mesh(
-      new THREE.SphereGeometry(0.3, 24, 24),
-      new THREE.MeshStandardMaterial({ color: '#b6c4da', metalness: 0.2, roughness: 0.35 }),
+      new THREE.SphereGeometry(0.42, 24, 24),
+      new THREE.MeshStandardMaterial({ color: '#0b0c10', metalness: 0.08, roughness: 0.88 }),
     )
-    avatarHead.position.set(0, 1.9, 0)
+    avatarHead.position.set(0, 1.85, 0)
     avatarHead.castShadow = true
     avatarGroup.add(avatarHead)
+
+    const avatarFeet = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.2, 0.36, 6, 10),
+      new THREE.MeshStandardMaterial({ color: '#090a0d', metalness: 0.05, roughness: 0.95 }),
+    )
+    avatarFeet.position.set(0, 0.34, 0)
+    avatarFeet.castShadow = true
+    avatarGroup.add(avatarFeet)
+
+    const shadowBlob = new THREE.Mesh(
+      new THREE.CircleGeometry(0.9, 32),
+      new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.22 }),
+    )
+    shadowBlob.rotation.x = -Math.PI / 2
+    shadowBlob.position.set(0, 0.03, 0)
+    scene.add(shadowBlob)
 
     const boardRefs: BoardRef[] = []
     const boardTextures: THREE.CanvasTexture[] = []
@@ -146,8 +164,17 @@ export default function WorldScene({ sections, onActiveSectionChange }: WorldSce
 
     const clock = new THREE.Clock()
     const moveDirection = new THREE.Vector3()
-    const cameraTarget = new THREE.Vector3()
+    const targetVelocity = new THREE.Vector3()
+    const velocity = new THREE.Vector3()
+    const cameraForward = new THREE.Vector3()
+    const cameraRight = new THREE.Vector3()
+    const desiredCameraPosition = new THREE.Vector3()
+    const desiredLookAt = new THREE.Vector3()
+    const smoothedLookAt = new THREE.Vector3(avatarGroup.position.x, 1.4, avatarGroup.position.z - 1.5)
+    let cameraYaw = 0
     let activeSection = ''
+    let lastInteractionId = ''
+    let lastInteractionNear = false
     let rafId = 0
 
     const setActiveByDistance = () => {
@@ -166,40 +193,85 @@ export default function WorldScene({ sections, onActiveSectionChange }: WorldSce
         activeSection = nearestId
         onActiveSectionChange(nearestId)
       }
+
+      const isNear = nearestDistance < 4
+      if (nearestId !== lastInteractionId || isNear !== lastInteractionNear) {
+        lastInteractionId = nearestId
+        lastInteractionNear = isNear
+        onInteractionChange(nearestId, isNear)
+      }
     }
 
     const animate = () => {
       const dt = clock.getDelta()
       moveDirection.set(0, 0, 0)
 
+      if (pressedKeys.has('q') || pressedKeys.has('j')) {
+        cameraYaw += dt * 1.6
+      }
+      if (pressedKeys.has('e') || pressedKeys.has('l')) {
+        cameraYaw -= dt * 1.6
+      }
+
+      cameraForward.set(Math.sin(cameraYaw), 0, -Math.cos(cameraYaw))
+      cameraRight.set(Math.cos(cameraYaw), 0, Math.sin(cameraYaw))
+
       if (pressedKeys.has('w') || pressedKeys.has('arrowup')) {
-        moveDirection.z -= 1
+        moveDirection.add(cameraForward)
       }
       if (pressedKeys.has('s') || pressedKeys.has('arrowdown')) {
-        moveDirection.z += 1
+        moveDirection.addScaledVector(cameraForward, -1)
       }
       if (pressedKeys.has('a') || pressedKeys.has('arrowleft')) {
-        moveDirection.x -= 1
+        moveDirection.addScaledVector(cameraRight, -1)
       }
       if (pressedKeys.has('d') || pressedKeys.has('arrowright')) {
-        moveDirection.x += 1
+        moveDirection.add(cameraRight)
       }
 
       if (moveDirection.lengthSq() > 0) {
-        moveDirection.normalize().multiplyScalar(5 * dt)
-        avatarGroup.position.add(moveDirection)
-        avatarGroup.position.x = THREE.MathUtils.clamp(avatarGroup.position.x, -12, 12)
-        avatarGroup.position.z = THREE.MathUtils.clamp(avatarGroup.position.z, -12, 6)
-
-        const facing = Math.atan2(moveDirection.x, moveDirection.z)
-        avatarGroup.rotation.y = facing
+        moveDirection.normalize()
       }
 
-      avatarBody.position.y = 1 + Math.sin(clock.elapsedTime * 8) * 0.04
+      const isSprinting = pressedKeys.has('shift')
+      const moveSpeed = isSprinting ? 7.2 : 4.8
+      targetVelocity.copy(moveDirection).multiplyScalar(moveSpeed)
 
-      cameraTarget.set(avatarGroup.position.x, avatarGroup.position.y + 1.7, avatarGroup.position.z + 8)
-      camera.position.lerp(cameraTarget, 0.06)
-      camera.lookAt(avatarGroup.position.x, avatarGroup.position.y + 1, avatarGroup.position.z - 2)
+      const velocityBlend = 1 - Math.exp(-10 * dt)
+      velocity.lerp(targetVelocity, velocityBlend)
+
+      avatarGroup.position.addScaledVector(velocity, dt)
+      avatarGroup.position.x = THREE.MathUtils.clamp(avatarGroup.position.x, -12, 12)
+      avatarGroup.position.z = THREE.MathUtils.clamp(avatarGroup.position.z, -12, 6)
+
+      if (velocity.lengthSq() > 0.05) {
+        const facing = Math.atan2(velocity.x, velocity.z)
+        const turnBlend = 1 - Math.exp(-14 * dt)
+        avatarGroup.rotation.y = THREE.MathUtils.lerp(avatarGroup.rotation.y, facing, turnBlend)
+      }
+
+      const moveAmount = Math.min(velocity.length() / moveSpeed, 1)
+      const walkBob = Math.sin(clock.elapsedTime * (7 + moveAmount * 8)) * 0.08 * moveAmount
+      avatarBody.position.y = 1 + walkBob
+      avatarHead.position.y = 1.85 + walkBob * 0.35
+      avatarFeet.position.y = 0.34 + walkBob * 0.25
+      shadowBlob.position.set(avatarGroup.position.x, 0.03, avatarGroup.position.z)
+      shadowBlob.scale.setScalar(1 - moveAmount * 0.05)
+
+      desiredCameraPosition
+        .copy(avatarGroup.position)
+        .addScaledVector(cameraForward, -6.8)
+        .addScaledVector(cameraRight, 0.65)
+      desiredCameraPosition.y += 3.3
+
+      const cameraBlend = 1 - Math.exp(-8 * dt)
+      camera.position.lerp(desiredCameraPosition, cameraBlend)
+
+      desiredLookAt.copy(avatarGroup.position).addScaledVector(cameraForward, 2.1)
+      desiredLookAt.y += 1.35
+      const lookAtBlend = 1 - Math.exp(-10 * dt)
+      smoothedLookAt.lerp(desiredLookAt, lookAtBlend)
+      camera.lookAt(smoothedLookAt)
 
       setActiveByDistance()
       renderer.render(scene, camera)
@@ -207,6 +279,7 @@ export default function WorldScene({ sections, onActiveSectionChange }: WorldSce
     }
 
     onActiveSectionChange(sections[0]?.id ?? '')
+    onInteractionChange(sections[0]?.id ?? '', false)
     animate()
 
     const onResize = () => {
@@ -231,7 +304,7 @@ export default function WorldScene({ sections, onActiveSectionChange }: WorldSce
         container.removeChild(container.firstChild)
       }
     }
-  }, [onActiveSectionChange, sections])
+  }, [onActiveSectionChange, onInteractionChange, sections])
 
   return <div ref={containerRef} className="worldCanvas" aria-label="3D world" />
 }
