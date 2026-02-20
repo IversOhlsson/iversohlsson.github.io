@@ -9,7 +9,7 @@
 @media screen and (max-width:1199px){
 	nav.navbar.bootsnav ul.nav > li > a { padding: 35px 8px;}
 	
-	.welcome-hero {height: 768px;}
+	.welcome-hero {min-height: 740px;}
 
 	.timeline-content span>i, .experience-time span>i {left: -15.5%;}
 }/*max-width:1199px*/
@@ -44,7 +44,8 @@
 }/*max-width:991px*/
 
 @media screen and (max-width:768px){
-    
+	.header-text h2 {font-size: 42px; margin-top: 120px;}
+	.hero-stack-panel {max-width: 100%;}
 }/*max-width:768px*/
 
 @media screen and (max-width:767px){
@@ -70,6 +71,11 @@
 }/*max-width:640px*/
 
 @media screen and (max-width: 580px){
+	.welcome-hero {min-height: 700px;}
+	.header-text h2 {font-size: 32px; margin-top: 100px;}
+	.header-text p {font-size: 16px; margin: 20px 0 36px;}
+	.hero-stack-panel {padding: 14px 14px; margin-bottom: 20px;}
+	.list-icon ul li a {margin-left: 10px;}
 
 }/*max-width:580px*/
 

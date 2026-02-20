@@ -1,0 +1,109 @@
+.appRoot {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #090b0e;
+}
+
+.worldCanvas {
+  width: 100%;
+  height: 100%;
+}
+
+.worldCanvas canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hudOverlay {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: min(440px, calc(100% - 48px));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(7, 9, 14, 0.72);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+
+.kicker {
+  margin: 0;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: #c3d2ea;
+}
+
+.hudOverlay h1 {
+  margin: 8px 0 10px;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  line-height: 1.2;
+}
+
+.copy {
+  margin: 0;
+  color: #e0e8f5;
+  font-size: 0.96rem;
+}
+
+.hint {
+  margin: 12px 0 0;
+  color: #b6c3d9;
+  font-size: 0.82rem;
+}
+
+.boardLegend {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: min(240px, calc(100% - 48px));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(7, 9, 14, 0.72);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.boardLegend h2 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.boardLegend ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.boardLegend li {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d4ddec;
+}
+
+.boardLegend li.active {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 768px) {
+  .hudOverlay {
+    top: 16px;
+    left: 16px;
+    width: calc(100% - 32px);
+  }
+
+  .boardLegend {
+    top: auto;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+  }
+}
