@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { SectionItem } from '../content/sections'
+import { getActiveCharacterConfig } from '../config/characters'
 
 type WorldSceneProps = {
   sections: SectionItem[]
@@ -111,6 +113,61 @@ export default function WorldScene({ sections, onActiveSectionChange, onInteract
     avatarFeet.position.set(0, 0.34, 0)
     avatarFeet.castShadow = true
     avatarGroup.add(avatarFeet)
+
+    const fallbackParts = [avatarBody, avatarHead, avatarFeet]
+
+    const activeCharacter = getActiveCharacterConfig()
+    const characterLoader = new GLTFLoader()
+    let externalCharacter: THREE.Object3D | null = null
+    let externalCharacterMixer: THREE.AnimationMixer | null = null
+
+    if (activeCharacter.modelPath) {
+      characterLoader.load(
+        activeCharacter.modelPath,
+        (gltf) => {
+          externalCharacter = gltf.scene
+          externalCharacter.traverse((object) => {
+            if (object instanceof THREE.Mesh) {
+              object.castShadow = true
+              object.receiveShadow = true
+            }
+          })
+
+          const characterScale = activeCharacter.scale ?? 1
+          externalCharacter.scale.setScalar(characterScale)
+          externalCharacter.position.set(0, activeCharacter.yOffset ?? 0, 0)
+          avatarGroup.add(externalCharacter)
+          fallbackParts.forEach((part) => {
+            part.visible = false
+          })
+
+          if (gltf.animations.length > 0) {
+            const animationNames = gltf.animations.map((animation) => animation.name)
+            console.info('[Character] Available animations:', animationNames)
+
+            externalCharacterMixer = new THREE.AnimationMixer(externalCharacter)
+            const clip =
+              gltf.animations.find((animation) => animation.name === activeCharacter.animationName) ??
+              (typeof activeCharacter.animationIndex === 'number'
+                ? gltf.animations[activeCharacter.animationIndex]
+                : undefined) ??
+              gltf.animations[0]
+
+            if (clip && activeCharacter.playAnimation !== false) {
+              const action = externalCharacterMixer.clipAction(clip)
+              action.timeScale = activeCharacter.animationSpeed ?? 1
+              action.play()
+            }
+          }
+        },
+        undefined,
+        () => {
+          fallbackParts.forEach((part) => {
+            part.visible = true
+          })
+        },
+      )
+    }
 
     const shadowBlob = new THREE.Mesh(
       new THREE.CircleGeometry(0.9, 32),
@@ -252,11 +309,21 @@ export default function WorldScene({ sections, onActiveSectionChange, onInteract
 
       const moveAmount = Math.min(velocity.length() / moveSpeed, 1)
       const walkBob = Math.sin(clock.elapsedTime * (7 + moveAmount * 8)) * 0.08 * moveAmount
-      avatarBody.position.y = 1 + walkBob
-      avatarHead.position.y = 1.85 + walkBob * 0.35
-      avatarFeet.position.y = 0.34 + walkBob * 0.25
+      if (avatarBody.visible) {
+        avatarBody.position.y = 1 + walkBob
+      }
+      if (avatarHead.visible) {
+        avatarHead.position.y = 1.85 + walkBob * 0.35
+      }
+      if (avatarFeet.visible) {
+        avatarFeet.position.y = 0.34 + walkBob * 0.25
+      }
       shadowBlob.position.set(avatarGroup.position.x, 0.03, avatarGroup.position.z)
       shadowBlob.scale.setScalar(1 - moveAmount * 0.05)
+
+      if (externalCharacterMixer) {
+        externalCharacterMixer.update(dt)
+      }
 
       desiredCameraPosition
         .copy(avatarGroup.position)
@@ -298,6 +365,15 @@ export default function WorldScene({ sections, onActiveSectionChange, onInteract
       window.removeEventListener('keyup', onKeyUp)
 
       boardTextures.forEach((texture) => texture.dispose())
+
+      if (externalCharacterMixer) {
+        externalCharacterMixer.stopAllAction()
+      }
+
+      if (externalCharacter) {
+        avatarGroup.remove(externalCharacter)
+      }
+
       renderer.dispose()
 
       while (container.firstChild) {
