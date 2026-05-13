@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>B · Mercury — WebGPU raymarched SDF metaballs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #08090C;
+    --ink: #EFEDE5;
+    --ink-2: #A8A69E;
+    --dim: #6A6863;
+    --hair: rgba(239,237,229,0.08);
+    --hair-2: rgba(239,237,229,0.16);
+    --accent: #8FB1DD;
+    --accent-2: #C4D6EE;
+    --live: #66D69B;
+    --max: 1240px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--accent); color: var(--bg); }
+  canvas#bg { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+  .grain { position: fixed; inset: 0; pointer-events: none; z-index: 2; opacity: 0.07; mix-blend-mode: overlay; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.7 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>"); }
+  .warn { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg); border: 1px solid var(--hair-2); padding: 24px 28px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-2); display: none; z-index: 20; max-width: 360px; }
+  .warn b { color: var(--ink); display: block; margin-bottom: 8px; font-weight: 500; }
+
+  .nav { position: fixed; top: 0; left: 0; right: 0; padding: 24px 36px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 10; }
+  .brand { display: flex; align-items: center; gap: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-2); letter-spacing: 0.02em; }
+  .brand .mark { color: var(--ink); }
+  .brand .sep { width: 1px; height: 12px; background: var(--hair-2); }
+  .links { justify-self: center; display: flex; gap: 28px; }
+  .links a { color: var(--ink-2); text-decoration: none; font-size: 13px; transition: color 160ms; }
+  .links a:hover { color: var(--ink); }
+  .status { justify-self: end; }
+  .pill { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink-2); padding: 7px 14px 7px 12px; border: 1px solid var(--hair-2); border-radius: 999px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; background: rgba(8,9,12,0.4); backdrop-filter: blur(8px); }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--live); box-shadow: 0 0 10px var(--live); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  main { position: relative; z-index: 3; max-width: var(--max); margin: 0 auto; padding: 0 36px; }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 140px 0 80px; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 56px; display: flex; align-items: center; gap: 14px; }
+  .eyebrow .idx { color: var(--accent); }
+  .eyebrow .line { flex: 0 0 64px; height: 1px; background: var(--hair-2); }
+  .display { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(56px, 9.5vw, 148px); line-height: 0.94; letter-spacing: -0.025em; margin: 0 0 56px; max-width: 16ch; }
+  .display em { font-style: italic; color: var(--ink-2); }
+  .display .ampr { font-style: italic; color: var(--accent); }
+  .lead { font-size: 17px; line-height: 1.55; color: var(--ink-2); max-width: 50ch; margin: 0 0 64px; font-weight: 400; }
+  .lead strong { color: var(--ink); font-weight: 500; }
+  .heroMeta { display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; flex-wrap: wrap; }
+  .heroMeta a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--hair-2); padding-bottom: 4px; transition: border-color 200ms, color 200ms; }
+  .heroMeta a:hover { border-bottom-color: var(--accent); color: var(--accent-2); }
+
+  section.work { padding: 160px 0 120px; }
+  .sectionHead { display: grid; grid-template-columns: 220px 1fr; gap: 48px; align-items: baseline; margin-bottom: 80px; padding-bottom: 28px; border-bottom: 1px solid var(--hair); }
+  .sectionHead .lbl { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); }
+  .sectionHead .lbl .idx { color: var(--accent); margin-right: 12px; }
+  .sectionHead h2 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(28px, 3.4vw, 44px); letter-spacing: -0.02em; margin: 0; line-height: 1.05; }
+  .sectionHead h2 em { font-style: italic; color: var(--ink-2); }
+  .row { display: grid; grid-template-columns: 220px 1fr 280px; gap: 48px; padding: 40px 0; border-bottom: 1px solid var(--hair); }
+  .row .when { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .row .role { font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; font-weight: 400; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .row .co { color: var(--ink-2); font-size: 13.5px; margin: 0 0 22px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em; }
+  .row ul { list-style: none; padding: 0; margin: 0; }
+  .row li { color: var(--ink-2); font-size: 14px; line-height: 1.7; padding-left: 22px; position: relative; margin-bottom: 6px; }
+  .row li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+  .row .tags { display: flex; flex-direction: column; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--dim); }
+
+  @media (max-width: 880px) {
+    .sectionHead, .row { grid-template-columns: 1fr; gap: 16px; }
+    .row .tags { flex-direction: row; flex-wrap: wrap; gap: 16px; }
+    .links { display: none; }
+    .nav { grid-template-columns: 1fr auto; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="grain"></div>
+<div class="warn" id="warn"><b>WebGPU unavailable</b>Open in Chrome, Edge, or Safari 18+ to see the live raymarched SDF metaballs. Layout still renders.</div>
+
+<header class="nav">
+  <div class="brand">
+    <span class="mark">PIO ⏤ 02</span>
+    <span class="sep"></span>
+    <span>Uppsala, SE</span>
+    <span class="sep"></span>
+    <span id="clock">—</span>
+  </div>
+  <nav class="links">
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a href="#projects">Projects</a>
+    <a href="mailto:philip.iversohlsson@gmail.com">Contact</a>
+  </nav>
+  <div class="status"><span class="pill"><span class="dot"></span>Available Q2 2026</span></div>
+</header>
+
+<main>
+  <section class="hero">
+    <p class="eyebrow"><span class="idx">01</span><span>Independent practice</span><span class="line"></span></p>
+    <h1 class="display">Distributed, <em>real-time</em>, IoT systems <span class="ampr">&</span> the people who run them.</h1>
+    <p class="lead"><strong>Philip Ivers Ohlsson</strong> — full-stack engineer and systems architect working across backend services, data pipelines, frontend interfaces, and ML-enabled production workflows. Domain experience in life sciences, mission-critical systems, edge computing, and signal processing.</p>
+    <div class="heroMeta">
+      <a href="mailto:philip.iversohlsson@gmail.com">philip.iversohlsson@gmail.com →</a>
+      <a href="https://linkedin.com" target="_blank" rel="noreferrer">LinkedIn ↗</a>
+      <a href="https://github.com/IversOhlsson" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </div>
+  </section>
+
+  <section class="work" id="work">
+    <div class="sectionHead">
+      <span class="lbl"><span class="idx">02</span>Selected work</span>
+      <h2>Recent engagements <em>across systems, data,</em> and ML.</h2>
+    </div>
+    <article class="row">
+      <span class="when">Aug 2024 → Now</span>
+      <div>
+        <h3 class="role">System Architect & Full-Stack Engineer</h3>
+        <p class="co">Raven 'n Crow · Uppsala</p>
+        <ul>
+          <li>Architected distributed IoT systems spanning ingestion, services, frontends, and deployment.</li>
+          <li>Built real-time edge components and ETL pipelines for analytics and ML deployment.</li>
+          <li>ML-based signal-processing workflows for direction finding and field deployment.</li>
+        </ul>
+      </div>
+      <div class="tags">
+        <span>C++ · Python · gRPC</span>
+        <span>WebRTC · Edge · IoT</span>
+        <span>Signal processing</span>
+      </div>
+    </article>
+    <article class="row">
+      <span class="when">Dec 2023 → Jun 2024</span>
+      <div>
+        <h3 class="role">Data Scientist · Permeability</h3>
+        <p class="co">AstraZeneca R&D · Gothenburg</p>
+        <ul>
+          <li>Multi-task graph neural network training pipelines for molecular permeability prediction.</li>
+          <li>Model now used in production within AstraZeneca R&D.</li>
+          <li>Contributed to research outcomes that were later published.</li>
+        </ul>
+      </div>
+      <div class="tags">
+        <span>GNNs · PyTorch</span>
+        <span>Life sciences</span>
+        <span>Production ML</span>
+      </div>
+    </article>
+  </section>
+</main>
+
+<script type="module">
+const warn = document.getElementById('warn');
+function tick() {
+  const d = new Date();
+  const fmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Stockholm' }).format(d);
+  document.getElementById('clock').textContent = fmt + ' CET';
+}
+tick(); setInterval(tick, 30000);
+
+let mouseX = 0.5, mouseY = 0.5;
+addEventListener('mousemove', e => {
+  mouseX = e.clientX / innerWidth;
+  mouseY = 1 - e.clientY / innerHeight;
+});
+
+async function init() {
+  if (!navigator.gpu) { warn.style.display = 'block'; return; }
+  const adapter = await navigator.gpu.requestAdapter();
+  if (!adapter) { warn.style.display = 'block'; return; }
+  const device = await adapter.requestDevice();
+  const canvas = document.getElementById('bg');
+  const ctx = canvas.getContext('webgpu');
+  const format = navigator.gpu.getPreferredCanvasFormat();
+  ctx.configure({ device, format, alphaMode: 'premultiplied' });
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  function resize() {
+    canvas.width  = Math.floor(innerWidth  * dpr);
+    canvas.height = Math.floor(innerHeight * dpr);
+    canvas.style.width  = innerWidth  + 'px';
+    canvas.style.height = innerHeight + 'px';
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  const uBuf = device.createBuffer({
+    size: 32,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const module = device.createShaderModule({ code: /* wgsl */ `
+    struct U {
+      time: f32, res_x: f32, res_y: f32, m_x: f32,
+      m_y: f32, _p0: f32, _p1: f32, _p2: f32,
+    };
+    @group(0) @binding(0) var<uniform> u: U;
+
+    @vertex
+    fn vs(@builtin(vertex_index) i: u32) -> @builtin(position) vec4f {
+      let x = f32(i32(i) - 1);
+      let y = f32(i32(i & 1u) * 2 - 1);
+      return vec4f(x * 3.0, y * 3.0, 0.0, 1.0);
+    }
+
+    fn smin(a: f32, b: f32, k: f32) -> f32 {
+      let h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+      return mix(b, a, h) - k * h * (1.0 - h);
+    }
+    fn sphere(p: vec3f, c: vec3f, r: f32) -> f32 { return length(p - c) - r; }
+    fn sdf(p: vec3f) -> f32 {
+      let t = u.time;
+      let mx = (u.m_x - 0.5) * 1.0;
+      let my = (u.m_y - 0.5) * 0.6;
+      var d = 100.0;
+      let c1 = vec3f(sin(t*0.31) * 1.4 + mx, cos(t*0.22) * 0.7 + my, sin(t*0.40));
+      let c2 = vec3f(cos(t*0.27) * 1.2 - mx*0.5, sin(t*0.36) * 1.0, cos(t*0.31));
+      let c3 = vec3f(sin(t*0.45 + 1.1) * 0.9, cos(t*0.30 + 2.0) * 1.4, sin(t*0.20));
+      let c4 = vec3f(cos(t*0.38 + 1.7) * 1.0, sin(t*0.55) * 0.55, cos(t*0.48 + 1.0));
+      let c5 = vec3f(sin(t*0.20 + 3.0) * 0.6, cos(t*0.42 + 0.5) * 0.4, sin(t*0.33 + 1.5));
+      d = smin(d, sphere(p, c1, 0.75), 0.85);
+      d = smin(d, sphere(p, c2, 0.65), 0.85);
+      d = smin(d, sphere(p, c3, 0.55), 0.85);
+      d = smin(d, sphere(p, c4, 0.65), 0.85);
+      d = smin(d, sphere(p, c5, 0.50), 0.85);
+      return d;
+    }
+    fn normal(p: vec3f) -> vec3f {
+      let e = 0.0015;
+      return normalize(vec3f(
+        sdf(p + vec3f(e,0.,0.)) - sdf(p - vec3f(e,0.,0.)),
+        sdf(p + vec3f(0.,e,0.)) - sdf(p - vec3f(0.,e,0.)),
+        sdf(p + vec3f(0.,0.,e)) - sdf(p - vec3f(0.,0.,e)),
+      ));
+    }
+
+    @fragment
+    fn fs(@builtin(position) frag: vec4f) -> @location(0) vec4f {
+      let res = vec2f(u.res_x, u.res_y);
+      let uv = (vec2f(frag.x, frag.y) - 0.5 * res) / res.y;
+      let ro = vec3f(0.0, 0.0, -5.2);
+      let rd = normalize(vec3f(uv, 1.55));
+
+      var t = 0.0;
+      var hit = false;
+      var p = ro;
+      for (var i = 0; i < 56; i = i + 1) {
+        p = ro + rd * t;
+        let d = sdf(p);
+        if (d < 0.0015) { hit = true; break; }
+        if (t > 14.0) { break; }
+        t = t + d * 0.96;
+      }
+
+      let bg = vec3f(0.031, 0.035, 0.047);
+      var col = bg;
+      if (hit) {
+        let n = normal(p);
+        let l = normalize(vec3f(0.55, 0.85, -0.45));
+        let diff = max(dot(n, l), 0.0);
+        let fres = pow(1.0 - max(dot(n, -rd), 0.0), 2.6);
+        let base = mix(vec3f(0.10, 0.14, 0.20), vec3f(0.48, 0.63, 0.86), diff);
+        let rim  = fres * vec3f(0.88, 0.92, 0.98);
+        col = base * 0.85 + rim;
+        col = mix(col, bg, smoothstep(2.4, 7.5, t));
+      }
+      // soft ambient halo around the volume
+      let amb = exp(-2.0 * length(uv * vec2f(1.0, 1.0))) * 0.08;
+      col = col + vec3f(0.30, 0.42, 0.62) * amb;
+      // vignette
+      let v = 1.0 - dot(uv, uv) * 0.35;
+      col = col * v;
+      // film grain handled via overlay
+      return vec4f(col, 1.0);
+    }
+  `});
+
+  const pipe = device.createRenderPipeline({
+    layout: 'auto',
+    vertex: { module, entryPoint: 'vs' },
+    fragment: { module, entryPoint: 'fs', targets: [{ format }] },
+    primitive: { topology: 'triangle-list' },
+  });
+
+  const bind = device.createBindGroup({
+    layout: pipe.getBindGroupLayout(0),
+    entries: [{ binding: 0, resource: { buffer: uBuf } }],
+  });
+
+  const t0 = performance.now();
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let tFrozen = 0;
+  function frame() {
+    const t = reduced ? 1.2 : (performance.now() - t0) / 1000;
+    device.queue.writeBuffer(uBuf, 0, new Float32Array([t, canvas.width, canvas.height, mouseX, mouseY, 0, 0, 0]));
+
+    const enc = device.createCommandEncoder();
+    const view = ctx.getCurrentTexture().createView();
+    const pass = enc.beginRenderPass({
+      colorAttachments: [{ view, loadOp: 'clear', storeOp: 'store',
+        clearValue: { r: 0.031, g: 0.035, b: 0.047, a: 1.0 } }],
+    });
+    pass.setPipeline(pipe);
+    pass.setBindGroup(0, bind);
+    pass.draw(3);
+    pass.end();
+    device.queue.submit([enc.finish()]);
+    if (!reduced) requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+init().catch(err => { console.error(err); warn.style.display = 'block'; });
+</script>
+</body>
+</html>

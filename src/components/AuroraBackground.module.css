@@ -1,0 +1,79 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Solid backdrop sits at the very back. */
+.backdrop {
+  z-index: 0;
+  background: var(--bg);
+}
+
+/* CSS aurora — bright radial gradients on a wrapper that animates.
+   Lives between backdrop and canvas. */
+.fallback {
+  z-index: 1;
+  overflow: hidden;
+}
+.fallback::before,
+.fallback::after {
+  content: '';
+  position: absolute;
+  width: 160%;
+  height: 160%;
+  top: -30%;
+  left: -30%;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.fallback::before {
+  background:
+    radial-gradient(ellipse 38% 28% at 24% 36%, rgba(110, 165, 235, 0.55), transparent 62%),
+    radial-gradient(ellipse 30% 24% at 68% 58%, rgba(160, 195, 245, 0.42), transparent 65%),
+    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(70, 120, 200, 0.40), transparent 70%);
+  animation: driftA 38s ease-in-out infinite alternate;
+}
+.fallback::after {
+  background:
+    radial-gradient(ellipse 45% 32% at 78% 28%, rgba(140, 180, 235, 0.32), transparent 60%),
+    radial-gradient(ellipse 50% 35% at 18% 70%, rgba(90, 140, 220, 0.30), transparent 60%);
+  animation: driftB 56s ease-in-out infinite alternate-reverse;
+  opacity: 0.85;
+}
+@keyframes driftA {
+  0%   { transform: translate(-3%, -2%) scale(1.00); }
+  50%  { transform: translate( 4%,  3%) scale(1.08); }
+  100% { transform: translate(-2%,  5%) scale(1.04); }
+}
+@keyframes driftB {
+  0%   { transform: translate( 2%, -1%) scale(1.02); }
+  50%  { transform: translate(-3%,  4%) scale(1.10); }
+  100% { transform: translate( 3%, -3%) scale(1.00); }
+}
+
+/* WebGPU particle canvas — additive on top of CSS aurora */
+.canvas {
+  z-index: 2;
+}
+
+/* Film grain overlay */
+.grain {
+  z-index: 3;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.7 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+}
+
+/* Readability — strong central wash where the text sits, plus an edge vignette */
+.readability {
+  z-index: 4;
+  background:
+    radial-gradient(ellipse 70% 55% at 55% 55%, rgba(7, 8, 11, 0.62), transparent 78%),
+    linear-gradient(to bottom, rgba(7, 8, 11, 0.18) 0%, rgba(7, 8, 11, 0.30) 60%, rgba(7, 8, 11, 0.50) 100%),
+    radial-gradient(140% 90% at 50% 60%, transparent 55%, rgba(7, 8, 11, 0.60) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fallback::before, .fallback::after { animation: none; }
+}

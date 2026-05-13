@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WebGPU previews — pick a direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #08090C;
+    --ink: #EFEDE5;
+    --ink-2: #A8A69E;
+    --dim: #6A6863;
+    --hair: rgba(239,237,229,0.08);
+    --hair-2: rgba(239,237,229,0.16);
+    --accent: #7AA2D8;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 96px 36px 64px; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 32px; }
+  .eyebrow .idx { color: var(--accent); margin-right: 10px; }
+  h1 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(40px, 6vw, 72px); letter-spacing: -0.025em; line-height: 0.98; margin: 0 0 24px; }
+  h1 em { font-style: italic; color: var(--ink-2); }
+  .lead { font-size: 16px; line-height: 1.6; color: var(--ink-2); max-width: 60ch; margin: 0 0 64px; }
+  .lead strong { color: var(--ink); font-weight: 500; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li { border-top: 1px solid var(--hair); }
+  li:last-child { border-bottom: 1px solid var(--hair); }
+  a.opt { display: grid; grid-template-columns: 64px 1fr auto; gap: 28px; align-items: center; padding: 28px 8px; color: inherit; text-decoration: none; transition: background 160ms, padding 200ms; }
+  a.opt:hover { background: rgba(239,237,229,0.02); padding-left: 20px; }
+  .num { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--accent); text-transform: uppercase; }
+  .title { font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; font-weight: 400; letter-spacing: -0.01em; margin: 0 0 6px; }
+  .title em { font-style: italic; color: var(--ink-2); }
+  .desc { font-size: 13.5px; color: var(--ink-2); line-height: 1.55; max-width: 56ch; }
+  .arrow { font-family: 'JetBrains Mono', monospace; color: var(--ink-2); font-size: 18px; transition: color 200ms, transform 200ms; }
+  a.opt:hover .arrow { color: var(--accent); transform: translateX(4px); }
+  .foot { margin-top: 56px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--dim); line-height: 1.8; letter-spacing: 0.04em; }
+  .foot b { color: var(--ink-2); font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><span class="idx">00</span>Style previews · WebGPU</p>
+  <h1>Three directions <em>— same content,<br>different atmosphere.</em></h1>
+  <p class="lead">Each preview ships a real WebGPU shader. <strong>Open one</strong>, scroll, look at the type, the meta strip, the live status pill, the way the background reacts. Tell me which direction you want me to build the full site in.</p>
+
+  <ul>
+    <li><a class="opt" href="01-aurora.html">
+      <span class="num">A</span>
+      <div>
+        <p class="title"><em>Aurora</em> — compute-shader curl-noise particles</p>
+        <p class="desc">~120k particles, advected by curl-noise fbm in a compute pass, additively blended. Drifting, smoke-like flow. Heavier on GPU, but the most "alive" of the three.</p>
+      </div>
+      <span class="arrow">→</span>
+    </a></li>
+    <li><a class="opt" href="02-mercury.html">
+      <span class="num">B</span>
+      <div>
+        <p class="title"><em>Mercury</em> — raymarched SDF metaballs</p>
+        <p class="desc">Five soft spheres blended via smooth-min, raymarched per pixel with fresnel rim lighting and depth fade. Slow, liquid, expensive-feeling. Reacts subtly to cursor.</p>
+      </div>
+      <span class="arrow">→</span>
+    </a></li>
+    <li><a class="opt" href="03-veil.html">
+      <span class="num">C</span>
+      <div>
+        <p class="title"><em>Veil</em> — domain-warped fbm field</p>
+        <p class="desc">Two-pass domain-warped fractal noise. Aurora-like sheets of soft light drifting across the viewport. Cheapest to run, most atmospheric, least geometric.</p>
+      </div>
+      <span class="arrow">→</span>
+    </a></li>
+    <li><a class="opt" href="04-veil-sectioned.html">
+      <span class="num">D</span>
+      <div>
+        <p class="title"><em>Veil · sectioned</em> — practice areas + chronology</p>
+        <p class="desc">Earlier iteration: scrollable with four practice areas + collapsed full chronology. Superseded by E.</p>
+      </div>
+      <span class="arrow">→</span>
+    </a></li>
+    <li><a class="opt" href="05-veil-interactive.html">
+      <span class="num">E</span>
+      <div>
+        <p class="title"><em>Veil · interactive</em> — single-viewport, button-driven</p>
+        <p class="desc">Veil fbm background, click-driven area panel. Superseded by F.</p>
+      </div>
+      <span class="arrow">→</span>
+    </a></li>
+    <li><a class="opt" href="06-aurora-interactive.html">
+      <span class="num">F</span>
+      <div>
+        <p class="title"><em>Aurora · interactive</em> — particles + click feedback</p>
+        <p class="desc">Particle background + 2×2 tab grid + panel. Superseded — too boxy.</p>
+      </div>
+      <span class="arrow">→</span>
+    </a></li>
+  </ul>
+
+  <p class="eyebrow" style="margin-top:64px;margin-bottom:32px"><span class="idx">v2</span>Left list · text morphs on right · no separate panel</p>
+  <ul>
+    <li><a class="opt" href="07-index.html">
+      <span class="num">G</span>
+      <div>
+        <p class="title"><em>Editorial Index</em> — hairline list + serif name</p>
+        <p class="desc">Left: simple list of areas separated by thin lines (number in mono, name in serif italic). Right: the landing text itself morphs into the area title + brief + capabilities + tags. Hover indents, selected gets an accent dot/arrow. Cleanest reading.</p>
+      </div>
+      <span class="arrow">→</span>
+    </a></li>
+    <li><a class="opt" href="08-mono.html">
+      <span class="num">H</span>
+      <div>
+        <p class="title"><em>Brutalist Mono</em> — terminal listing</p>
+        <p class="desc">Left: directory-style listing with brackets [01], dashed dividers, all caps mono names, caret indicator on selection. Right: serif title kept, body becomes mixed mono + sans, capability bullets prefixed with <code>&gt;</code>, company tags as square outlined chips. Most technical/SIGINT feel.</p>
+      </div>
+      <span class="arrow">→</span>
+    </a></li>
+    <li><a class="opt" href="09-spread.html">
+      <span class="num">I</span>
+      <div>
+        <p class="title"><em>Magazine Spread</em> — big numerals + two-line titles</p>
+        <p class="desc">Left: big 56px serif numerals and two-line area titles (name + italic subtitle), generous spacing. Right: bigger H1 (up to 104px), serif brief, capabilities in a 2-column flow with company tag <em>below</em> each line. Most editorial / brand-y.</p>
+      </div>
+      <span class="arrow">→</span>
+    </a></li>
+  </ul>
+
+  <p class="foot">
+    <b>WebGPU support:</b> Chrome / Edge / Arc 113+, Safari 18+, Firefox Nightly. Falls back to a clear notice if unavailable.<br>
+    <b>Same content:</b> hero + first two experience rows — the comparison is style, not layout.<br>
+    <b>Same dark palette:</b> #08090C bg · ivory ink · #7AA2D8 accent.
+  </p>
+</div>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>07 · Editorial Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #07080B;
+    --ink: #F2EFE6;
+    --ink-2: #ADAAA1;
+    --dim: #6F6D67;
+    --hair: rgba(242,239,230,0.08);
+    --hair-2: rgba(242,239,230,0.18);
+    --accent: #9CBDE5;
+    --accent-2: #D4E0F3;
+    --live: #66D69B;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; height: 100%; }
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  /* Background — CSS aurora only, no WebGPU in previews */
+  .aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .aurora::before, .aurora::after { content: ''; position: absolute; width: 160%; height: 160%; top: -30%; left: -30%; }
+  .aurora::before {
+    background:
+      radial-gradient(ellipse 38% 28% at 24% 36%, rgba(110,165,235,0.55), transparent 62%),
+      radial-gradient(ellipse 30% 24% at 68% 58%, rgba(160,195,245,0.42), transparent 65%),
+      radial-gradient(ellipse 40% 30% at 50% 80%, rgba(70,120,200,0.40), transparent 70%);
+    animation: a 38s ease-in-out infinite alternate;
+  }
+  .aurora::after {
+    background:
+      radial-gradient(ellipse 45% 32% at 78% 28%, rgba(140,180,235,0.32), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 18% 70%, rgba(90,140,220,0.30), transparent 60%);
+    animation: b 56s ease-in-out infinite alternate-reverse;
+    opacity: 0.85;
+  }
+  @keyframes a { 0%{transform:translate(-3%,-2%) scale(1)} 50%{transform:translate(4%,3%) scale(1.08)} 100%{transform:translate(-2%,5%) scale(1.04)} }
+  @keyframes b { 0%{transform:translate(2%,-1%) scale(1.02)} 50%{transform:translate(-3%,4%) scale(1.1)} 100%{transform:translate(3%,-3%) scale(1)} }
+  .vignette { position: fixed; inset: 0; z-index: 1; background: radial-gradient(120% 80% at 50% 60%, transparent 50%, rgba(7,8,11,0.5) 100%); pointer-events: none; }
+
+  .stage { position: relative; z-index: 2; height: 100vh; max-width: 1320px; margin: 0 auto; padding: 28px 48px 32px; display: grid; grid-template-rows: auto 1fr auto; }
+
+  /* Top bar */
+  .nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding-bottom: 18px; }
+  .brand { display: flex; align-items: center; gap: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-2); letter-spacing: 0.02em; }
+  .brand .mark { color: var(--ink); }
+  .brand .sep { width: 1px; height: 12px; background: var(--hair-2); }
+  .center-label { justify-self: center; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-2); letter-spacing: 0.18em; text-transform: uppercase; }
+  .pill { justify-self: end; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink-2); padding: 7px 14px 7px 12px; border: 1px solid var(--hair-2); border-radius: 999px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; background: rgba(7,8,11,0.4); backdrop-filter: blur(8px); }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--live); box-shadow: 0 0 10px var(--live); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  /* Layout — left list, right content */
+  .main { display: grid; grid-template-columns: minmax(280px, 0.38fr) 1fr; gap: 64px; align-items: start; padding: 32px 0; min-height: 0; }
+
+  /* Left: editorial index */
+  .index { padding-top: 8px; }
+  .index .kicker { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: var(--ink-2); text-transform: uppercase; margin: 0 0 28px; display: flex; align-items: center; gap: 14px; }
+  .index .kicker .line { flex: 1; height: 1px; background: var(--hair-2); }
+  .options { list-style: none; padding: 0; margin: 0; }
+  .opt { all: unset; display: grid; grid-template-columns: 28px 1fr 16px; gap: 18px; align-items: baseline; padding: 18px 0; border-top: 1px solid var(--hair); cursor: pointer; transition: padding-left 320ms cubic-bezier(0.4,0,0.2,1); }
+  .opt:last-child { border-bottom: 1px solid var(--hair); }
+  .opt:hover { padding-left: 6px; }
+  .opt .n { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.08em; color: var(--ink-2); transition: color 200ms ease; }
+  .opt .label { font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; line-height: 1.1; color: var(--ink); transition: color 200ms ease, transform 320ms cubic-bezier(0.4,0,0.2,1); }
+  .opt .label em { font-style: italic; color: var(--ink-2); }
+  .opt .arrow { font-family: 'JetBrains Mono', monospace; color: transparent; transition: color 240ms ease, transform 240ms ease; }
+  .opt:hover .arrow { color: var(--ink-2); transform: translateX(2px); }
+  .opt[aria-selected="true"] .n { color: var(--accent); }
+  .opt[aria-selected="true"] .label { color: var(--accent-2); }
+  .opt[aria-selected="true"] .label em { color: var(--accent); font-style: italic; }
+  .opt[aria-selected="true"] .arrow { color: var(--accent); transform: translateX(2px); }
+  .opt[aria-selected="true"] { padding-left: 6px; }
+
+  /* Right: morphing content */
+  .right { position: relative; min-height: 0; padding-top: 8px; }
+  .stack { position: relative; }
+  .panel { transition: opacity 320ms cubic-bezier(0.4,0,0.2,1), transform 320ms cubic-bezier(0.4,0,0.2,1); }
+  .panel[hidden] { display: block; position: absolute; inset: 0; opacity: 0; transform: translateY(8px); pointer-events: none; }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; color: var(--ink-2); text-transform: uppercase; margin: 0 0 28px; display: flex; align-items: center; gap: 14px; }
+  .eyebrow .idx { color: var(--accent); }
+  .eyebrow .line { flex: 0 0 48px; height: 1px; background: var(--hair-2); }
+  h1 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(44px, 5.6vw, 92px); line-height: 0.96; letter-spacing: -0.025em; margin: 0 0 28px; max-width: 14ch; }
+  h1 em { font-style: italic; color: var(--ink-2); }
+  h1 .ampr { font-style: italic; color: var(--accent); }
+  .brief { font-size: 16px; line-height: 1.6; color: var(--ink-2); max-width: 56ch; margin: 0 0 32px; }
+  .brief strong { color: var(--ink); font-weight: 500; }
+  .caps { list-style: none; padding: 0; margin: 0 0 28px; }
+  .caps li { font-size: 14.5px; line-height: 1.65; color: var(--ink-2); padding-left: 22px; position: relative; margin-bottom: 14px; max-width: 70ch; }
+  .caps li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+  .caps .what { color: var(--ink); }
+  .caps .co { display: inline-block; margin-left: 10px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; color: var(--accent-2); padding: 1px 8px; border: 1px solid rgba(156,189,229,0.30); border-radius: 999px; background: rgba(156,189,229,0.06); white-space: nowrap; vertical-align: 1px; }
+  .tags { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--dim); letter-spacing: 0.04em; padding-top: 18px; border-top: 1px solid var(--hair); display: flex; flex-wrap: wrap; gap: 6px 14px; max-width: 80ch; }
+  .meta { display: flex; gap: 28px; font-family: 'JetBrains Mono', monospace; font-size: 13px; flex-wrap: wrap; margin-top: 8px; }
+  .meta a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--hair-2); padding-bottom: 3px; transition: border-color 200ms ease, color 200ms ease; }
+  .meta a:hover { border-bottom-color: var(--accent); color: var(--accent-2); }
+
+  /* Bottom strip */
+  .foot { display: flex; justify-content: space-between; gap: 24px; padding-top: 16px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--dim); letter-spacing: 0.04em; flex-wrap: wrap; border-top: 1px solid var(--hair); }
+  .foot a { color: var(--ink-2); text-decoration: none; }
+  .foot a:hover { color: var(--accent); }
+  .foot kbd { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; padding: 2px 6px; border: 1px solid var(--hair-2); border-radius: 3px; color: var(--ink-2); background: rgba(7,8,11,0.5); margin: 0 2px; }
+
+  @media (max-width: 980px) {
+    html, body { overflow: auto; }
+    .stage { height: auto; min-height: 100vh; padding: 24px; }
+    .main { grid-template-columns: 1fr; gap: 32px; }
+  }
+</style>
+</head>
+<body>
+<div class="aurora"></div>
+<div class="vignette"></div>
+
+<div class="stage">
+  <header class="nav">
+    <div class="brand">
+      <span class="mark">PIO ⏤ 07</span>
+      <span class="sep"></span>
+      <span>Uppsala, SE</span>
+    </div>
+    <span class="center-label" id="centerLabel">Independent practice</span>
+    <span class="pill"><span class="dot"></span>Available Q2 2026</span>
+  </header>
+
+  <main class="main">
+    <aside class="index" aria-label="Practice areas">
+      <p class="kicker"><span>Practice</span><span class="line"></span></p>
+      <ul class="options" role="tablist">
+        <li><button class="opt" role="tab" aria-selected="false" data-area="01">
+          <span class="n">01</span>
+          <span class="label"><em>Machine Learning</em></span>
+          <span class="arrow">→</span>
+        </button></li>
+        <li><button class="opt" role="tab" aria-selected="false" data-area="02">
+          <span class="n">02</span>
+          <span class="label"><em>Architecture</em></span>
+          <span class="arrow">→</span>
+        </button></li>
+        <li><button class="opt" role="tab" aria-selected="false" data-area="03">
+          <span class="n">03</span>
+          <span class="label"><em>Full-stack</em></span>
+          <span class="arrow">→</span>
+        </button></li>
+        <li><button class="opt" role="tab" aria-selected="false" data-area="04">
+          <span class="n">04</span>
+          <span class="label"><em>Security & Signal</em></span>
+          <span class="arrow">→</span>
+        </button></li>
+      </ul>
+    </aside>
+
+    <section class="right">
+      <div class="stack" id="stack">
+        <div class="panel" data-state="default">
+          <p class="eyebrow"><span class="idx">01</span><span>Independent practice</span><span class="line"></span></p>
+          <h1>Distributed, <em>real-time</em>, IoT systems <span class="ampr">&</span> the people who run them.</h1>
+          <p class="brief"><strong>Philip Ivers Ohlsson</strong> — full-stack engineer and systems architect. Pick an area on the left to see how I&rsquo;ve applied it.</p>
+          <div class="meta">
+            <a href="mailto:philip.iversohlsson@gmail.com">philip.iversohlsson@gmail.com →</a>
+            <a href="#">LinkedIn ↗</a>
+            <a href="#">GitHub ↗</a>
+          </div>
+        </div>
+        <!-- area panels injected by JS -->
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span><a href="mailto:philip.iversohlsson@gmail.com">philip.iversohlsson@gmail.com</a> · <a href="#">LinkedIn</a> · <a href="#">GitHub</a></span>
+    <span>Select<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd>· step<kbd>←</kbd><kbd>→</kbd>· clear<kbd>Esc</kbd></span>
+    <span>© 2026 · Philip Ivers Ohlsson</span>
+  </footer>
+</div>
+
+<script>
+const AREAS = {
+  '01': {
+    label: 'Machine Learning',
+    title: 'Machine Learning <em>& Data Science</em>',
+    brief: 'I build ML systems that ship and operate, not just notebooks — <strong>production graph neural networks, GenAI workflows, and real-time signal-processing ML on the edge.</strong>',
+    caps: [
+      ['Built multi-task graph neural network training pipelines for molecular permeability prediction; the trained model now runs in production R&D.', 'AstraZeneca R&D'],
+      ['Designed and shipped GenAI solutions for business intelligence; trained teams on LLM workflows and applied GenAI implementation.', 'LAR AI'],
+      ['Developed ML-based signal-processing workflows for direction finding, sensor-data analysis, and field deployment.', "Raven 'n Crow"],
+      ['Published an open-source Python package for temporal train/test splitting in multi-endpoint datasets.', 'IVERS · open source'],
+    ],
+    tags: ['PyTorch', 'GNNs', 'LLMs / GenAI', 'Signal processing', 'ETL', 'Python'],
+  },
+  '02': {
+    label: 'Architecture',
+    title: 'Architecture <em>& Distributed Systems</em>',
+    brief: 'Event-driven, real-time, IoT-enabled systems — end to end. <strong>Ingestion through deployment with ML embedded in the data path</strong>, not bolted on the side.',
+    caps: [
+      ['Architected a distributed IoT platform spanning data ingestion, backend services, frontend interfaces, and field deployment.', "Raven 'n Crow"],
+      ['Built real-time edge components and ETL pipelines for analytics, integration, and ML deployment.', "Raven 'n Crow"],
+      ['Designed a Qt-based platform for real-time monitoring and data visualisation in advanced manufacturing.', 'Fraunhofer CMA'],
+      ['Implemented an ML-based ER patient-load prediction system using Akka Streams and Google Cloud Pub/Sub.', 'BSc thesis · Chalmers'],
+    ],
+    tags: ['gRPC', 'WebRTC', 'ETL', 'Pub/Sub', 'Edge', 'Real-time', 'Docker'],
+  },
+  '03': {
+    label: 'Full-stack',
+    title: 'Full-stack <em>& Product</em>',
+    brief: 'Backend services, data pipelines, frontend interfaces — and the connective tissue between them. <strong>Comfortable owning a feature from API to UI</strong>.',
+    caps: [
+      ['Owned full-stack delivery of an IoT platform: backend services, frontend interfaces, and deployment.', "Raven 'n Crow"],
+      ['Shipped GenAI BI applications and designed training programs on implementation workflows.', 'LAR AI'],
+      ['Built Python-based internal tools supporting operational and validation workflows over multiple years.', 'Temperature Sensitive Solutions'],
+      ['Developed computer vision evaluation tooling and data acquisition pipelines.', 'Fraunhofer CMA'],
+    ],
+    tags: ['Python', 'C++', 'TypeScript / React', 'SQL', 'Docker', 'Azure', 'GCP', 'Qt'],
+  },
+  '04': {
+    label: 'Security & Signal',
+    title: 'Security <em>& Signal</em>',
+    brief: 'Mission-critical, regulated, signal-domain work. <strong>Direction finding, edge-deployed ML, sensor monitoring, and validation against regulatory and quality standards.</strong>',
+    caps: [
+      ['Developed ML-driven direction-finding workflows with sensor-data analysis, monitoring, and field deployment.', "Raven 'n Crow"],
+      ['Built real-time edge inference paths designed to operate under unreliable network conditions.', "Raven 'n Crow"],
+      ['Implemented validation scripts and processes aligned with regulatory and quality standards.', 'Temperature Sensitive Solutions'],
+      ['Applied signal processing across edge devices and real-time inference paths.', "Raven 'n Crow"],
+    ],
+    tags: ['Signal processing', 'Edge', 'IoT', 'Real-time', 'Validation / QA', 'Python', 'C++'],
+  },
+};
+
+const order = ['01','02','03','04'];
+const stack = document.getElementById('stack');
+const centerLabel = document.getElementById('centerLabel');
+const defaultPanel = stack.querySelector('[data-state="default"]');
+let current = null;
+
+function buildAreaPanel(id) {
+  const a = AREAS[id];
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.dataset.state = id;
+  panel.hidden = true;
+  panel.innerHTML = `
+    <p class="eyebrow"><span class="idx">${id}</span><span>${a.label}</span><span class="line"></span></p>
+    <h1>${a.title}</h1>
+    <p class="brief">${a.brief}</p>
+    <ul class="caps">${a.caps.map(([w,c]) => `<li><span class="what">${w}</span><span class="co">${c}</span></li>`).join('')}</ul>
+    <div class="tags">${a.tags.map(t => `<span>${t}</span>`).join('')}</div>
+  `;
+  stack.appendChild(panel);
+  return panel;
+}
+
+const panels = { default: defaultPanel };
+order.forEach(id => { panels[id] = buildAreaPanel(id); });
+
+function show(id) {
+  current = id;
+  Object.entries(panels).forEach(([key, el]) => {
+    el.hidden = key !== (id ?? 'default');
+  });
+  document.querySelectorAll('.opt').forEach(b => {
+    b.setAttribute('aria-selected', b.dataset.area === id ? 'true' : 'false');
+  });
+  centerLabel.textContent = id ? AREAS[id].label : 'Independent practice';
+}
+
+document.querySelectorAll('.opt').forEach(btn => {
+  btn.addEventListener('click', () => show(btn.dataset.area));
+});
+
+document.addEventListener('keydown', e => {
+  if (['1','2','3','4'].includes(e.key)) show('0' + e.key);
+  else if (e.key === 'Escape' || e.key === 'Backspace') show(null);
+  else if (current && (e.key === 'ArrowDown' || e.key === 'ArrowRight')) {
+    const i = order.indexOf(current); show(order[(i+1) % order.length]);
+  }
+  else if (current && (e.key === 'ArrowUp' || e.key === 'ArrowLeft')) {
+    const i = order.indexOf(current); show(order[(i-1+order.length) % order.length]);
+  }
+});
+</script>
+</body>
+</html>

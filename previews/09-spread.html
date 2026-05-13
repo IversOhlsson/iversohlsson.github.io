@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>09 · Magazine Spread</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #07080B;
+    --ink: #F2EFE6;
+    --ink-2: #ADAAA1;
+    --dim: #6F6D67;
+    --hair: rgba(242,239,230,0.08);
+    --hair-2: rgba(242,239,230,0.18);
+    --accent: #9CBDE5;
+    --accent-2: #D4E0F3;
+    --live: #66D69B;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; height: 100%; }
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  .aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .aurora::before, .aurora::after { content: ''; position: absolute; width: 160%; height: 160%; top: -30%; left: -30%; }
+  .aurora::before { background: radial-gradient(ellipse 38% 28% at 24% 36%, rgba(110,165,235,0.5), transparent 62%), radial-gradient(ellipse 30% 24% at 68% 58%, rgba(160,195,245,0.4), transparent 65%); animation: a 38s ease-in-out infinite alternate; }
+  .aurora::after { background: radial-gradient(ellipse 45% 32% at 78% 28%, rgba(140,180,235,0.32), transparent 60%), radial-gradient(ellipse 50% 35% at 18% 70%, rgba(90,140,220,0.3), transparent 60%); animation: b 56s ease-in-out infinite alternate-reverse; opacity: 0.85; }
+  @keyframes a { 0%{transform:translate(-3%,-2%) scale(1)} 50%{transform:translate(4%,3%) scale(1.08)} 100%{transform:translate(-2%,5%) scale(1.04)} }
+  @keyframes b { 0%{transform:translate(2%,-1%) scale(1.02)} 50%{transform:translate(-3%,4%) scale(1.1)} 100%{transform:translate(3%,-3%) scale(1)} }
+  .vignette { position: fixed; inset: 0; z-index: 1; background: radial-gradient(120% 80% at 50% 60%, transparent 50%, rgba(7,8,11,0.5) 100%); pointer-events: none; }
+
+  .stage { position: relative; z-index: 2; height: 100vh; max-width: 1320px; margin: 0 auto; padding: 28px 48px 32px; display: grid; grid-template-rows: auto 1fr auto; }
+
+  .nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding-bottom: 18px; }
+  .brand { display: flex; align-items: center; gap: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-2); letter-spacing: 0.02em; }
+  .brand .mark { color: var(--ink); }
+  .brand .sep { width: 1px; height: 12px; background: var(--hair-2); }
+  .center-label { justify-self: center; font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 14px; color: var(--ink-2); }
+  .pill { justify-self: end; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink-2); padding: 7px 14px 7px 12px; border: 1px solid var(--hair-2); border-radius: 999px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; background: rgba(7,8,11,0.4); }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--live); box-shadow: 0 0 10px var(--live); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  /* Magazine grid */
+  .main { display: grid; grid-template-columns: 0.42fr 1fr; gap: 80px; align-items: start; padding: 28px 0; min-height: 0; }
+
+  /* Left: big numerals + two-line titles */
+  .index { padding-top: 4px; }
+  .kicker { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 14px; color: var(--ink-2); margin: 0 0 18px; }
+  .kicker::before { content: '— '; color: var(--accent); }
+  .options { list-style: none; padding: 0; margin: 0; }
+  .opt { all: unset; display: grid; grid-template-columns: 76px 1fr; gap: 18px; align-items: baseline; padding: 22px 0; cursor: pointer; border-top: 1px solid var(--hair); transition: padding-left 320ms cubic-bezier(0.4,0,0.2,1); }
+  .opt:last-child { border-bottom: 1px solid var(--hair); }
+  .opt .big { font-family: 'Instrument Serif', Georgia, serif; font-size: 56px; line-height: 0.9; color: var(--ink-2); letter-spacing: -0.02em; transition: color 220ms ease; }
+  .opt .body { display: flex; flex-direction: column; gap: 2px; }
+  .opt .row1 { font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; line-height: 1.05; color: var(--ink); letter-spacing: -0.01em; transition: color 220ms ease; }
+  .opt .row2 { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 16px; color: var(--ink-2); line-height: 1.1; transition: color 220ms ease; }
+  .opt:hover { padding-left: 6px; }
+  .opt:hover .big { color: var(--ink); }
+  .opt[aria-selected="true"] { padding-left: 6px; }
+  .opt[aria-selected="true"] .big { color: var(--accent); }
+  .opt[aria-selected="true"] .row1 { color: var(--accent-2); }
+  .opt[aria-selected="true"] .row2 { color: var(--accent); }
+
+  /* Right content */
+  .right { position: relative; min-height: 0; padding-top: 4px; }
+  .stack { position: relative; }
+  .panel { transition: opacity 320ms cubic-bezier(0.4,0,0.2,1), transform 320ms cubic-bezier(0.4,0,0.2,1); }
+  .panel[hidden] { display: block; position: absolute; inset: 0; opacity: 0; transform: translateY(8px); pointer-events: none; }
+  .eyebrow { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 16px; color: var(--ink-2); margin: 0 0 20px; }
+  .eyebrow::before { content: '—  '; color: var(--accent); font-style: normal; }
+  h1 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(48px, 6vw, 104px); line-height: 0.95; letter-spacing: -0.025em; margin: 0 0 28px; max-width: 14ch; }
+  h1 em { font-style: italic; color: var(--ink-2); }
+  h1 .ampr { font-style: italic; color: var(--accent); }
+  .brief { font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; line-height: 1.35; color: var(--ink); max-width: 38ch; margin: 0 0 32px; font-weight: 400; }
+  .brief strong { color: var(--ink); font-weight: 400; }
+  .caps { list-style: none; padding: 0; margin: 0 0 28px; column-count: 2; column-gap: 40px; }
+  .caps li { color: var(--ink-2); font-size: 13.5px; line-height: 1.55; margin: 0 0 16px; padding-left: 18px; position: relative; break-inside: avoid; }
+  .caps li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+  .caps .what { color: var(--ink); }
+  .caps .co { display: block; margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em; color: var(--accent-2); text-transform: uppercase; }
+  .tags { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--dim); letter-spacing: 0.04em; padding-top: 18px; border-top: 1px solid var(--hair); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .meta { display: flex; gap: 28px; font-family: 'JetBrains Mono', monospace; font-size: 13px; flex-wrap: wrap; margin-top: 4px; }
+  .meta a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--hair-2); padding-bottom: 3px; transition: border-color 200ms ease, color 200ms ease; }
+  .meta a:hover { border-bottom-color: var(--accent); color: var(--accent-2); }
+
+  .foot { display: flex; justify-content: space-between; gap: 24px; padding-top: 16px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--dim); letter-spacing: 0.04em; flex-wrap: wrap; border-top: 1px solid var(--hair); }
+  .foot a { color: var(--ink-2); text-decoration: none; }
+  .foot a:hover { color: var(--accent); }
+  .foot kbd { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; padding: 2px 6px; border: 1px solid var(--hair-2); border-radius: 3px; color: var(--ink-2); background: rgba(7,8,11,0.5); margin: 0 2px; }
+
+  @media (max-width: 1080px) {
+    html, body { overflow: auto; }
+    .stage { height: auto; min-height: 100vh; padding: 24px; }
+    .main { grid-template-columns: 1fr; gap: 28px; }
+    .caps { column-count: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="aurora"></div>
+<div class="vignette"></div>
+
+<div class="stage">
+  <header class="nav">
+    <div class="brand">
+      <span class="mark">PIO ⏤ 09</span>
+      <span class="sep"></span>
+      <span>Uppsala, SE</span>
+    </div>
+    <span class="center-label" id="centerLabel">Independent practice</span>
+    <span class="pill"><span class="dot"></span>Available Q2 2026</span>
+  </header>
+
+  <main class="main">
+    <aside class="index" aria-label="Practice areas">
+      <p class="kicker">Practice</p>
+      <ul class="options" role="tablist">
+        <li><button class="opt" role="tab" aria-selected="false" data-area="01">
+          <span class="big">01</span>
+          <span class="body">
+            <span class="row1">Machine Learning</span>
+            <span class="row2">& Data Science</span>
+          </span>
+        </button></li>
+        <li><button class="opt" role="tab" aria-selected="false" data-area="02">
+          <span class="big">02</span>
+          <span class="body">
+            <span class="row1">Architecture</span>
+            <span class="row2">& Distributed Systems</span>
+          </span>
+        </button></li>
+        <li><button class="opt" role="tab" aria-selected="false" data-area="03">
+          <span class="big">03</span>
+          <span class="body">
+            <span class="row1">Full-stack</span>
+            <span class="row2">& Product</span>
+          </span>
+        </button></li>
+        <li><button class="opt" role="tab" aria-selected="false" data-area="04">
+          <span class="big">04</span>
+          <span class="body">
+            <span class="row1">Security</span>
+            <span class="row2">& Signal</span>
+          </span>
+        </button></li>
+      </ul>
+    </aside>
+
+    <section class="right">
+      <div class="stack" id="stack">
+        <div class="panel" data-state="default">
+          <p class="eyebrow">Independent practice</p>
+          <h1>Distributed, <em>real-time</em>, IoT systems <span class="ampr">&</span> the people who run them.</h1>
+          <p class="brief"><strong>Philip Ivers Ohlsson</strong> — full-stack engineer and systems architect. Pick an area on the left.</p>
+          <div class="meta">
+            <a href="mailto:philip.iversohlsson@gmail.com">philip.iversohlsson@gmail.com →</a>
+            <a href="#">LinkedIn ↗</a>
+            <a href="#">GitHub ↗</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span><a href="mailto:philip.iversohlsson@gmail.com">philip.iversohlsson@gmail.com</a> · <a href="#">LinkedIn</a> · <a href="#">GitHub</a></span>
+    <span>Select<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd>· step<kbd>←</kbd><kbd>→</kbd>· clear<kbd>Esc</kbd></span>
+    <span>© 2026 · Philip Ivers Ohlsson</span>
+  </footer>
+</div>
+
+<script>
+const AREAS = {
+  '01': { label:'Machine Learning', title:'Machine Learning <em>& Data Science</em>',
+    brief:'I build ML systems that ship and operate — production graph neural networks, GenAI workflows, real-time signal-processing ML on the edge.',
+    caps:[
+      ['Built multi-task GNN training pipelines for molecular permeability prediction; the trained model now runs in production R&D.', 'AstraZeneca R&D'],
+      ['Designed and shipped GenAI solutions for BI; trained teams on LLM workflows and applied GenAI implementation.', 'LAR AI'],
+      ['Developed ML-based signal-processing workflows for direction finding and field deployment.', "Raven 'n Crow"],
+      ['Published an open-source Python package for temporal train/test splitting in multi-endpoint datasets.', 'IVERS · open source'],
+    ], tags:['PyTorch','GNNs','LLMs / GenAI','Signal processing','ETL','Python'] },
+  '02': { label:'Architecture', title:'Architecture <em>& Distributed Systems</em>',
+    brief:'Event-driven, real-time, IoT-enabled systems — end to end. Ingestion through deployment with ML embedded in the data path.',
+    caps:[
+      ['Architected a distributed IoT platform spanning ingestion, services, frontends, and deployment.', "Raven 'n Crow"],
+      ['Built real-time edge components and ETL pipelines for analytics, integration, and ML deployment.', "Raven 'n Crow"],
+      ['Designed a Qt-based platform for real-time monitoring in advanced manufacturing.', 'Fraunhofer CMA'],
+      ['Implemented an ML-based ER patient-load prediction system using Akka Streams and Google Cloud Pub/Sub.', 'BSc thesis · Chalmers'],
+    ], tags:['gRPC','WebRTC','ETL','Pub/Sub','Edge','Real-time','Docker'] },
+  '03': { label:'Full-stack', title:'Full-stack <em>& Product</em>',
+    brief:'Backend, data pipelines, frontend, and the connective tissue between them. Owning a feature from API to UI.',
+    caps:[
+      ['Owned full-stack delivery of an IoT platform: backend, frontend, and deployment.', "Raven 'n Crow"],
+      ['Shipped GenAI BI applications and ran training programs on implementation workflows.', 'LAR AI'],
+      ['Built Python-based internal tools for operational and validation workflows.', 'Temperature Sensitive Solutions'],
+      ['Developed CV evaluation tooling and data acquisition pipelines.', 'Fraunhofer CMA'],
+    ], tags:['Python','C++','TypeScript / React','SQL','Docker','Azure','GCP','Qt'] },
+  '04': { label:'Security', title:'Security <em>& Signal</em>',
+    brief:'Mission-critical, regulated, signal-domain work — direction finding, edge-deployed ML, sensor monitoring, regulated validation.',
+    caps:[
+      ['Developed ML-driven direction-finding workflows with sensor analysis, monitoring, and field deployment.', "Raven 'n Crow"],
+      ['Built real-time edge inference paths designed for unreliable network conditions.', "Raven 'n Crow"],
+      ['Implemented validation scripts and processes aligned with regulatory and quality standards.', 'Temperature Sensitive Solutions'],
+      ['Applied signal processing across edge devices and real-time inference paths.', "Raven 'n Crow"],
+    ], tags:['Signal processing','Edge','IoT','Real-time','Validation / QA','Python','C++'] },
+};
+
+const order = ['01','02','03','04'];
+const stack = document.getElementById('stack');
+const centerLabel = document.getElementById('centerLabel');
+const defaultPanel = stack.querySelector('[data-state="default"]');
+let current = null;
+
+function buildPanel(id) {
+  const a = AREAS[id];
+  const p = document.createElement('div');
+  p.className = 'panel'; p.dataset.state = id; p.hidden = true;
+  p.innerHTML = `
+    <p class="eyebrow">${a.label}</p>
+    <h1>${a.title}</h1>
+    <p class="brief">${a.brief}</p>
+    <ul class="caps">${a.caps.map(([w,c]) => `<li><span class="what">${w}</span><span class="co">${c}</span></li>`).join('')}</ul>
+    <div class="tags">${a.tags.map(t => `<span>${t}</span>`).join('')}</div>
+  `;
+  stack.appendChild(p); return p;
+}
+const panels = { default: defaultPanel };
+order.forEach(id => { panels[id] = buildPanel(id); });
+
+function show(id) {
+  current = id;
+  Object.entries(panels).forEach(([k, el]) => el.hidden = k !== (id ?? 'default'));
+  document.querySelectorAll('.opt').forEach(b => b.setAttribute('aria-selected', b.dataset.area === id ? 'true' : 'false'));
+  centerLabel.textContent = id ? AREAS[id].label : 'Independent practice';
+}
+
+document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => show(b.dataset.area)));
+document.addEventListener('keydown', e => {
+  if (['1','2','3','4'].includes(e.key)) show('0' + e.key);
+  else if (e.key === 'Escape' || e.key === 'Backspace') show(null);
+  else if (current && (e.key === 'ArrowDown' || e.key === 'ArrowRight')) { const i = order.indexOf(current); show(order[(i+1)%order.length]); }
+  else if (current && (e.key === 'ArrowUp' || e.key === 'ArrowLeft'))     { const i = order.indexOf(current); show(order[(i-1+order.length)%order.length]); }
+});
+</script>
+</body>
+</html>

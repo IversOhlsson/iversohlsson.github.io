@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aurora · interactive — particles + click feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #07080B;
+    --ink: #F2EFE6;
+    --ink-2: #ADAAA1;
+    --dim: #6F6D67;
+    --hair: rgba(242,239,230,0.08);
+    --hair-2: rgba(242,239,230,0.18);
+    --accent: #9CBDE5;
+    --accent-2: #D4E0F3;
+    --accent-soft: rgba(156,189,229,0.16);
+    --live: #66D69B;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  canvas#bg { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+  .grain { position: fixed; inset: 0; pointer-events: none; z-index: 2; opacity: 0.06; mix-blend-mode: overlay; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.7 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>"); }
+  .warn { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg); border: 1px solid var(--hair-2); padding: 24px 28px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-2); display: none; z-index: 20; max-width: 360px; }
+  .warn b { color: var(--ink); display: block; margin-bottom: 8px; font-weight: 500; }
+  .warn code { color: var(--accent-2); background: rgba(156,189,229,0.08); padding: 1px 6px; border-radius: 2px; }
+
+  .stage { position: relative; z-index: 3; height: 100vh; max-width: 1320px; margin: 0 auto; padding: 28px 48px 32px; display: grid; grid-template-rows: auto 1fr auto; gap: 0; }
+
+  /* Top bar */
+  .nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding-bottom: 18px; }
+  .brand { display: flex; align-items: center; gap: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-2); letter-spacing: 0.02em; }
+  .brand .mark { color: var(--ink); }
+  .brand .sep { width: 1px; height: 12px; background: var(--hair-2); }
+  .links { justify-self: center; display: flex; gap: 28px; }
+  .links a { color: var(--ink-2); text-decoration: none; font-size: 12.5px; transition: color 160ms; }
+  .links a:hover { color: var(--ink); }
+  .links a.active { color: var(--ink); }
+  .status { justify-self: end; }
+  .pill { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink-2); padding: 7px 14px 7px 12px; border: 1px solid var(--hair-2); border-radius: 999px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; background: rgba(7,8,11,0.4); backdrop-filter: blur(8px); }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--live); box-shadow: 0 0 10px var(--live); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  /* Center stage */
+  .center { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 64px; align-items: center; min-height: 0; }
+  @media (max-width: 1080px) { .center { grid-template-columns: 1fr; gap: 32px; } }
+
+  .left { will-change: transform; transition: transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 28px; display: flex; align-items: center; gap: 14px; }
+  .eyebrow .idx { color: var(--accent); }
+  .eyebrow .line { flex: 0 0 48px; height: 1px; background: var(--hair-2); }
+  .display { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(40px, 5.4vw, 88px); line-height: 0.96; letter-spacing: -0.022em; margin: 0 0 24px; max-width: 14ch; }
+  .display em { font-style: italic; color: var(--ink-2); }
+  .display .ampr { font-style: italic; color: var(--accent); }
+  .lead { font-size: 14.5px; line-height: 1.55; color: var(--ink-2); max-width: 44ch; margin: 0 0 32px; font-weight: 400; }
+  .lead strong { color: var(--ink); font-weight: 500; }
+  .heroMeta { display: flex; gap: 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; flex-wrap: wrap; }
+  .heroMeta a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--hair-2); padding-bottom: 3px; transition: border-color 200ms, color 200ms; }
+  .heroMeta a:hover { border-bottom-color: var(--accent); color: var(--accent-2); }
+
+  /* Right column — selector + panel */
+  .right { display: flex; flex-direction: column; gap: 20px; min-height: 0; }
+  .tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .tab {
+    all: unset; cursor: pointer; padding: 14px 18px; border-radius: 8px;
+    background: rgba(7,8,11,0.42); backdrop-filter: blur(10px);
+    border: 1px solid var(--hair-2);
+    display: flex; flex-direction: column; gap: 6px;
+    transform: translateY(0) scale(1);
+    transition:
+      transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      border-color 220ms ease, background 220ms ease,
+      box-shadow 320ms ease;
+    position: relative; overflow: hidden;
+  }
+  .tab::after {
+    content: ''; position: absolute; inset: 0; border-radius: 8px;
+    box-shadow: 0 0 0 1px transparent inset;
+    pointer-events: none; transition: box-shadow 240ms ease;
+  }
+  .tab:hover { border-color: rgba(156,189,229,0.35); transform: translateY(-1.5px) scale(1.005); }
+  .tab:focus-visible { outline: none; border-color: var(--accent); }
+  .tab:active { transform: translateY(-1px) scale(0.975); transition-duration: 90ms; }
+  .tab .num { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; color: var(--ink-2); text-transform: uppercase; position: relative; z-index: 2; }
+  .tab .name { font-family: 'Instrument Serif', Georgia, serif; font-size: 19px; letter-spacing: -0.01em; line-height: 1.1; color: var(--ink); position: relative; z-index: 2; }
+  .tab .name em { font-style: italic; color: var(--ink-2); }
+  .tab[aria-selected="true"] {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 1px rgba(156,189,229,0.18) inset, 0 12px 36px rgba(8,12,28,0.55);
+  }
+  .tab[aria-selected="true"] .num { color: var(--accent-2); }
+  .tab[aria-selected="true"] .name em { color: var(--accent-2); }
+  .tab.justSelected::after { animation: rim 540ms ease-out forwards; }
+  @keyframes rim {
+    0%   { box-shadow: 0 0 0 1px var(--accent) inset, 0 0 0 0 rgba(156,189,229,0.55); }
+    100% { box-shadow: 0 0 0 1px transparent inset, 0 0 0 14px rgba(156,189,229,0); }
+  }
+
+  /* Ripple */
+  .ripple {
+    position: absolute; width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(156,189,229,0.45);
+    transform: translate(-50%, -50%) scale(0.5);
+    animation: ripple 620ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    pointer-events: none; z-index: 1;
+  }
+  @keyframes ripple { to { transform: translate(-50%, -50%) scale(40); opacity: 0; } }
+
+  .panel {
+    position: relative; padding: 24px 26px 22px;
+    border: 1px solid var(--hair-2); border-radius: 10px;
+    background: rgba(7,8,11,0.58); backdrop-filter: blur(14px);
+    min-height: 240px; overflow: hidden;
+    transition: border-color 380ms ease, box-shadow 380ms ease;
+  }
+  .panel.flash {
+    border-color: rgba(156,189,229,0.55);
+    box-shadow: 0 0 0 1px rgba(156,189,229,0.25) inset, 0 0 36px rgba(156,189,229,0.18);
+  }
+  .panel-inner { transition: opacity 260ms cubic-bezier(0.4,0,0.2,1), transform 260ms cubic-bezier(0.4,0,0.2,1); opacity: 1; transform: translateY(0); }
+  .panel.swapping .panel-inner { opacity: 0; transform: translateY(8px); }
+  .panel h3 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 28px; letter-spacing: -0.015em; line-height: 1.05; margin: 0 0 12px; }
+  .panel h3 em { font-style: italic; color: var(--ink-2); }
+  .panel .brief { font-size: 14px; line-height: 1.55; color: var(--ink-2); margin: 0 0 20px; }
+  .panel .brief strong { color: var(--ink); font-weight: 500; }
+  .panel ul { list-style: none; padding: 0; margin: 0 0 22px; }
+  .panel li { color: var(--ink-2); font-size: 13px; line-height: 1.6; padding-left: 20px; position: relative; margin-bottom: 6px; }
+  .panel li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+  .panel li b { color: var(--ink); font-weight: 500; }
+  .panel .tags { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--dim); letter-spacing: 0.04em; padding-top: 14px; border-top: 1px solid var(--hair); display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .panel .badge { position: absolute; top: 14px; right: 16px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent-2); letter-spacing: 0.16em; text-transform: uppercase; padding: 4px 9px; border: 1px solid rgba(156,189,229,0.4); border-radius: 999px; background: rgba(156,189,229,0.06); }
+  .panel .placeholder { display: flex; flex-direction: column; gap: 10px; }
+  .panel .placeholder .hint { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--dim); text-transform: uppercase; }
+  .panel .placeholder p { font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; line-height: 1.25; color: var(--ink-2); margin: 0; font-style: italic; }
+
+  /* Bottom strip */
+  .foot { display: flex; justify-content: space-between; gap: 24px; padding-top: 20px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--dim); letter-spacing: 0.04em; flex-wrap: wrap; border-top: 1px solid var(--hair); }
+  .foot a { color: var(--ink-2); text-decoration: none; }
+  .foot a:hover { color: var(--accent); }
+  .foot .kbd { display: inline-flex; align-items: center; gap: 6px; }
+  .foot kbd { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; padding: 2px 6px; border: 1px solid var(--hair-2); border-radius: 3px; color: var(--ink-2); background: rgba(7,8,11,0.5); }
+
+  @media (max-width: 1080px) {
+    html, body { overflow: auto; }
+    .stage { height: auto; min-height: 100vh; padding: 24px; grid-template-rows: auto auto auto; }
+    .display { font-size: clamp(40px, 9vw, 64px); }
+    .tabs { grid-template-columns: 1fr 1fr; }
+    .links { display: none; }
+    .nav { grid-template-columns: 1fr auto; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="grain"></div>
+<div class="warn" id="warn"><b>WebGPU unavailable</b>Enable in Chromium via <code>chrome://flags/#enable-unsafe-webgpu</code>, or open in Safari 18+. Layout still renders without it.</div>
+
+<div class="stage">
+  <header class="nav">
+    <div class="brand">
+      <span class="mark">PIO ⏤ 06</span>
+      <span class="sep"></span>
+      <span>Uppsala, SE</span>
+      <span class="sep"></span>
+      <span id="clock">—</span>
+    </div>
+    <nav class="links">
+      <a href="#" data-area="01">Machine Learning</a>
+      <a href="#" data-area="02">Architecture</a>
+      <a href="#" data-area="03">Full-stack</a>
+      <a href="#" data-area="04">Security</a>
+    </nav>
+    <div class="status"><span class="pill"><span class="dot"></span>Available Q2 2026</span></div>
+  </header>
+
+  <div class="center">
+    <div class="left" id="left">
+      <p class="eyebrow"><span class="idx">01</span><span>Independent practice</span><span class="line"></span></p>
+      <h1 class="display">Distributed, <em>real-time</em>, IoT systems <span class="ampr">&</span> the people who run them.</h1>
+      <p class="lead"><strong>Philip Ivers Ohlsson</strong> — full-stack engineer and systems architect. Pick an area on the right to see how I've applied it.</p>
+      <div class="heroMeta">
+        <a href="mailto:philip.iversohlsson@gmail.com">philip.iversohlsson@gmail.com →</a>
+        <a href="https://www.linkedin.com/in/philip-ivers-ohlsson-9874a313b/" target="_blank" rel="noreferrer">LinkedIn ↗</a>
+        <a href="https://github.com/IversOhlsson" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="tabs" role="tablist" aria-label="Practice areas">
+        <button class="tab" role="tab" aria-selected="false" data-area="01">
+          <span class="num">01 / ML & Data</span>
+          <span class="name"><em>Machine Learning</em></span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-area="02">
+          <span class="num">02 / Distributed</span>
+          <span class="name"><em>Architecture</em></span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-area="03">
+          <span class="num">03 / Product</span>
+          <span class="name"><em>Full-stack</em></span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-area="04">
+          <span class="num">04 / Mission-critical</span>
+          <span class="name"><em>Security & Signal</em></span>
+        </button>
+      </div>
+
+      <div class="panel" id="panel">
+        <div class="panel-inner" id="panelInner">
+          <div class="placeholder">
+            <span class="hint">— Awaiting selection</span>
+            <p>Hover or click an area above to read a brief and selected work.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <span><a href="mailto:philip.iversohlsson@gmail.com">philip.iversohlsson@gmail.com</a> · <a href="https://www.linkedin.com/in/philip-ivers-ohlsson-9874a313b/">LinkedIn</a> · <a href="https://github.com/IversOhlsson">GitHub</a></span>
+    <span class="kbd">Navigate <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> · clear <kbd>Esc</kbd></span>
+    <span>© 2026 · Philip Ivers Ohlsson</span>
+  </footer>
+</div>
+
+<script type="module">
+const warn = document.getElementById('warn');
+
+function tick() {
+  const d = new Date();
+  const fmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Stockholm' }).format(d);
+  document.getElementById('clock').textContent = fmt + ' CET';
+}
+tick(); setInterval(tick, 30000);
+
+// ---- Content ------------------------------------------------------
+const AREAS = {
+  '01': {
+    badge: '01',
+    title: 'Machine Learning <em>& Data Science</em>',
+    brief: 'I build ML systems that ship and operate, not just notebooks. <strong>Production graph neural networks at AstraZeneca, GenAI workflows at LAR AI, real-time signal-processing ML on the edge at Raven \'n Crow.</strong>',
+    items: [
+      '<b>AstraZeneca R&D</b> — multi-task GNN pipelines for molecular permeability; model in production within R&D.',
+      '<b>LAR AI</b> — GenAI solutions for BI; designed and delivered training on LLMs and applied GenAI workflows.',
+      '<b>Raven \'n Crow</b> — ML-based signal processing for direction finding, sensor-data analysis, field deployment.',
+      '<b>IVERS</b> — open-source Python package for temporal train/test splitting in multi-endpoint datasets.',
+    ],
+    tags: ['PyTorch', 'GNNs', 'LLMs / GenAI', 'Signal processing', 'ETL'],
+  },
+  '02': {
+    badge: '02',
+    title: 'Architecture <em>& Distributed Systems</em>',
+    brief: 'Event-driven, real-time, IoT-enabled systems — end to end. <strong>Ingestion through deployment with ML embedded in the data path</strong>, not bolted on the side.',
+    items: [
+      '<b>Raven \'n Crow</b> — architected distributed IoT spanning ingestion, services, frontends, deployment.',
+      '<b>Real-time edge</b> — components and ETL pipelines for analytics, integration, and ML deployment.',
+      '<b>Fraunhofer CMA</b> — Qt-based platform for real-time monitoring and data visualisation.',
+      '<b>BSc thesis</b> — ER patient-load prediction using Akka Streams and Google Cloud Pub/Sub.',
+    ],
+    tags: ['gRPC', 'WebRTC', 'ETL', 'Pub/Sub', 'Edge', 'Real-time'],
+  },
+  '03': {
+    badge: '03',
+    title: 'Full-stack <em>& Product</em>',
+    brief: 'Backend services, data pipelines, frontend interfaces, and the connective tissue. <strong>Comfortable owning a feature from API to UI</strong>, and shipping internal tooling that real teams depend on.',
+    items: [
+      '<b>Raven \'n Crow</b> — backend + frontend + deployment for an IoT platform.',
+      '<b>LAR AI</b> — GenAI solutions for BI; training programs on implementation workflows.',
+      '<b>Temperature Sensitive Solutions</b> — Python-based internal tools for operational and validation workflows.',
+      '<b>Fraunhofer CMA</b> — data acquisition tooling and computer vision evaluation pipelines.',
+    ],
+    tags: ['Python', 'C++', 'TypeScript / React', 'Docker', 'Azure', 'GCP'],
+  },
+  '04': {
+    badge: '04',
+    title: 'Security <em>& Signal</em>',
+    brief: 'Mission-critical, regulated, signal-domain work. <strong>Direction finding, edge-deployed ML, sensor monitoring, and validation against regulatory and quality standards</strong> — where systems have to be right the first time.',
+    items: [
+      '<b>Raven \'n Crow</b> — ML direction-finding workflows, sensor-data analysis, monitoring, field deployment.',
+      '<b>Edge real-time</b> — inference under unreliable network conditions and field operations.',
+      '<b>Temperature Sensitive Solutions</b> — validation pipelines aligned with regulatory and quality standards.',
+      '<b>Signal processing</b> — applied across edge devices and real-time inference paths.',
+    ],
+    tags: ['Signal processing', 'Edge', 'IoT', 'Real-time', 'Validation / QA'],
+  },
+};
+
+// ---- Tabs + panel -------------------------------------------------
+const tabs   = document.querySelectorAll('.tab');
+const navLinks = document.querySelectorAll('.links a');
+const panel  = document.getElementById('panel');
+const inner  = document.getElementById('panelInner');
+let current  = null;
+
+function render(id) {
+  const a = AREAS[id];
+  if (!a) return;
+  inner.innerHTML = `
+    <span class="badge">${a.badge} / showing</span>
+    <h3>${a.title}</h3>
+    <p class="brief">${a.brief}</p>
+    <ul>${a.items.map(it => `<li>${it}</li>`).join('')}</ul>
+    <div class="tags">${a.tags.map(t => `<span>${t}</span>`).join('')}</div>
+  `;
+}
+
+function select(id) {
+  if (id === current) return;
+  current = id;
+  tabs.forEach(t => {
+    const on = t.dataset.area === id;
+    t.setAttribute('aria-selected', on ? 'true' : 'false');
+    if (on) {
+      t.classList.remove('justSelected');
+      void t.offsetWidth; // restart animation
+      t.classList.add('justSelected');
+    }
+  });
+  navLinks.forEach(a => a.classList.toggle('active', a.dataset.area === id));
+
+  panel.classList.add('swapping', 'flash');
+  setTimeout(() => {
+    render(id);
+    panel.classList.remove('swapping');
+  }, 220);
+  setTimeout(() => panel.classList.remove('flash'), 540);
+}
+
+function clearSel() {
+  current = null;
+  tabs.forEach(t => { t.setAttribute('aria-selected', 'false'); t.classList.remove('justSelected'); });
+  navLinks.forEach(a => a.classList.remove('active'));
+  panel.classList.add('swapping');
+  setTimeout(() => {
+    inner.innerHTML = `
+      <div class="placeholder">
+        <span class="hint">— Awaiting selection</span>
+        <p>Hover or click an area above to read a brief and selected work.</p>
+      </div>`;
+    panel.classList.remove('swapping');
+  }, 220);
+}
+
+function makeRipple(host, x, y) {
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  r.style.left = x + 'px';
+  r.style.top  = y + 'px';
+  host.appendChild(r);
+  setTimeout(() => r.remove(), 640);
+}
+
+tabs.forEach(t => {
+  t.addEventListener('click', (e) => {
+    const rect = t.getBoundingClientRect();
+    makeRipple(t, e.clientX - rect.left, e.clientY - rect.top);
+    select(t.dataset.area);
+  });
+});
+navLinks.forEach(a => {
+  a.addEventListener('click', e => { e.preventDefault(); select(a.dataset.area); });
+});
+addEventListener('keydown', e => {
+  if (['1','2','3','4'].includes(e.key)) {
+    const id = '0' + e.key;
+    const target = document.querySelector(`.tab[data-area="${id}"]`);
+    if (target) {
+      const rect = target.getBoundingClientRect();
+      makeRipple(target, rect.width / 2, rect.height / 2);
+    }
+    select(id);
+  } else if (e.key === 'Escape') {
+    clearSel();
+  }
+});
+
+// ---- Mouse tracking — global state, smoothed in RAF ---------------
+let mx = 0.5, my = 0.5;
+let smx = 0.5, smy = 0.5;
+const left = document.getElementById('left');
+addEventListener('pointermove', e => {
+  mx = e.clientX / innerWidth;
+  my = e.clientY / innerHeight;
+}, { passive: true });
+
+// ---- WebGPU — compute-shader curl-noise particles -----------------
+async function init() {
+  if (!navigator.gpu) { warn.style.display = 'block'; return null; }
+  const adapter = await navigator.gpu.requestAdapter();
+  if (!adapter) { warn.style.display = 'block'; return null; }
+  const device = await adapter.requestDevice();
+  const canvas = document.getElementById('bg');
+  const ctx = canvas.getContext('webgpu');
+  const format = navigator.gpu.getPreferredCanvasFormat();
+  ctx.configure({ device, format, alphaMode: 'premultiplied' });
+
+  const dpr = 1.0;
+  function resize() {
+    canvas.width  = Math.floor(innerWidth  * dpr);
+    canvas.height = Math.floor(innerHeight * dpr);
+    canvas.style.width  = innerWidth  + 'px';
+    canvas.style.height = innerHeight + 'px';
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  const N = 60000;
+  const data = new Float32Array(N * 4);
+  for (let i = 0; i < N; i++) {
+    data[i*4 + 0] = (Math.random() * 2 - 1) * 1.3;
+    data[i*4 + 1] = (Math.random() * 2 - 1) * 1.3;
+    data[i*4 + 2] = 0;
+    data[i*4 + 3] = 0;
+  }
+  const particles = device.createBuffer({
+    size: data.byteLength,
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+  });
+  device.queue.writeBuffer(particles, 0, data);
+
+  const uBuf = device.createBuffer({
+    size: 32,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const compute = device.createShaderModule({ code: /* wgsl */ `
+    struct P { pos: vec2f, vel: vec2f };
+    struct U {
+      time: f32, aspect: f32, dt: f32, m_x: f32,
+      m_y: f32, _p0: f32, _p1: f32, _p2: f32,
+    };
+    @group(0) @binding(0) var<storage, read_write> ps: array<P>;
+    @group(0) @binding(1) var<uniform> u: U;
+
+    fn hash21(p: vec2f) -> f32 {
+      var p3 = fract(vec3f(p.x, p.y, p.x) * 0.1031);
+      p3 = p3 + dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
+    }
+    fn vnoise(p: vec2f) -> f32 {
+      let i = floor(p); let f = fract(p);
+      let s = f * f * (3.0 - 2.0 * f);
+      let a = hash21(i);
+      let b = hash21(i + vec2f(1.0, 0.0));
+      let c = hash21(i + vec2f(0.0, 1.0));
+      let d = hash21(i + vec2f(1.0, 1.0));
+      return mix(mix(a, b, s.x), mix(c, d, s.x), s.y);
+    }
+    fn fbm(p: vec2f) -> f32 {
+      var v = 0.0; var a = 0.5; var q = p;
+      v = v + a * vnoise(q); q = q * 2.03 + vec2f(11.7, 5.3); a = a * 0.5;
+      v = v + a * vnoise(q); q = q * 2.03 + vec2f(11.7, 5.3); a = a * 0.5;
+      v = v + a * vnoise(q);
+      return v;
+    }
+    fn curl(p: vec2f) -> vec2f {
+      let e = 0.06;
+      let n1 = fbm(p + vec2f(0.0, e));
+      let n2 = fbm(p - vec2f(0.0, e));
+      let n3 = fbm(p + vec2f(e, 0.0));
+      let n4 = fbm(p - vec2f(e, 0.0));
+      return vec2f((n1 - n2), -(n3 - n4)) / (2.0 * e);
+    }
+
+    @compute @workgroup_size(64)
+    fn main(@builtin(global_invocation_id) gid: vec3u) {
+      let i = gid.x;
+      if (i >= arrayLength(&ps)) { return; }
+      var p = ps[i];
+
+      // mouse in clip space (-1..1, y-flipped). Approximate; aspect-corrected for visual feel.
+      let m = vec2f(u.m_x * 2.0 - 1.0, 1.0 - u.m_y * 2.0);
+
+      // base curl-noise advection — slightly offset by mouse so the field "follows"
+      let q = p.pos * vec2f(1.1, 1.6) + vec2f(u.time * 0.035 + m.x * 0.30, u.time * 0.018 - m.y * 0.18);
+      let v = curl(q);
+      p.vel = p.vel * 0.945 + v * 0.00115;
+
+      // mouse attract — gentle, falls off with distance
+      let toM = m - p.pos;
+      let d   = length(toM) + 0.0001;
+      let pull = exp(-d * 2.6) * 0.00075;
+      p.vel = p.vel + (toM / d) * pull;
+
+      p.pos = p.pos + p.vel;
+      if (p.pos.x >  1.35) { p.pos.x = -1.35; p.vel = vec2f(0.0); }
+      if (p.pos.x < -1.35) { p.pos.x =  1.35; p.vel = vec2f(0.0); }
+      if (p.pos.y >  1.35) { p.pos.y = -1.35; p.vel = vec2f(0.0); }
+      if (p.pos.y < -1.35) { p.pos.y =  1.35; p.vel = vec2f(0.0); }
+      ps[i] = p;
+    }
+  `});
+
+  const render = device.createShaderModule({ code: /* wgsl */ `
+    struct VO { @builtin(position) position: vec4f, @location(0) speed: f32 };
+    @vertex
+    fn vs(@location(0) pos: vec2f, @location(1) vel: vec2f) -> VO {
+      var o: VO;
+      o.position = vec4f(pos, 0.0, 1.0);
+      o.speed = length(vel);
+      return o;
+    }
+    @fragment
+    fn fs(in: VO) -> @location(0) vec4f {
+      let s = clamp(in.speed * 70.0, 0.0, 1.0);
+      let cool = vec3f(0.30, 0.46, 0.74);
+      let warm = vec3f(0.86, 0.90, 0.95);
+      let col  = mix(cool * 0.42, warm, s);
+      let a = 0.09 + s * 0.30;
+      return vec4f(col * a, a);
+    }
+  `});
+
+  const computePipe = device.createComputePipeline({
+    layout: 'auto',
+    compute: { module: compute, entryPoint: 'main' },
+  });
+
+  const renderPipe = device.createRenderPipeline({
+    layout: 'auto',
+    vertex: {
+      module: render, entryPoint: 'vs',
+      buffers: [{
+        arrayStride: 16,
+        attributes: [
+          { shaderLocation: 0, offset: 0, format: 'float32x2' },
+          { shaderLocation: 1, offset: 8, format: 'float32x2' },
+        ],
+      }],
+    },
+    fragment: {
+      module: render, entryPoint: 'fs',
+      targets: [{
+        format,
+        blend: {
+          color: { srcFactor: 'one', dstFactor: 'one', operation: 'add' },
+          alpha: { srcFactor: 'one', dstFactor: 'one', operation: 'add' },
+        },
+      }],
+    },
+    primitive: { topology: 'point-list' },
+  });
+
+  const computeBind = device.createBindGroup({
+    layout: computePipe.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: { buffer: particles } },
+      { binding: 1, resource: { buffer: uBuf } },
+    ],
+  });
+
+  return { device, ctx, computePipe, renderPipe, computeBind, particles, uBuf, N };
+}
+
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+(async () => {
+  const gpu = await init();
+  const t0 = performance.now();
+  let lastT = t0;
+  const canvas = document.getElementById('bg');
+
+  function frame() {
+    smx += (mx - smx) * 0.05;
+    smy += (my - smy) * 0.05;
+
+    const px = (smx - 0.5) * -8;
+    const py = (smy - 0.5) * -6;
+    left.style.transform = `translate3d(${px}px, ${py}px, 0)`;
+
+    if (gpu) {
+      const now = performance.now();
+      const dt  = Math.min((now - lastT) / 1000, 0.05); lastT = now;
+      const time = (now - t0) / 1000;
+      gpu.device.queue.writeBuffer(gpu.uBuf, 0, new Float32Array([
+        time, canvas.width / canvas.height, dt, smx,
+        smy, 0, 0, 0,
+      ]));
+
+      const enc = gpu.device.createCommandEncoder();
+      if (!reduced) {
+        const pass = enc.beginComputePass();
+        pass.setPipeline(gpu.computePipe);
+        pass.setBindGroup(0, gpu.computeBind);
+        pass.dispatchWorkgroups(Math.ceil(gpu.N / 64));
+        pass.end();
+      }
+      {
+        const view = gpu.ctx.getCurrentTexture().createView();
+        const pass = enc.beginRenderPass({
+          colorAttachments: [{ view, loadOp: 'clear', storeOp: 'store',
+            clearValue: { r: 0.027, g: 0.031, b: 0.043, a: 1.0 } }],
+        });
+        pass.setPipeline(gpu.renderPipe);
+        pass.setVertexBuffer(0, gpu.particles);
+        pass.draw(gpu.N);
+        pass.end();
+      }
+      gpu.device.queue.submit([enc.finish()]);
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+})().catch(err => { console.error(err); warn.style.display = 'block'; });
+</script>
+</body>
+</html>
