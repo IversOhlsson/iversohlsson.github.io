@@ -35,11 +35,11 @@
 .h1 {
   font-family: 'Instrument Serif', Georgia, serif;
   font-weight: 400;
-  font-size: clamp(38px, 4.2vw, 58px);
-  line-height: 1.02;
-  letter-spacing: -0.02em;
-  margin: 0 0 24px;
-  max-width: 18ch;
+  font-size: clamp(30px, 3.2vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0 0 22px;
+  max-width: 22ch;
 }
 .h1 em { font-style: italic; color: var(--ink-2); }
 .h1 .ampr { font-style: italic; color: var(--accent); }
@@ -125,4 +125,73 @@
 .meta a:hover {
   border-bottom-color: var(--accent);
   color: var(--accent-2);
+}
+
+@media (max-width: 720px) {
+  .right {
+    padding: 22px 18px 24px;
+  }
+  .crumb {
+    margin: 0 0 16px;
+    font-size: 10.5px;
+  }
+  .h1 {
+    font-size: clamp(28px, 7.5vw, 36px);
+    line-height: 1.1;
+    margin: 0 0 18px;
+    max-width: none;
+  }
+  .brief {
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin-bottom: 22px;
+    max-width: none;
+  }
+  .sectionLabel {
+    margin: 24px 0 14px;
+    padding-top: 18px;
+    font-size: 10px;
+  }
+  .caps li {
+    font-size: 14px;
+    padding-left: 22px;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .caps li::before {
+    font-size: 11px;
+  }
+  .meta {
+    flex-direction: column;
+    gap: 0;
+    margin-top: 8px;
+  }
+  .meta a {
+    display: block;
+    padding: 12px 0;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--hair);
+  }
+  .meta a:last-child {
+    border-bottom: 1px solid var(--hair);
+  }
+  .tags {
+    gap: 6px 10px;
+    font-size: 10.5px;
+  }
+}
+
+@media (max-width: 420px) {
+  .right {
+    padding: 20px 14px 22px;
+  }
+  .h1 {
+    font-size: clamp(24px, 7.5vw, 30px);
+  }
+  .brief {
+    font-size: 14px;
+  }
+  .caps li {
+    font-size: 13.5px;
+  }
 }

@@ -27,3 +27,21 @@
   background: rgba(7, 8, 11, 0.5);
   margin: 0 2px;
 }
+
+@media (max-width: 720px) {
+  .foot {
+    font-size: 10px;
+    gap: 12px 18px;
+    padding-top: 14px;
+  }
+  /* Keyboard shortcuts are noise on touch devices */
+  .kbd { display: none; }
+}
+
+@media (max-width: 420px) {
+  .foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

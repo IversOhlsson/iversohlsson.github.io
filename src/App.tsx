@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styles from './App.module.css'
 import AuroraBackground from './components/AuroraBackground'
 import TopNav from './components/TopNav'
 import AreaList from './components/AreaList'
 import MainContent from './components/MainContent'
+import MobileSwitcher from './components/MobileSwitcher'
 import Footer from './components/Footer'
 import { AREA_ORDER, type AreaId } from './content/areas'
 
@@ -27,6 +28,38 @@ function App() {
   const onSelect = useCallback((id: AreaId | null) => {
     setCurrent(prev => (prev === id ? prev : id))
   }, [])
+
+  // Ordered list of pages for swipe + bottom switcher (About first, then areas).
+  const pages = useMemo<(AreaId | null)[]>(() => [null, ...AREA_ORDER], [])
+
+  const step = useCallback((dir: 1 | -1) => {
+    setCurrent(prev => {
+      const idx = pages.indexOf(prev)
+      if (idx === -1) return prev
+      const next = Math.max(0, Math.min(pages.length - 1, idx + dir))
+      return pages[next]
+    })
+  }, [pages])
+
+  // Swipe handling — horizontal-only to avoid hijacking vertical scroll.
+  const touchStart = useRef<{ x: number; y: number; t: number } | null>(null)
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const t = e.touches[0]
+    touchStart.current = { x: t.clientX, y: t.clientY, t: performance.now() }
+  }, [])
+  const onTouchEnd = useCallback((e: React.TouchEvent) => {
+    const s = touchStart.current
+    touchStart.current = null
+    if (!s) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - s.x
+    const dy = t.clientY - s.y
+    const dt = performance.now() - s.t
+    if (dt > 600) return
+    if (Math.abs(dx) < 55) return
+    if (Math.abs(dy) > Math.abs(dx) * 0.7) return
+    step(dx < 0 ? 1 : -1)
+  }, [step])
 
   // Keyboard: 0 = about / home, 1-4 select an area, Esc/Backspace also home, ↑↓ / ←→ step through.
   useEffect(() => {
@@ -67,10 +100,16 @@ function App() {
       <div className={styles.stage}>
         <TopNav current={current} />
 
-        <main className={styles.main}>
+        <main
+          className={styles.main}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
           <AreaList current={current} onSelect={onSelect} />
           <MainContent current={current} mouseRef={mouseRef} />
         </main>
+
+        <MobileSwitcher current={current} onSelect={onSelect} />
 
         <Footer />
       </div>

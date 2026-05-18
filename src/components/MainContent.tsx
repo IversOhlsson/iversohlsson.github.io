@@ -57,35 +57,28 @@ function DefaultPanel({ hidden }: { hidden: boolean }) {
     <div className={[styles.panel, hidden ? styles.hidden : ''].filter(Boolean).join(' ')}>
       <p className={styles.crumb}>~ <span className={styles.slash}>/</span> about</p>
       <h1 className={styles.h1}>
-        Distributed, <em>real-time</em>, and IoT systems for complex technical environments.
+        <em>Real-time</em>, distributed, and IoT systems for complex environments.
       </h1>
       <p className={styles.brief} style={{ marginBottom: 16 }}>
-        I’m <strong>Philip Ivers Ohlsson</strong>, a full-stack engineer and systems architect.
-        I work with teams building production-grade software across distributed systems, real-time
-        applications, IoT platforms, backend services, data pipelines, frontend interfaces, and
-        practical ML workflows.
-      </p>
-      <p className={styles.brief} style={{ marginBottom: 16 }}>
-        My work often sits close to the real world: edge devices, signal processing, real-time
-        analytics, mission-critical environments, and systems that need to keep working outside
-        the happy path.
+        I’m <strong>Philip Ivers Ohlsson</strong>, a full-stack engineer and systems architect
+        working close to the real world — edge devices, signal processing, real-time analytics,
+        and mission-critical systems that have to keep working outside the happy path.
       </p>
       <p className={styles.brief}>
-        I bring experience from life sciences, R&amp;D-heavy teams, edge computing, and technically
-        demanding products where reliability, speed, and clarity matter. A lot of my work sits
-        between engineers and the people who need the system to work — turning requirements into
+        I bring experience from life sciences, R&amp;D-heavy teams, and technically demanding
+        products where reliability, speed, and clarity matter. A lot of my work sits between
+        engineers and the people who need the system to work — turning requirements into
         something real, and trade-offs into plain terms.
       </p>
 
       <p className={styles.sectionLabel}>/ EXPERTISE</p>
       <ul className={styles.caps}>
-        <li>Distributed architecture and event-driven systems.</li>
-        <li>Real-time platforms, IoT, edge components, gRPC, WebRTC, and Pub/Sub.</li>
-        <li>Backend services, data pipelines, frontend interfaces, and production tooling.</li>
-        <li>Practical ML workflows in production systems.</li>
+        <li>Distributed and event-driven systems — real-time, IoT, edge.</li>
+        <li>Production tooling for engineers, R&amp;D teams, and operators.</li>
+        <li>Practical ML workflows from research to production.</li>
         <li>Software built for operational, technical, and field constraints.</li>
-        <li>Tools and infrastructure that help R&amp;D teams move faster.</li>
-        <li>Collaboration across technical and non-technical stakeholders — engineering, R&amp;D, ops, and business.</li>
+        <li>Reliability work — regulated, mission-critical, offline-grid.</li>
+        <li>Collaboration across engineering, R&amp;D, ops, and business stakeholders.</li>
       </ul>
 
       <p className={styles.sectionLabel}>/ CONTACT</p>

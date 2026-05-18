@@ -50,6 +50,21 @@
 }
 
 @media (max-width: 720px) {
-  .nav { grid-template-columns: 1fr auto; }
+  .nav {
+    grid-template-columns: 1fr auto;
+    padding-bottom: 16px;
+  }
   .center { display: none; }
+  .pill {
+    font-size: 9.5px;
+    padding: 6px 10px 6px 9px;
+    gap: 7px;
+    letter-spacing: 0.06em;
+  }
+  .pill .live { width: 5px; height: 5px; }
+}
+
+@media (max-width: 420px) {
+  .brand { gap: 8px; font-size: 10.5px; }
+  .pill { font-size: 9px; padding: 5px 8px; }
 }

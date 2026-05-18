@@ -67,3 +67,8 @@
 @media (max-width: 980px) {
   .list { padding-top: 0; }
 }
+
+@media (max-width: 720px) {
+  /* Replaced on mobile by MobileSwitcher (bottom pagination + swipe) */
+  .list { display: none; }
+}
