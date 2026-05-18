@@ -57,23 +57,35 @@ function DefaultPanel({ hidden }: { hidden: boolean }) {
     <div className={[styles.panel, hidden ? styles.hidden : ''].filter(Boolean).join(' ')}>
       <p className={styles.crumb}>~ <span className={styles.slash}>/</span> about</p>
       <h1 className={styles.h1}>
-        Distributed, <em>real-time</em>, IoT systems{' '}
-        <span className={styles.ampr}>&</span> the people who run them.
+        Distributed, <em>real-time</em>, and IoT systems for complex technical environments.
       </h1>
+      <p className={styles.brief} style={{ marginBottom: 16 }}>
+        I’m <strong>Philip Ivers Ohlsson</strong>, a full-stack engineer and systems architect.
+        I work with teams building production-grade software across distributed systems, real-time
+        applications, IoT platforms, backend services, data pipelines, frontend interfaces, and
+        practical ML workflows.
+      </p>
+      <p className={styles.brief} style={{ marginBottom: 16 }}>
+        My work often sits close to the real world: edge devices, signal processing, real-time
+        analytics, mission-critical environments, and systems that need to keep working outside
+        the happy path.
+      </p>
       <p className={styles.brief}>
-        <strong>Philip Ivers Ohlsson</strong> — full-stack engineer and systems architect focused on
-        distributed, real-time, IoT-enabled, and event-driven systems. Backend services, data pipelines,
-        frontend interfaces, and ML-enabled production workflows — with domain experience in life sciences,
-        mission-critical systems, edge computing, signal processing, and real-time analytics.
+        I bring experience from life sciences, R&amp;D-heavy teams, edge computing, and technically
+        demanding products where reliability, speed, and clarity matter. A lot of my work sits
+        between engineers and the people who need the system to work — turning requirements into
+        something real, and trade-offs into plain terms.
       </p>
 
-      <p className={styles.sectionLabel}>/ PASSION</p>
+      <p className={styles.sectionLabel}>/ EXPERTISE</p>
       <ul className={styles.caps}>
-        <li>Distributed architecture &amp; event-driven system design.</li>
-        <li>Real-time and IoT — gRPC, WebRTC, Pub/Sub, edge components.</li>
-        <li>ML embedded in the data path, not bolted on as a service.</li>
-        <li>Production-grade systems built for operational and field constraints.</li>
-        <li>Fast-paced iteration — building tools and infrastructure that make R&amp;D quicker, not slower.</li>
+        <li>Distributed architecture and event-driven systems.</li>
+        <li>Real-time platforms, IoT, edge components, gRPC, WebRTC, and Pub/Sub.</li>
+        <li>Backend services, data pipelines, frontend interfaces, and production tooling.</li>
+        <li>Practical ML workflows in production systems.</li>
+        <li>Software built for operational, technical, and field constraints.</li>
+        <li>Tools and infrastructure that help R&amp;D teams move faster.</li>
+        <li>Collaboration across technical and non-technical stakeholders — engineering, R&amp;D, ops, and business.</li>
       </ul>
 
       <p className={styles.sectionLabel}>/ CONTACT</p>
