@@ -2,7 +2,7 @@
   position: relative;
   z-index: 5;
   height: 100vh;
-  max-width: 1140px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 28px 48px 32px;
   display: grid;
@@ -11,7 +11,7 @@
 
 .main {
   display: grid;
-  grid-template-columns: minmax(240px, 0.32fr) minmax(0, 720px);
+  grid-template-columns: minmax(240px, 0.28fr) minmax(0, 880px);
   gap: 64px;
   justify-content: center;
   align-items: start;

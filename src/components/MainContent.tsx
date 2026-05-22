@@ -81,12 +81,6 @@ function DefaultPanel({ hidden }: { hidden: boolean }) {
         <li>Collaboration across engineering, R&amp;D, ops, and business stakeholders.</li>
       </ul>
 
-      <p className={styles.sectionLabel}>/ CONTACT</p>
-      <div className={styles.meta}>
-        <a href="mailto:philip.iversohlsson@gmail.com">philip.iversohlsson@gmail.com →</a>
-        <a href="https://www.linkedin.com/in/philip-ivers-ohlsson-9874a313b/" target="_blank" rel="noreferrer">LinkedIn ↗</a>
-        <a href="https://github.com/IversOhlsson" target="_blank" rel="noreferrer">GitHub ↗</a>
-      </div>
     </div>
   )
 }

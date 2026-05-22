@@ -32,7 +32,7 @@ export const AREAS: Record<AreaId, Area> = {
       'Exploratory ML for R&D — graph neural networks, signal-processing models, and GenAI workflows.',
       'Tooling and notebooks that make R&D work reproducible and reviewable.',
     ],
-    tags: ['Pandas', 'PyTorch', 'GNNs', 'LLMs / GenAI', 'Python', 'ETL', 'Data viz'],
+    tags: ['Pandas', 'PyTorch', 'GNNs', 'LLMs / GenAI', 'Snowflake', 'DBT', 'Python', 'ETL', 'Data viz'],
   },
   '02': {
     id: '02',
@@ -48,7 +48,7 @@ export const AREAS: Record<AreaId, Area> = {
       'Cloud architecture with infrastructure as code.',
       'Distributed systems designed end-to-end, from device to dashboard.',
     ],
-    tags: ['gRPC', 'WebRTC', 'Pub/Sub', 'Docker', 'Azure', 'GCP', 'IaC'],
+    tags: ['gRPC', 'WebRTC', 'Pub/Sub', 'Docker', 'Kubernetes', 'Terraform', 'Azure', 'GCP', 'Cloudflare', 'Go'],
   },
   '03': {
     id: '03',
@@ -64,7 +64,7 @@ export const AREAS: Record<AreaId, Area> = {
       'Internal tooling for operations teams and R&D workflows.',
       'GenAI applications and implementation-training programs.',
     ],
-    tags: ['TypeScript / React', 'Qt', 'Python', 'SQL', 'C++'],
+    tags: ['TypeScript / React', 'Next.js', 'Qt', 'Python', 'SQL', 'C++'],
   },
   '04': {
     id: '04',
@@ -80,7 +80,7 @@ export const AREAS: Record<AreaId, Area> = {
       'Signal processing for direction finding, sensor analysis, and field monitoring.',
       'Mission-critical systems across bio-pharma, advanced manufacturing, and regulated industries.',
     ],
-    tags: ['Signal processing', 'Edge', 'IoT', 'Validation / QA', 'C++', 'Python'],
+    tags: ['Signal processing', 'Edge', 'IoT', 'Validation / QA', 'Datadog', 'ArgoCD', 'GitHub Actions', 'C++', 'Python'],
   },
 }
 
