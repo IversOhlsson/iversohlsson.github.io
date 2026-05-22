@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import styles from './MainContent.module.css'
 import { AREA_ORDER, AREAS, type AreaId } from '../content/areas'
+import ProjectsPanel from './ProjectsPanel'
 
 type Props = {
   current: AreaId | null
@@ -45,7 +46,16 @@ export default function MainContent({ current, mouseRef }: Props) {
       >
         <DefaultPanel hidden={current !== null} />
         {AREA_ORDER.map(id => (
-          <AreaPanelView key={id} id={id} hidden={current !== id} />
+          id === '05'
+            ? (
+              <div
+                key={id}
+                className={[styles.panel, current !== id ? styles.hidden : ''].filter(Boolean).join(' ')}
+              >
+                <ProjectsPanel />
+              </div>
+            )
+            : <AreaPanelView key={id} id={id} hidden={current !== id} />
         ))}
       </div>
     </section>

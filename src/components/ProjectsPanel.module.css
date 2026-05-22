@@ -1,0 +1,237 @@
+.crumb {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+  margin: 0 0 24px;
+}
+.crumb .slash { color: var(--accent); }
+
+.h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(30px, 3.2vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0 0 18px;
+  max-width: 22ch;
+}
+.h1 em { font-style: italic; color: var(--ink-2); }
+
+.brief {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink);
+  max-width: 68ch;
+  margin: 0 0 28px;
+  font-weight: 300;
+}
+
+.sectionLabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  color: var(--ink-2);
+  text-transform: uppercase;
+  margin: 22px 0 8px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--hair);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.row {
+  border-top: 1px solid var(--hair);
+}
+.row:last-child {
+  border-bottom: 1px solid var(--hair);
+}
+
+.head {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: baseline;
+  gap: 14px;
+  padding: 14px 4px;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  transition: background 200ms ease;
+}
+.head:hover {
+  background: rgba(242, 239, 230, 0.025);
+}
+.head:hover .caret {
+  color: var(--accent);
+}
+
+.caret {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--dim);
+  transition: transform 220ms ease, color 200ms ease;
+  display: inline-block;
+  line-height: 1;
+}
+.open .caret {
+  transform: rotate(90deg);
+  color: var(--accent);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.kicker {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  font-weight: 300;
+  max-width: 64ch;
+}
+
+.year {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.body {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height 360ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 260ms ease,
+    padding 260ms ease;
+}
+.open .body {
+  max-height: 1400px;
+  opacity: 1;
+  padding: 4px 4px 22px 36px;
+}
+
+.bodyInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.copy p {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin: 0 0 10px;
+  font-weight: 300;
+  max-width: 56ch;
+}
+.copy p strong { color: var(--ink); font-weight: 500; }
+.copy p em { font-style: italic; color: var(--ink-2); }
+
+.tags {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--dim);
+  letter-spacing: 0.04em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  margin-top: 12px;
+}
+.tags span::before {
+  content: '#';
+  color: var(--accent);
+  opacity: 0.4;
+  margin-right: 2px;
+}
+
+.thumb {
+  display: block;
+  border: 1px solid var(--hair);
+  overflow: hidden;
+  background: var(--bg-2);
+  position: relative;
+}
+.thumb img {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0.92;
+  filter: saturate(0.85);
+  transition: opacity 220ms ease, filter 220ms ease;
+}
+.thumb:hover img {
+  opacity: 1;
+  filter: saturate(1);
+}
+
+.link {
+  margin-top: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+.link a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hair-2);
+  padding-bottom: 2px;
+  transition: border-color 200ms ease, color 200ms ease;
+}
+.link a:hover {
+  border-bottom-color: var(--accent);
+  color: var(--accent-2);
+}
+
+@media (max-width: 720px) {
+  .head {
+    grid-template-columns: 18px 1fr auto;
+    gap: 10px;
+    padding: 12px 2px;
+  }
+  .name { font-size: 12px; }
+  .kicker { font-size: 13px; }
+  .year { font-size: 10.5px; }
+
+  .open .body {
+    padding: 2px 2px 18px 28px;
+  }
+  .bodyInner {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .copy p {
+    font-size: 13.5px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .head { gap: 8px; }
+  .open .body {
+    padding-left: 22px;
+  }
+}

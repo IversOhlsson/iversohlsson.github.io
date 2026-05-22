@@ -14,7 +14,7 @@
   grid-template-columns: minmax(240px, 0.28fr) minmax(0, 880px);
   gap: 64px;
   justify-content: center;
-  align-items: start;
+  align-items: safe center;
   padding: 36px 0;
   min-height: 0;
 }

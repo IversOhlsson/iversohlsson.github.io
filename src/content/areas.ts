@@ -1,4 +1,4 @@
-export type AreaId = '01' | '02' | '03' | '04'
+export type AreaId = '01' | '02' | '03' | '04' | '05'
 
 export type Area = {
   id: AreaId
@@ -82,6 +82,17 @@ export const AREAS: Record<AreaId, Area> = {
     ],
     tags: ['Signal processing', 'Edge', 'IoT', 'Validation / QA', 'Datadog', 'ArgoCD', 'GitHub Actions', 'C++', 'Python'],
   },
+  '05': {
+    id: '05',
+    badge: '05',
+    shortLabel: 'Projects',
+    monoLabel: 'PROJECTS',
+    crumb: 'projects',
+    title: 'Selected <em>personal projects</em>',
+    brief: 'A few small things built on the side — data analytics, deep-learning experiments, product tooling.',
+    capabilities: [],
+    tags: [],
+  },
 }
 
-export const AREA_ORDER: AreaId[] = ['01', '02', '03', '04']
+export const AREA_ORDER: AreaId[] = ['01', '02', '03', '04', '05']

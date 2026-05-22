@@ -74,7 +74,7 @@ function App() {
         }
         return
       }
-      if (['1', '2', '3', '4'].includes(e.key)) {
+      if (['1', '2', '3', '4', '5'].includes(e.key)) {
         const id = ('0' + e.key) as AreaId
         if (AREA_ORDER.includes(id)) setCurrent(id)
         return
