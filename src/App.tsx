@@ -3,7 +3,6 @@ import Icon from './components/Icon'
 import { ABOUT, CONTACT, FIELDS, HERO, NAV, PROCESS, SEE, SERVICES, SITE, bookHref } from './content/site'
 import Workflow from './components/Workflow'
 import Capabilities from './components/Capabilities'
-import Booking from './components/Booking'
 
 const mail = `mailto:${SITE.email}`
 
@@ -128,7 +127,11 @@ export default function App() {
               <h2 className={s.h2}>{CONTACT.title}</h2>
               <p className={s.p + ' ' + s.headText}>{CONTACT.text}</p>
             </div>
-            <Booking />
+            <div className={s.ctas}>
+              <a href={bookHref} className={s.btn}>Book a meeting</a>
+              <a href={mail} className={s.btnGhost}>Send an email</a>
+            </div>
+            <p className={s.bookNote}>30 minutes on a video call, Stockholm time. I confirm by email within a day.</p>
           </div>
         </section>
       </main>

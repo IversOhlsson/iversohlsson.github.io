@@ -5,7 +5,7 @@ export const SITE = {
   location: 'Stockholm, Sweden',
 }
 
-export const bookHref = '#book'
+export const bookHref = `mailto:${SITE.email}?subject=${encodeURIComponent('Book a meeting')}&body=${encodeURIComponent('Hi Philip,\n\nI would like to book a call. Wednesday or Thursday afternoon works for me on:\n\nA few lines about what we do and what we need:\n\n')}`
 
 export const NAV = [
   { href: '#services', label: 'Services' },
@@ -54,7 +54,7 @@ export const ABOUT = {
 
 export const CONTACT = {
   title: 'Let’s talk about your business.',
-  text: 'A short call, no obligation. You tell me what slows you down, I tell you what would help. Wednesdays and Thursdays are open.',
+  text: 'A short call, no obligation. You tell me what slows you down, I tell you what would help. Wednesday and Thursday afternoons are open.',
 }
 
 export const SEE = {

@@ -55,10 +55,11 @@ function Art({ id }: { id: string }) {
     case 'pipeline':
       return (
         <svg viewBox="0 0 120 72" className={s.svg}>
-          {[10, 42, 74].map((x, i) => <rect key={x} x={x} y="26" width="22" height="20" rx="4" {...P} style={{ animationDelay: `${i * 0.25}s` }} className={s.animPop} />)}
-          <path {...P} d="M32 36h10M64 36h10" className={s.accent} />
-          <rect x="88" y="26" width="22" height="20" rx="4" {...P} className={[s.accent, s.animPipeNew].join(' ')} />
-          <path {...P} d="M96 36h6M99 33v6" className={[s.accent, s.animPipeNew].join(' ')} />
+          {[8, 36, 64].map((x, i) => <rect key={x} x={x} y="26" width="20" height="20" rx="4" {...P} style={{ animationDelay: `${i * 0.25}s` }} className={s.animPop} />)}
+          <path {...P} d="M28 36h8M56 36h8" className={s.accent} />
+          <path {...P} d="M84 36h8" className={[s.accent, s.animPipeNew].join(' ')} />
+          <rect x="92" y="26" width="20" height="20" rx="4" {...P} className={[s.accent, s.animPipeNew].join(' ')} />
+          <path {...P} d="M98 36h8M102 32v8" className={[s.accent, s.animPipeNew].join(' ')} />
         </svg>
       )
     case 'systems':
