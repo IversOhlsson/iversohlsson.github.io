@@ -5,6 +5,7 @@ import { ABOUT, CONTACT, FIELDS, HERO, NAV, PROCESS, SEE, SERVICES, SITE } from 
 import Workflow from './components/Workflow'
 import Capabilities from './components/Capabilities'
 import BookingModal from './components/Booking'
+import AgentTalk from './components/AgentTalk'
 
 const mail = `mailto:${SITE.email}`
 
@@ -36,7 +37,7 @@ export default function App() {
               </div>
               <p className={s.trust}>{HERO.trust}</p>
             </div>
-            <Visual />
+            <AgentTalk />
           </div>
         </section>
 
@@ -44,7 +45,7 @@ export default function App() {
           <div className={s.wrap}>
             <div className={s.head}>
               <p className={s.eyebrow}>Services</p>
-              <h2 className={s.h2}>Everything your system needs, from one partner.</h2>
+              <h2 className={s.h2}>Agents, and everything they need around them.</h2>
             </div>
             <ul className={s.services}>
               {SERVICES.map(x => (
@@ -63,7 +64,7 @@ export default function App() {
             <div className={s.head}>
               <p className={s.eyebrow}>Your field</p>
               <h2 className={s.h2}>Built for your workflow, whatever the industry.</h2>
-              <p className={s.p + ' ' + s.headText}>Every business has a few workflows that eat the week. Documents that arrive by email, forms filled in twice, data that lives in five places. That is where we start.</p>
+              <p className={s.p + ' ' + s.headText}>Every business has a few workflows that eat the week. Documents that arrive by email, forms filled in twice, data that lives in five places. That is where the agents go to work.</p>
             </div>
             <ul className={s.fields2}>
               {FIELDS.map(f => (
@@ -156,30 +157,3 @@ export default function App() {
 }
 
 /** Abstract "your product, live" illustration built from plain boxes. */
-function Visual() {
-  return (
-    <div className={s.visual} aria-hidden="true">
-      <div className={s.glow} />
-      <div className={s.window}>
-        <div className={s.winBar}>
-          <span /><span /><span />
-          <em className={s.live}>Live</em>
-        </div>
-        <div className={s.winBody}>
-          <div className={s.side}>
-            <i className={s.barOn} /><i /><i /><i />
-          </div>
-          <div className={s.mainArea}>
-            <div className={s.title} />
-            <div className={s.tiles}><span /><span /><span /></div>
-            <div className={s.rows}>
-              <div><b /><i /></div>
-              <div><b /><i /></div>
-              <div><b /><i /></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}

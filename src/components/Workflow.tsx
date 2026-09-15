@@ -342,7 +342,7 @@ function LogScene({ x, p, company }: { x: Extract<Scene, { kind: 'log' }>; p: nu
       <ul className={s.log}>
         {x.entries.map((l, i) => (
           <li key={l.what} className={io(p > 0.1 + i * 0.14)}>
-            <span className={[s.logWho, l.who === 'AI' ? s.logAi : ''].join(' ')}>{l.who}</span><span>{l.what}</span>
+            <span className={[s.logWho, l.who === 'Agent' ? s.logAi : ''].join(' ')}>{l.who}</span><span>{l.what}</span>
           </li>
         ))}
       </ul>

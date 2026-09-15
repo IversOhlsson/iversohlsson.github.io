@@ -20,8 +20,8 @@ export default function Capabilities() {
   return (
     <section className={s.wrap}>
       <div className={s.head}>
-        <p className={s.eyebrow}>What can be built in</p>
-        <h2 className={s.h2}>The building blocks behind every flow.</h2>
+        <p className={s.eyebrow}>Agent building blocks</p>
+        <h2 className={s.h2}>The building blocks behind every agent flow.</h2>
         <p className={s.sub}>Pick the ones your work needs. Each has been built before and can be combined with the others.</p>
       </div>
       <ul className={s.grid}>
