@@ -15,7 +15,7 @@ export default function App() {
           <nav className={s.links} aria-label="Sections">
             {NAV.map(l => <a key={l.href} href={l.href}>{l.label}</a>)}
           </nav>
-          <a href={bookHref} className={s.btnSmall}>Book a meeting</a>
+          <a href={bookHref} className={s.btnSmall} target="_blank" rel="noreferrer">Book a meeting</a>
         </div>
       </header>
 
@@ -27,7 +27,7 @@ export default function App() {
               <h1 className={s.h1}>{HERO.title}</h1>
               <p className={s.sub}>{HERO.sub}</p>
               <div className={s.ctas}>
-                <a href={bookHref} className={s.btn}>Book a meeting</a>
+                <a href={bookHref} className={s.btn} target="_blank" rel="noreferrer">Book a meeting</a>
                 <a href="#see" className={s.btnGhost}>See it work</a>
               </div>
               <p className={s.trust}>{HERO.trust}</p>
@@ -128,10 +128,10 @@ export default function App() {
               <p className={s.p + ' ' + s.headText}>{CONTACT.text}</p>
             </div>
             <div className={s.ctas}>
-              <a href={bookHref} className={s.btn}>Book a meeting</a>
+              <a href={bookHref} className={s.btn} target="_blank" rel="noreferrer">Book a meeting</a>
               <a href={mail} className={s.btnGhost}>Send an email</a>
             </div>
-            <p className={s.bookNote}>30 minutes on a video call, Stockholm time. I confirm by email within a day.</p>
+            <p className={s.bookNote}>Opens Google Calendar with a 30-minute slot on the next Wednesday or Thursday afternoon, Stockholm time. Move it if you need to, save, and the invite lands with me.</p>
           </div>
         </section>
       </main>

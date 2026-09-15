@@ -271,12 +271,14 @@
 
 @media (max-width: 900px) {
   .picker { grid-template-columns: repeat(2, 1fr); }
-  .stage { aspect-ratio: 3 / 4; }
+  .stage { aspect-ratio: 4 / 5; }
   .scene { padding: 4%; }
   .window { overflow-y: auto; }
   .mail { grid-template-columns: 1fr; min-height: 0; }
   .mailList { border-right: 0; border-bottom: 1px solid var(--line); }
   .mailItem em { white-space: normal; }
+  .mailBody.out { display: none; }
+  .scene { align-items: flex-start; padding-top: 6%; }
   .record { grid-template-columns: 1fr; padding: 14px; gap: 12px; }
   .docLines { display: none; }
   .docCard { grid-template-columns: auto 1fr; }

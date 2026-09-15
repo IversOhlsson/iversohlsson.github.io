@@ -5,7 +5,36 @@ export const SITE = {
   location: 'Stockholm, Sweden',
 }
 
-export const bookHref = `mailto:${SITE.email}?subject=${encodeURIComponent('Book a meeting')}&body=${encodeURIComponent('Hi Philip,\n\nI would like to book a call. Wednesday or Thursday afternoon works for me on:\n\nA few lines about what we do and what we need:\n\n')}`
+/**
+ * Booking. If `SITE.bookingPage` is set (a Google Calendar appointment schedule or similar),
+ * every "Book a meeting" button opens it. Otherwise the button opens Google Calendar with a
+ * 30-minute event prefilled for the next Wednesday or Thursday afternoon, Stockholm time, with
+ * Philip as a guest. Saving it sends the invite to his Gmail.
+ */
+export const BOOKING_PAGE = ''
+
+function nextSlot(): { start: string; end: string } {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() + 1)
+  while (d.getDay() !== 3 && d.getDay() !== 4) d.setDate(d.getDate() + 1)
+  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
+  return { start: `${ymd}T140000`, end: `${ymd}T143000` }
+}
+
+export const bookHref = BOOKING_PAGE || (() => {
+  const { start, end } = nextSlot()
+  const q = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: 'Intro call · Philip Ivers Ohlsson',
+    dates: `${start}/${end}`,
+    ctz: 'Europe/Stockholm',
+    details: 'A 30-minute video call about your business and what software could take off your plate. Wednesday and Thursday afternoons work best for Philip; move the time if you need to.',
+    add: SITE.email,
+  })
+  return `https://calendar.google.com/calendar/render?${q.toString()}`
+})()
+
 
 export const NAV = [
   { href: '#services', label: 'Services' },
