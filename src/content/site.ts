@@ -6,34 +6,13 @@ export const SITE = {
 }
 
 /**
- * Booking. If `SITE.bookingPage` is set (a Google Calendar appointment schedule or similar),
- * every "Book a meeting" button opens it. Otherwise the button opens Google Calendar with a
- * 30-minute event prefilled for the next Wednesday or Thursday afternoon, Stockholm time, with
- * Philip as a guest. Saving it sends the invite to his Gmail.
+ * Booking. Every "Book a meeting" button scrolls to the picker on the page.
+ * Requests are sent through FORM_ENDPOINT when set (a Formspree form URL such as
+ * https://formspree.io/f/xxxxxxxx works as is). When empty, the request opens the visitor's
+ * email app with everything prefilled instead.
  */
-export const BOOKING_PAGE = ''
-
-function nextSlot(): { start: string; end: string } {
-  const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  d.setDate(d.getDate() + 1)
-  while (d.getDay() !== 3 && d.getDay() !== 4) d.setDate(d.getDate() + 1)
-  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
-  return { start: `${ymd}T140000`, end: `${ymd}T143000` }
-}
-
-export const bookHref = BOOKING_PAGE || (() => {
-  const { start, end } = nextSlot()
-  const q = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: 'Intro call · Philip Ivers Ohlsson',
-    dates: `${start}/${end}`,
-    ctz: 'Europe/Stockholm',
-    details: 'A 30-minute video call about your business and what software could take off your plate. Wednesday and Thursday afternoons work best for Philip; move the time if you need to.',
-    add: SITE.email,
-  })
-  return `https://calendar.google.com/calendar/render?${q.toString()}`
-})()
+export const FORM_ENDPOINT = ''
+export const bookHref = '#book'
 
 
 export const NAV = [
@@ -83,7 +62,7 @@ export const ABOUT = {
 
 export const CONTACT = {
   title: 'Let’s talk about your business.',
-  text: 'A short call, no obligation. You tell me what slows you down, I tell you what would help. Wednesday and Thursday afternoons are open.',
+  text: 'A short call, no obligation. You tell me what slows you down, I tell you what would help. Pick a time, leave your details, and I confirm by email.',
 }
 
 export const SEE = {

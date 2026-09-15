@@ -162,6 +162,7 @@
 
 /* Footer */
 .bookNote { margin: 16px 0 0; font-size: 14px; color: var(--muted); }
+.bookNote a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
 
 .footer { border-top: 1px solid var(--line); padding: 28px 0 36px; font-size: 14px; color: var(--muted); }
 .footInner { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
