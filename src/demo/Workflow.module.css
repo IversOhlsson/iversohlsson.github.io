@@ -15,7 +15,21 @@
 .task strong { font-size: 16px; }
 .taskMeta { font-size: 12.5px; color: var(--muted); }
 
-.agents { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.agents { display: grid; grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); gap: 10px; }
+.agentAdded { animation: up 400ms ease; position: relative; }
+.addedTag { position: absolute; top: -9px; right: 10px; font-size: 10px; font-weight: 600; background: var(--accent); color: #fff; padding: 2px 7px; border-radius: 999px; }
+
+/* Flow strip */
+.flow { list-style: none; margin: 0 0 14px; padding: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.flow::-webkit-scrollbar { display: none; }
+.flowStep { flex: 1 0 auto; display: grid; gap: 1px; padding: 7px 10px; border-radius: 10px; border: 1px solid var(--line); background: #fff; font-size: 12px; white-space: nowrap; color: var(--muted); position: relative; transition: border-color 300ms, background 300ms, color 300ms; }
+.flowStep + .flowStep::before { content: ''; position: absolute; left: -6px; top: 50%; width: 6px; height: 1px; background: #C9CBD3; }
+.flowWho { font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.w_you .flowWho { color: #8A5A00; }
+.w_ai .flowWho { color: var(--accent); }
+.f_active { border-color: var(--ink); color: var(--ink); background: #fff; box-shadow: 0 0 0 3px rgba(21, 23, 26, 0.08); }
+.f_done { color: var(--ink); background: #F3FAF5; border-color: #CFE0D6; }
+.f_done .flowWho { color: #157347; }
 .agent { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 2px; transition: border-color 300ms, background 300ms; }
 .agentHead { display: flex; justify-content: space-between; align-items: center; }
 .agent strong { font-size: 13.5px; }
@@ -118,6 +132,8 @@
   .stage { padding: 10px; border-radius: 14px; }
   .grid { grid-template-columns: 1fr; }
   .agents { grid-template-columns: repeat(2, 1fr); }
+  .flow { margin-bottom: 10px; }
+  .flowStep { font-size: 11px; padding: 6px 8px; }
   .docs { grid-template-columns: 1fr 1fr; }
   .scores { grid-template-columns: repeat(2, 1fr); }
   .right { min-height: 0; max-height: 360px; }

@@ -28,6 +28,12 @@ export type Scenario = {
   scores: Score[]
   riskStream: string
   findings: string[]
+  /** The requester asks for one more check mid-run; the coordinator adds an agent for it. */
+  extraRequest: string
+  extraAgent: { name: string; role: string; working: string; done: string }
+  extraCheck: string
+  extraStream: string
+  extraFinding: string
 }
 
 export const SCENARIOS: Scenario[] = [
@@ -60,6 +66,11 @@ export const SCENARIOS: Scenario[] = [
       { area: 'Insurance', level: 'green', note: 'Valid cover, adequate limits' },
       { area: 'People', level: 'green', note: 'Key staff on long notice periods' },
     ],
+    extraRequest: 'Can you also check whether the company or its owners are on any sanctions list?',
+    extraAgent: { name: 'Sanctions', role: 'Checks public lists', working: 'Checking EU, UN and OFAC lists', done: 'No matches' },
+    extraCheck: 'No sanctions matches for the company or its two owners',
+    extraStream: 'Sanctions check done. No matches for the company or its owners on EU, UN or OFAC lists.',
+    extraFinding: 'No sanctions matches for the company or its owners (EU, UN, OFAC lists, checked today)',
     riskStream: 'Legal needs a look: two customer contracts can be ended if the company changes owner.',
     findings: ['2 of 12 customer contracts end on change of ownership (pages 14, 31)', 'Liability insurance renewed, valid to 31 Mar 2027 (new certificate)', 'Revenue 2025 matches signed contract values within 1% (accounts p. 6)'],
   },
@@ -92,6 +103,11 @@ export const SCENARIOS: Scenario[] = [
       { area: 'Compliance', level: 'green', note: 'Code of conduct signed' },
       { area: 'Pricing', level: 'green', note: 'Within 3% of current supplier' },
     ],
+    extraRequest: 'Can you also check their delivery record with us from the old supplier system?',
+    extraAgent: { name: 'Delivery record', role: 'Reads your ERP', working: 'Reading 3 years of deliveries', done: '94% on time' },
+    extraCheck: 'On-time delivery 94% over 3 years, 212 orders',
+    extraStream: 'Delivery record checked in your ERP. 94% on time over 212 orders in three years.',
+    extraFinding: 'On-time delivery 94% over 212 orders since 2023 (your ERP)',
     riskStream: 'Finance needs a look: thin margins and one late payment last year.',
     findings: ['Financial statements show a 2% margin and one late payment (p. 4)', 'ISO 9001 re-certified, valid to 30 Jun 2029 (new certificate)', 'Price list matches the quote line by line, 12 items (price list, sheet 1)'],
   },
@@ -124,6 +140,11 @@ export const SCENARIOS: Scenario[] = [
       { area: 'Cost', level: 'amber', note: 'Estimate 12% above typical' },
       { area: 'Timeline', level: 'green', note: 'Reported within 30 days' },
     ],
+    extraRequest: 'Can you also check for earlier claims on this address?',
+    extraAgent: { name: 'Claim history', role: 'Reads your claims system', working: 'Searching 10 years of claims', done: '1 earlier claim' },
+    extraCheck: 'One earlier claim on the address, 2022, roof damage, unrelated',
+    extraStream: 'Claim history checked. One earlier claim on the address in 2022, roof damage, unrelated to this one.',
+    extraFinding: 'One earlier claim on the address, 2022, roof damage, unrelated (your claims system)',
     riskStream: 'Cost needs a look: the estimate is 12% above what this repair usually costs.',
     findings: ['Repair estimate 48 000 SEK, 12% above typical for this repair (estimate p. 1)', 'Incident date confirmed 14 Mar 2026 (tenant email)', 'Policy HM-44-2210 active and covers water damage (policy p. 3)'],
   },
@@ -156,6 +177,11 @@ export const SCENARIOS: Scenario[] = [
       { area: 'Terms', level: 'amber', note: 'Delay penalty with no upper limit' },
       { area: 'Site', level: 'green', note: 'Good ground, access confirmed' },
     ],
+    extraRequest: 'Can you also check the client’s payment history with us?',
+    extraAgent: { name: 'Payment history', role: 'Reads your accounting', working: 'Reading invoices since 2021', done: '11 of 12 on time' },
+    extraCheck: 'Client paid 11 of 12 invoices on time since 2021',
+    extraStream: 'Payment history checked in your accounting system. 11 of 12 invoices paid on time since 2021.',
+    extraFinding: 'Client paid 11 of 12 invoices on time since 2021 (your accounting system)',
     riskStream: 'Terms need a look: a weekly delay penalty with no upper limit.',
     findings: ['Delay penalty 0.5% per week with no cap (contract terms p. 9)', 'Site access confirmed 1 Mar 2027 (client email)', 'Bill of quantities within 2% of our own take-off (BoQ, sheet 2)'],
   },

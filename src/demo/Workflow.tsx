@@ -14,6 +14,7 @@ type State = {
   readers: { status: Status; text: string }
   checker: { status: Status; text: string; results: { ok: boolean; text: string }[] }
   risk: { status: Status; text: string; scores: Score[] }
+  extra: { status: Status; text: string } | null
   question: { text: string; answer: string; answeredAt: number } | null
   report: { status: 'none' | 'draft' | 'review' | 'approved'; findings: string[] }
   stream: Item[]
@@ -25,12 +26,13 @@ const initial = (sc: Scenario): State => ({
   readers: { status: 'idle', text: 'Idle' },
   checker: { status: 'idle', text: 'Idle', results: [] },
   risk: { status: 'idle', text: 'Idle', scores: [] },
+  extra: null,
   question: null,
   report: { status: 'none', findings: [] },
   stream: [],
 })
 
-const T = 1.15 // global slow-down factor
+const T = 1.25 // global slow-down factor
 const at = (ms: number) => Math.round(ms * T)
 /** Length of the opening scene: chat message + files dragged into the data room. */
 const INTRO = 9000
@@ -63,61 +65,90 @@ function buildEvents(sc: Scenario): Ev[] {
       st.readers = { status: 'done', text: `${total} facts, each linked to its page` }
       st.stream.push({ who: 'Readers', text: `${total} facts collected. Every one keeps a link to the page it came from.` })
     } },
-    { t: E(6300), run: st => { st.checker = { status: 'working', text: `Cross-checking ${total} facts`, results: [] } } },
-    { t: E(7400), run: st => {
+    { t: E(6600), run: st => { st.checker = { status: 'working', text: `Cross-checking ${total} facts`, results: [] } } },
+    { t: E(7800), run: st => {
       st.checker = { status: 'done', text: '1 issue found', results: [
         { ok: true, text: sc.checksOk[0] }, { ok: true, text: sc.checksOk[1] }, { ok: false, text: sc.checkFail },
       ] }
       st.stream.push({ who: 'Checks', text: sc.failStream, kind: 'warn' })
     } },
-    { t: E(8200), run: st => {
+    { t: E(9600), run: st => {
       st.coordinator = { status: 'waiting', text: 'Waiting for your answer' }
       st.question = { text: sc.question, answer: '', answeredAt: 0 }
       st.stream.push({ who: 'Coordinator', text: sc.question, kind: 'ask' })
     } },
-    { t: E(10600), run: st => { if (st.question) { st.question.answer = sc.answer; st.question.answeredAt = E(10600) } } },
-    { t: E(12400), run: st => {
+    { t: E(12400), run: st => { if (st.question) { st.question.answer = sc.answer; st.question.answeredAt = E(12400) } } },
+    { t: E(14400), run: st => {
       st.stream.push({ who: 'You', text: sc.answer, kind: 'answer' })
       st.docs.push({ name: sc.newDoc, status: 'reading' })
       st.coordinator = { status: 'working', text: 'Answer received. Reading the new document.' }
       st.readers = { status: 'working', text: 'Reading 1 new document' }
     } },
-    { t: E(13600), run: st => {
+    { t: E(15800), run: st => {
       st.docs[6] = { ...st.docs[6], status: 'done', facts: `${sc.newDocFacts} facts` }
       st.readers = { status: 'done', text: `${total + sc.newDocFacts} facts, each linked to its page` }
       st.checker = { status: 'working', text: 'Re-checking', results: st.checker.results }
     } },
-    { t: E(14500), run: st => {
+    { t: E(16900), run: st => {
       st.checker = { status: 'done', text: 'All checks pass', results: [
         { ok: true, text: sc.checksOk[0] }, { ok: true, text: sc.checksOk[1] }, { ok: true, text: sc.recheck },
       ] }
       st.coordinator = { status: 'done', text: 'All areas covered' }
       st.stream.push({ who: 'Checks', text: sc.recheckStream, kind: 'ok' })
-      st.risk = { status: 'working', text: `Scoring ${sc.areasCount} areas`, scores: [] }
     } },
-    ...sc.scores.map((score, i) => ({ t: E(15600 + i * 600), run: (st: State) => { st.risk.scores.push(score) } })),
-    { t: E(17400), run: st => {
+    // The requester asks for one more check. The coordinator adds an agent for it.
+    { t: E(18600), run: st => { st.stream.push({ who: sc.requester, text: sc.extraRequest, kind: 'me', typedAt: E(18600) }) } },
+    { t: E(21000), run: st => {
+      st.coordinator = { status: 'working', text: `Adding a check: ${sc.extraAgent.name.toLowerCase()}` }
+      st.extra = { status: 'working', text: sc.extraAgent.working }
+      st.stream.push({ who: 'Coordinator', text: `Adding a ${sc.extraAgent.name.toLowerCase()} agent. One moment.` })
+    } },
+    { t: E(23400), run: st => {
+      st.extra = { status: 'done', text: sc.extraAgent.done }
+      st.checker = { ...st.checker, results: [...st.checker.results, { ok: true, text: sc.extraCheck }] }
+      st.coordinator = { status: 'done', text: 'All areas covered' }
+      st.stream.push({ who: sc.extraAgent.name, text: sc.extraStream, kind: 'ok' })
+    } },
+    { t: E(25000), run: st => { st.risk = { status: 'working', text: `Scoring ${sc.areasCount} areas`, scores: [] } } },
+    ...sc.scores.map((score, i) => ({ t: E(26000 + i * 700), run: (st: State) => { st.risk.scores.push(score) } })),
+    { t: E(28400), run: st => {
       st.risk = { ...st.risk, status: 'done', text: '1 area to look at' }
       st.stream.push({ who: 'Risk', text: sc.riskStream, kind: 'warn' })
     } },
-    { t: E(18400), run: st => {
-      st.report = { status: 'draft', findings: sc.findings }
+    { t: E(30200), run: st => {
+      st.report = { status: 'draft', findings: [...sc.findings, sc.extraFinding] }
       st.stream.push({ who: 'Report', text: 'Draft report ready. Every finding links to the page it came from.' })
     } },
-    { t: E(19800), run: st => { st.report.status = 'review'; st.stream.push({ who: 'Report', text: `Sent to ${sc.reviewer} for review before anyone else sees it.` }) } },
-    { t: E(22000), run: st => { st.report.status = 'approved'; st.stream.push({ who: sc.reviewer, text: `Approved. Shared with the ${sc.team}.`, kind: 'ok' }) } },
+    { t: E(32000), run: st => { st.report.status = 'review'; st.stream.push({ who: 'Report', text: `Sent to ${sc.reviewer} for review before anyone else sees it.` }) } },
+    { t: E(34800), run: st => { st.report.status = 'approved'; st.stream.push({ who: sc.reviewer, text: `Approved. Shared with the ${sc.team}.`, kind: 'ok' }) } },
   ]
 }
 
-const TOTAL = E(24500)
+const TOTAL = E(37500)
 
 const CHAPTERS = [
   { t: 0, title: 'Documents come in', caption: 'A message and a few files dragged into the data room. That is all your team needs to do.' },
   { t: E(2000), title: 'Agents read in parallel', caption: 'One reader per document. Every fact keeps a link to its page.' },
-  { t: E(6300), title: 'Code cross-checks the facts', caption: 'Numbers and dates are compared by rules, not by the AI.' },
-  { t: E(8200), title: 'It asks instead of guessing', caption: 'Something is missing. The coordinator asks you, then carries on.' },
-  { t: E(14500), title: 'Risk by area', caption: 'Green, amber, red. Each with a one-line reason.' },
-  { t: E(18400), title: 'A report you can trust', caption: 'Every finding cites its source. A person approves before it goes anywhere.' },
+  { t: E(6600), title: 'Code cross-checks the facts', caption: 'Numbers and dates are compared by rules, not by the AI.' },
+  { t: E(9600), title: 'It asks instead of guessing', caption: 'Something is missing. The coordinator asks you, then carries on.' },
+  { t: E(18600), title: 'You can ask for more', caption: 'One message adds a new check. The coordinator brings in another agent for it.' },
+  { t: E(25000), title: 'Risk by area', caption: 'Green, amber, red. Each with a one-line reason.' },
+  { t: E(30200), title: 'A report you can trust', caption: 'Every finding cites its source. A person approves before it goes anywhere.' },
+]
+
+/** The flow strip at the top: who does what, in order. */
+const FLOW: { label: string; who: 'you' | 'ai'; from: number; to: number }[] = [
+  { label: 'Send documents', who: 'you', from: 0, to: at(INTRO) },
+  { label: 'Plan', who: 'ai', from: E(900), to: E(2000) },
+  { label: 'Read', who: 'ai', from: E(2000), to: E(6600) },
+  { label: 'Check', who: 'ai', from: E(6600), to: E(9600) },
+  { label: 'Answer a question', who: 'you', from: E(9600), to: E(14400) },
+  { label: 'Re-check', who: 'ai', from: E(14400), to: E(18600) },
+  { label: 'Ask for more', who: 'you', from: E(18600), to: E(21000) },
+  { label: 'Extra check', who: 'ai', from: E(21000), to: E(25000) },
+  { label: 'Score risk', who: 'ai', from: E(25000), to: E(30200) },
+  { label: 'Write report', who: 'ai', from: E(30200), to: E(32000) },
+  { label: 'Approve', who: 'you', from: E(32000), to: E(34800) },
 ]
 
 function stateAt(events: Ev[], sc: Scenario, t: number): State {
@@ -176,6 +207,17 @@ export default function Workflow() {
         ))}
       </div>
       <div className={s.stage}>
+        <ol className={s.flow} aria-label="Where we are">
+          {FLOW.map(f => {
+            const state = elapsed >= f.to ? 'done' : elapsed >= f.from ? 'active' : 'todo'
+            return (
+              <li key={f.label} className={[s.flowStep, s['f_' + state], s['w_' + f.who]].join(' ')}>
+                <span className={s.flowWho}>{f.who === 'you' ? 'You' : 'AI'}</span>
+                <span>{f.label}</span>
+              </li>
+            )
+          })}
+        </ol>
         <div className={s.grid}>
           {elapsed < at(INTRO) ? <Intro elapsed={elapsed} sc={sc} /> : (
           <div className={s.left}>
@@ -190,6 +232,7 @@ export default function Workflow() {
               <Agent name="Readers" role="One per document" st={st.readers} />
               <Agent name="Checks" role="Rules in code" st={st.checker} />
               <Agent name="Risk and report" role="Scores and writes" st={st.risk} />
+              {st.extra && <Agent name={sc.extraAgent.name} role={sc.extraAgent.role} st={st.extra} added />}
             </div>
 
             {st.report.status === 'none' ? (
@@ -252,7 +295,7 @@ export default function Workflow() {
                   <span>{it.typedAt ? it.text.slice(0, Math.round(it.text.length * Math.min(1, (elapsed - it.typedAt) / at(1700)))) : it.text}</span>
                 </div>
               ))}
-              {q && elapsed < E(12400) && (
+              {q && elapsed < E(14400) && (
                 <div className={s.ask}>
                   <span className={s.askLabel}>Needs your answer</span>
                   <p>{q.text}</p>
@@ -292,9 +335,10 @@ export default function Workflow() {
   )
 }
 
-function Agent({ name, role, st }: { name: string; role: string; st: { status: Status; text: string } }) {
+function Agent({ name, role, st, added }: { name: string; role: string; st: { status: Status; text: string }; added?: boolean }) {
   return (
-    <div className={[s.agent, s['a_' + st.status]].join(' ')}>
+    <div className={[s.agent, s['a_' + st.status], added ? s.agentAdded : ''].join(' ')}>
+      {added && <span className={s.addedTag}>Added by you</span>}
       <div className={s.agentHead}><strong>{name}</strong><span className={s.dot} /></div>
       <em>{role}</em>
       <p>{st.text}</p>
