@@ -1,107 +1,92 @@
-/** One story per field. Each drives the five scenes of the simulation. */
-export type Scenario = {
-  id: string
-  label: string
-  tagline: string
-  company: string
-  /** The person who gets the notification. */
-  person: string
-  /** Scene 1: the email that arrives. */
-  email: { from: string; subject: string; preview: string; attachment: string }
-  older: { from: string; subject: string }[]
-  /** Scene 2: the record the AI fills in inside the system. */
-  record: { title: string; system: string; fields: { label: string; value: string }[]; missing: string }
-  /** Scene 3: the notification and the one-tap decision. */
-  phone: { title: string; body: string; primary: string; secondary: string; result: string }
-  /** Scene 4: where it lands afterwards. */
-  board: { system: string; columns: string[]; into: number; card: string; cardSub: string; cards: { col: number; title: string; sub: string }[]; toast: string }
-  /** Scene 5: the log. */
-  log: { who: string; what: string }[]
-}
+/** Four different flows. Each is a list of scenes; the player renders scene by scene. */
+
+export type Where = 'internal' | 'external' | 'phone'
+
+type Base = { title: string; caption: string; ms: number; where: Where; system: string }
+
+export type Scene = Base & (
+  | { kind: 'email'; from: string; subject: string; preview: string; attachment: string; older: { from: string; subject: string }[] }
+  | { kind: 'portal'; url: string; heading: string; lines: string[]; files?: string[]; action: string; done: string }
+  | { kind: 'record'; recordTitle: string; fields: { label: string; value: string }[]; missing: string; askWho: string; doc: string }
+  | { kind: 'readmany'; docs: { name: string; facts: number }[]; issue: string }
+  | { kind: 'phone'; notifTitle: string; body: string; primary: string; secondary: string; result: string }
+  | { kind: 'chat'; contact: string; outgoing: string; reply: string; afterReply: string }
+  | { kind: 'board'; columns: string[]; into: number; card: string; cardSub: string; cards: { col: number; title: string; sub: string }[]; toast: string }
+  | { kind: 'report'; reportTitle: string; areas: { area: string; level: 'green' | 'amber'; note: string }[]; findings: string[]; reviewer: string }
+  | { kind: 'devices'; phase: 'offline' | 'synced'; devices: { name: string; where: string; ok: boolean; note: string }[]; toast?: string }
+  | { kind: 'log'; entries: { who: string; what: string }[] }
+)
+
+export type Scenario = { id: string; label: string; tagline: string; company: string; scenes: Scene[] }
 
 export const SCENARIOS: Scenario[] = [
   {
-    id: 'purchasing',
-    person: 'Anna',
-    label: 'Manufacturing',
-    tagline: 'An order comes in by email',
-    company: 'Nordic Parts AB',
-    email: { from: 'inkop@bergstromverkstad.se', subject: 'Purchase order PO-4471', preview: 'Hi, please find our order attached. Confirm receipt when you can.', attachment: 'PO-4471.pdf' },
-    older: [{ from: 'Norrland Energi', subject: 'Re: Mounting rail R-40 delivery' }, { from: 'Hansa Marine', subject: 'Invoice 2026-0912 paid' }],
-    record: {
-      title: 'Order PO-4471', system: 'Orders',
-      fields: [{ label: 'Customer', value: 'Bergström Verkstad AB' }, { label: 'Part', value: 'AB-220 aluminium bracket' }, { label: 'Quantity', value: '1 200 pcs' }, { label: 'Payment terms', value: '30 days net' }],
-      missing: 'Delivery date',
-    },
-    phone: { title: 'Order from Bergström needs a delivery date', body: 'Based on the usual lead time, 30 Oct 2026 works. Use it, or ask the customer?', primary: 'Use 30 Oct', secondary: 'Ask customer', result: 'Delivery date set: 30 Oct 2026' },
-    board: {
-      system: 'Production plan', columns: ['This week', 'Next week', 'Later'], into: 2, card: 'PO-4471 · Bergström', cardSub: '1 200 × AB-220 · due 30 Oct',
-      cards: [{ col: 0, title: 'PO-4468 · Lindqvist', sub: '800 × S-110' }, { col: 0, title: 'PO-4470 · Hansa', sub: '150 × H-7' }, { col: 1, title: 'PO-4469 · Norrland', sub: '2 400 × R-40' }],
-      toast: 'Order confirmation sent to Bergström Verkstad',
-    },
-    log: [{ who: 'Email', what: 'PO-4471.pdf received from Bergström Verkstad' }, { who: 'AI', what: 'Read the order. 4 of 5 fields filled. Delivery date missing.' }, { who: 'AI', what: 'Suggested 30 Oct 2026 from the usual lead time' }, { who: 'Anna', what: 'Chose 30 Oct 2026 from her phone' }, { who: 'System', what: 'Order created, added to the plan, confirmation sent' }],
+    id: 'manufacturing', label: 'Manufacturing', tagline: 'Order by email, straight into the plan', company: 'Nordic Parts AB',
+    scenes: [
+      { kind: 'email', where: 'internal', system: 'Inbox', title: 'An order arrives by email', caption: 'The way it always has. Nobody has to learn a new tool.', ms: 6500,
+        from: 'inkop@bergstromverkstad.se', subject: 'Purchase order PO-4471', preview: 'Hi, please find our order attached. Confirm receipt when you can.', attachment: 'PO-4471.pdf',
+        older: [{ from: 'Norrland Energi', subject: 'Re: Mounting rail R-40 delivery' }, { from: 'Hansa Marine', subject: 'Invoice 2026-0912 paid' }] },
+      { kind: 'record', where: 'internal', system: 'Orders', title: 'AI fills in the order inside your system', caption: 'The fields you care about, where they belong. Nothing copied by hand.', ms: 9000,
+        recordTitle: 'Order PO-4471', doc: 'PO-4471.pdf', fields: [{ label: 'Customer', value: 'Bergström Verkstad AB' }, { label: 'Part', value: 'AB-220 aluminium bracket' }, { label: 'Quantity', value: '1 200 pcs' }, { label: 'Payment terms', value: '30 days net' }], missing: 'Delivery date', askWho: 'Anna' },
+      { kind: 'phone', where: 'phone', system: 'Your phone', title: 'Anna gets a notification. One tap decides.', caption: 'The AI suggests a date from the usual lead time. A person decides.', ms: 10000,
+        notifTitle: 'Order from Bergström needs a delivery date', body: 'Based on the usual lead time, 30 Oct 2026 works. Use it, or ask the customer?', primary: 'Use 30 Oct', secondary: 'Ask customer', result: 'Delivery date set: 30 Oct 2026' },
+      { kind: 'board', where: 'internal', system: 'Production plan', title: 'The order lands in the plan', caption: 'The people on the floor see it where they already look.', ms: 7000,
+        columns: ['This week', 'Next week', 'Later'], into: 2, card: 'PO-4471 · Bergström', cardSub: '1 200 × AB-220 · due 30 Oct',
+        cards: [{ col: 0, title: 'PO-4468 · Lindqvist', sub: '800 × S-110' }, { col: 0, title: 'PO-4470 · Hansa', sub: '150 × H-7' }, { col: 1, title: 'PO-4469 · Norrland', sub: '2 400 × R-40' }], toast: 'Confirmation sent to Bergström Verkstad' },
+      { kind: 'portal', where: 'external', system: 'Customer portal', title: 'The customer sees it on their side', caption: 'No email ping-pong. They open their page and the answer is there.', ms: 7000,
+        url: 'portal.nordicparts.se/orders', heading: 'Order PO-4471', lines: ['Received 08:12 · Read automatically', 'Confirmed by Nordic Parts', 'Delivery 30 Oct 2026'], action: 'Download confirmation', done: 'Confirmed' },
+      { kind: 'log', where: 'internal', system: 'Activity', title: 'Everything is on the record', caption: 'What arrived, what the AI read, who decided.', ms: 7000,
+        entries: [{ who: 'Email', what: 'PO-4471.pdf received from Bergström Verkstad' }, { who: 'AI', what: 'Read the order. 4 of 5 fields filled. Delivery date missing.' }, { who: 'AI', what: 'Suggested 30 Oct 2026 from the usual lead time' }, { who: 'Anna', what: 'Chose 30 Oct 2026 from her phone' }, { who: 'System', what: 'Order planned, confirmation published to the customer portal' }] },
+    ],
   },
   {
-    id: 'investment',
-    person: 'Maria',
-    label: 'Investment',
-    tagline: 'A data room is shared',
-    company: 'Ather Capital',
-    email: { from: 'cfo@haldensystems.com', subject: 'Data room access: Halden Systems', preview: 'You now have access to the data room. Six documents, as agreed.', attachment: 'Data room (6 files)' },
-    older: [{ from: 'Maria Lind', subject: 'Re: Q4 pipeline review' }, { from: 'Board', subject: 'Minutes 12 September' }],
-    record: {
-      title: 'Halden Systems Ltd', system: 'Deals',
-      fields: [{ label: 'Revenue 2025', value: '42.1 MSEK' }, { label: 'Customer contracts', value: '12, all active' }, { label: 'Governing law', value: 'Sweden' }, { label: 'Key staff', value: '4, long notice periods' }],
-      missing: 'Liability insurance',
-    },
-    phone: { title: 'Halden Systems: insurance certificate expired', body: 'The certificate in the data room expired 31 March. Request a current one from Halden?', primary: 'Send request', secondary: 'Skip', result: 'Request sent to Halden Systems' },
-    board: {
-      system: 'Deal pipeline', columns: ['Screening', 'Due diligence', 'Decision'], into: 1, card: 'Halden Systems', cardSub: '5 of 6 areas checked · waiting on insurance',
-      cards: [{ col: 0, title: 'Kestrel Robotics', sub: 'Intro call booked' }, { col: 0, title: 'Fjord Analytics', sub: 'Deck received' }, { col: 2, title: 'Umeå Optics', sub: 'Term sheet out' }],
-      toast: 'Request for a current certificate sent to Halden Systems',
-    },
-    log: [{ who: 'Email', what: 'Data room access received from Halden Systems' }, { who: 'AI', what: 'Read 6 documents. 53 facts, each linked to its page.' }, { who: 'AI', what: 'Found the liability insurance certificate expired 31 Mar 2026' }, { who: 'Maria', what: 'Sent a request for a current certificate from her phone' }, { who: 'System', what: 'Deal moved to due diligence, waiting on Halden' }],
+    id: 'investment', label: 'Investment', tagline: 'A data room of PDFs becomes a report', company: 'Ather Capital',
+    scenes: [
+      { kind: 'portal', where: 'external', system: 'Data room · Halden Systems', title: 'The other side uploads their documents', caption: 'The company you are looking at drags its files into a shared data room. That is all they do.', ms: 8000,
+        url: 'dataroom.athercapital.se/halden', heading: 'Halden Systems Ltd · Data room', lines: ['Shared with Ather Capital'], files: ['Annual accounts 2025.pdf', 'Customer contracts (12).pdf', 'Liability insurance.pdf', 'Tax certificate.pdf', 'Employee list.xlsx', 'ISO 9001 certificate.pdf'], action: 'Upload', done: '6 documents shared' },
+      { kind: 'readmany', where: 'internal', system: 'Deals · AI readers', title: 'One AI reader per document', caption: 'Six documents read at once. Every fact keeps a link to the page it came from.', ms: 9000,
+        docs: [{ name: 'Annual accounts 2025.pdf', facts: 14 }, { name: 'Customer contracts (12).pdf', facts: 18 }, { name: 'Liability insurance.pdf', facts: 5 }, { name: 'Tax certificate.pdf', facts: 3 }, { name: 'Employee list.xlsx', facts: 9 }, { name: 'ISO 9001 certificate.pdf', facts: 4 }],
+        issue: 'Liability insurance certificate expired 31 Mar 2026' },
+      { kind: 'phone', where: 'phone', system: 'Your phone', title: 'Maria gets asked, not guessed for', caption: 'The system found a gap and asks a person what to do about it.', ms: 9500,
+        notifTitle: 'Halden Systems: insurance certificate expired', body: 'The certificate in the data room expired 31 March. Request a current one from Halden?', primary: 'Send request', secondary: 'Skip', result: 'Request sent to Halden Systems' },
+      { kind: 'portal', where: 'external', system: 'Data room · Halden Systems', title: 'Halden sees the request and uploads', caption: 'The request lands in their data room, not in someone’s inbox. They upload, the system continues.', ms: 8000,
+        url: 'dataroom.athercapital.se/halden', heading: 'Halden Systems Ltd · Data room', lines: ['Request from Ather Capital: a current liability insurance certificate'], files: ['Liability insurance 2026-27.pdf'], action: 'Upload', done: 'Uploaded · read automatically' },
+      { kind: 'report', where: 'internal', system: 'Deals', title: 'A report you can trust', caption: 'Risk by area, every finding cites its page. Maria approves before it goes to the team.', ms: 10000,
+        reportTitle: 'Due diligence · Halden Systems Ltd', reviewer: 'Maria',
+        areas: [{ area: 'Finance', level: 'green', note: 'Stable revenue, low debt' }, { area: 'Legal', level: 'amber', note: '2 contracts end on change of owner' }, { area: 'Insurance', level: 'green', note: 'Valid to 31 Mar 2027' }, { area: 'People', level: 'green', note: 'Key staff on long notice' }],
+        findings: ['2 of 12 customer contracts end on change of ownership (pages 14, 31)', 'Liability insurance renewed, valid to 31 Mar 2027 (new certificate)', 'Revenue 2025 matches signed contract values within 1% (accounts p. 6)'] },
+    ],
   },
   {
-    id: 'insurance',
-    person: 'Sara',
-    label: 'Insurance',
-    tagline: 'A claim is reported',
-    company: 'Norra Försäkring',
-    email: { from: 'claims-form@norraforsakring.se', subject: 'New claim: water damage, Storgatan 12', preview: 'Submitted via the web form. Photos and a plumber report attached.', attachment: 'Claim 2291 (4 files)' },
-    older: [{ from: 'Sara Berg', subject: 'Re: Claim 2280 decision' }, { from: 'Repair partner', subject: 'Invoice, claim 2274' }],
-    record: {
-      title: 'Claim 2291', system: 'Claims',
-      fields: [{ label: 'Policy', value: 'HM-44-2210, active' }, { label: 'Damage', value: 'Water, burst pipe' }, { label: 'Estimate', value: '48 000 SEK' }, { label: 'Photos', value: '6 attached' }],
-      missing: 'Incident date',
-    },
-    phone: { title: 'Claim 2291 is missing the incident date', body: 'The form has no date. Ask the tenant by text message?', primary: 'Ask tenant', secondary: 'Call instead', result: 'Text message sent to the tenant' },
-    board: {
-      system: 'Claims', columns: ['New', 'Assessing', 'Decided'], into: 1, card: 'Claim 2291 · Storgatan 12', cardSub: 'Water damage · waiting on tenant',
-      cards: [{ col: 0, title: 'Claim 2292 · Vasagatan 3', sub: 'Theft' }, { col: 1, title: 'Claim 2288 · Kungsgatan 9', sub: 'Fire, minor' }, { col: 2, title: 'Claim 2280 · Odengatan 14', sub: 'Approved' }],
-      toast: 'Text message sent to the tenant asking for the incident date',
-    },
-    log: [{ who: 'Web form', what: 'Claim 2291 submitted with 4 files' }, { who: 'AI', what: 'Read the claim. Policy active, estimate matches the plumber report.' }, { who: 'AI', what: 'Incident date missing from the form' }, { who: 'Sara', what: 'Asked the tenant by text from her phone' }, { who: 'System', what: 'Claim moved to assessing, waiting on tenant' }],
+    id: 'insurance', label: 'Insurance', tagline: 'A claim from the web form to a decision', company: 'Norra Försäkring',
+    scenes: [
+      { kind: 'portal', where: 'external', system: 'Public website', title: 'A customer reports a claim on your website', caption: 'A normal web form. Photos and a plumber report attached.', ms: 8000,
+        url: 'norraforsakring.se/claim', heading: 'Report a claim', lines: ['Water damage · Storgatan 12, Uppsala', 'Policy HM-44-2210'], files: ['Plumber report.pdf', 'Repair estimate.pdf', 'Photos (6)'], action: 'Send claim', done: 'Claim 2291 received' },
+      { kind: 'record', where: 'internal', system: 'Claims', title: 'AI prepares the claim file', caption: 'Policy checked, estimate compared with the report. One thing is missing.', ms: 9000,
+        recordTitle: 'Claim 2291', doc: 'Claim 2291 · 4 files', fields: [{ label: 'Policy', value: 'HM-44-2210, active' }, { label: 'Damage', value: 'Water, burst pipe' }, { label: 'Estimate', value: '48 000 SEK, matches report' }, { label: 'Photos', value: '6 attached' }], missing: 'Incident date', askWho: 'Sara' },
+      { kind: 'phone', where: 'phone', system: 'Your phone', title: 'Sara decides how to ask', caption: 'The system does not guess a date. It asks the adjuster how to get it.', ms: 9000,
+        notifTitle: 'Claim 2291 is missing the incident date', body: 'The form has no date. Ask the tenant by text message?', primary: 'Ask tenant', secondary: 'Call instead', result: 'Text message sent to the tenant' },
+      { kind: 'chat', where: 'external', system: 'Tenant’s phone', title: 'The tenant answers from their phone', caption: 'A plain text message. The reply goes straight into the claim.', ms: 9000,
+        contact: 'Norra Försäkring', outgoing: 'Hi! About your water damage claim at Storgatan 12: which date did the damage happen? Reply with the date.', reply: '14 March', afterReply: 'Thanks. Your claim is being assessed. We will be in touch within 5 days.' },
+      { kind: 'board', where: 'internal', system: 'Claims', title: 'The claim moves on', caption: 'Complete file, moved to assessing. Nobody chased anyone.', ms: 7000,
+        columns: ['New', 'Assessing', 'Decided'], into: 1, card: 'Claim 2291 · Storgatan 12', cardSub: 'Water damage · 14 Mar · complete',
+        cards: [{ col: 0, title: 'Claim 2292 · Vasagatan 3', sub: 'Theft' }, { col: 1, title: 'Claim 2288 · Kungsgatan 9', sub: 'Fire, minor' }, { col: 2, title: 'Claim 2280 · Odengatan 14', sub: 'Approved' }], toast: 'Customer notified: claim is being assessed' },
+    ],
   },
   {
-    id: 'construction',
-    person: 'Erik',
-    label: 'Construction',
-    tagline: 'A tender pack arrives',
-    company: 'Solna Bygg',
-    email: { from: 'upphandling@solna.se', subject: 'Tender: Solna school extension', preview: 'Please find the tender documents attached. Deadline 14 November.', attachment: 'Tender pack (6 files)' },
-    older: [{ from: 'Erik Dahl', subject: 'Re: Concrete supplier prices' }, { from: 'Site office', subject: 'Weekly report, Bromma' }],
-    record: {
-      title: 'Tender: Solna school extension', system: 'Tenders',
-      fields: [{ label: 'Deadline', value: '14 Nov 2026' }, { label: 'Scope', value: 'Extension, 1 400 m²' }, { label: 'Quantities', value: 'Match drawings within 2%' }, { label: 'Penalty', value: '0.5% per week, no cap' }],
-      missing: 'Site access date',
-    },
-    phone: { title: 'Solna tender: site access date missing', body: 'None of the documents say when the site is available. Ask the client?', primary: 'Ask client', secondary: 'Assume 1 Mar', result: 'Question sent to the client' },
-    board: {
-      system: 'Tenders', columns: ['Reviewing', 'Pricing', 'Submitted'], into: 1, card: 'Solna school extension', cardSub: 'Due 14 Nov · waiting on client',
-      cards: [{ col: 0, title: 'Bromma depot', sub: 'Due 28 Nov' }, { col: 1, title: 'Täby offices', sub: 'Due 21 Oct' }, { col: 2, title: 'Sundbyberg hall', sub: 'Submitted 2 Sep' }],
-      toast: 'Question about site access sent to the client',
-    },
-    log: [{ who: 'Email', what: 'Tender pack received from Solna municipality' }, { who: 'AI', what: 'Read 6 documents. Quantities match the drawings within 2%.' }, { who: 'AI', what: 'Site access date not stated anywhere' }, { who: 'Erik', what: 'Asked the client from his phone' }, { who: 'System', what: 'Tender moved to pricing, waiting on client' }],
+    id: 'logistics', label: 'Logistics', tagline: 'Devices in the field and the office', company: 'Mälar Frakt',
+    scenes: [
+      { kind: 'devices', where: 'internal', system: 'Fleet', phase: 'offline', title: 'A truck loses its connection', caption: 'It keeps recording. Readings are stored on the device until it is back.', ms: 8000,
+        devices: [{ name: 'Truck 12', where: 'E4 north of Uppsala', ok: false, note: 'Offline 18 min · 42 readings stored on board' }, { name: 'Truck 7', where: 'Västerås terminal', ok: true, note: 'On schedule' }, { name: 'Cold trailer 3', where: 'With Truck 12', ok: true, note: '4.1 °C · logging locally' }, { name: 'Warehouse gate', where: 'Enköping', ok: true, note: '2 arrivals this hour' }] },
+      { kind: 'phone', where: 'phone', system: 'Your phone', title: 'The fleet manager is told, not alarmed', caption: 'The AI checks the delivery plan first. Nothing is late yet, so the message says so.', ms: 9000,
+        notifTitle: 'Truck 12 offline for 18 minutes', body: 'Cold chain still logging on board. Deliveries still on schedule. Notify the customer now or wait 15 minutes?', primary: 'Wait 15 min', secondary: 'Notify customer', result: 'Watching. You will be told if it changes.' },
+      { kind: 'devices', where: 'internal', system: 'Fleet', phase: 'synced', title: 'Back online. Everything catches up.', caption: 'The stored readings sync on their own. The cold chain record has no gap.', ms: 7500,
+        devices: [{ name: 'Truck 12', where: 'E4 north of Uppsala', ok: true, note: 'Online · 42 readings synced · ETA 14:20' }, { name: 'Truck 7', where: 'Västerås terminal', ok: true, note: 'On schedule' }, { name: 'Cold trailer 3', where: 'With Truck 12', ok: true, note: '4.0 °C · no gap in the log' }, { name: 'Warehouse gate', where: 'Enköping', ok: true, note: '2 arrivals this hour' }],
+        toast: 'Cold chain log complete. Customer ETA updated.' },
+      { kind: 'portal', where: 'external', system: 'Customer tracking page', title: 'The customer sees the updated ETA', caption: 'Their tracking page updates on its own. No call to the office.', ms: 7000,
+        url: 'track.malarfrakt.se/8812', heading: 'Shipment 8812', lines: ['Truck 12 · Cold chain OK', 'Arriving 14:20 today'], action: 'Get a text when it arrives', done: 'On its way' },
+      { kind: 'log', where: 'internal', system: 'Activity', title: 'Everything is on the record', caption: 'Including the 18 minutes offline, with every reading in place.', ms: 7000,
+        entries: [{ who: 'Truck 12', what: 'Lost connection 13:02. Recording locally.' }, { who: 'AI', what: 'Checked the plan: no delivery at risk. Told Johan, suggested waiting.' }, { who: 'Johan', what: 'Chose to wait 15 minutes' }, { who: 'Truck 12', what: 'Back online 13:20. 42 readings synced.' }, { who: 'System', what: 'ETA updated on the customer tracking page' }] },
+    ],
   },
 ]
