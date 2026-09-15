@@ -99,6 +99,9 @@ function SceneView({ scene, p, company }: { scene: Scene; p: number; company: st
     case 'report': return <ReportScene x={scene} p={p} company={company} />
     case 'devices': return <DevicesScene x={scene} p={p} company={company} />
     case 'log': return <LogScene x={scene} p={p} company={company} />
+    case 'pipeline': return <PipelineScene x={scene} p={p} company={company} />
+    case 'lookups': return <LookupsScene x={scene} p={p} />
+    case 'checks': return <ChecksScene x={scene} p={p} company={company} />
   }
 }
 
@@ -340,6 +343,107 @@ function LogScene({ x, p, company }: { x: Extract<Scene, { kind: 'log' }>; p: nu
             <span className={[s.logWho, l.who === 'AI' ? s.logAi : ''].join(' ')}>{l.who}</span><span>{l.what}</span>
           </li>
         ))}
+      </ul>
+    </Win>
+  )
+}
+
+
+/* ---------- Pipeline: the designed flow, and a custom check added in plain language ---------- */
+
+function PipelineScene({ x, p, company }: { x: Extract<Scene, { kind: 'pipeline' }>; p: number; company: string }) {
+  const typedK = seg(p, 0.42, 0.7)
+  const typed = x.newCheck.slice(0, Math.round(x.newCheck.length * typedK))
+  const saved = p > 0.8
+  const composing = p > 0.34 && !saved
+  const clickAdd = p > 0.3 && p < 0.34
+  const clickSave = p > 0.76 && p < 0.8
+  const checks = saved ? [...x.checks, x.newCheck] : x.checks
+  return (
+    <Win where={x.where} label={`${x.system} · ${company}`} wide>
+      <div className={s.pipe}>
+        <div className={s.stages}>
+          {x.stages.map((st, i) => (
+            <div key={st.name} className={s.stageItem}>
+              <div className={[s.stageBox, i === x.checksStage ? s.stageChecks : '', io(p > 0.04 + i * 0.05)].join(' ')}>
+                <strong>{st.name}</strong><span>{st.sub}</span>
+                {i === x.checksStage && <em className={s.stageCount}>{checks.length} checks</em>}
+              </div>
+              {i < x.stages.length - 1 && <span className={[s.stageArrow, io(p > 0.08 + i * 0.05)].join(' ')} />}
+            </div>
+          ))}
+        </div>
+        <div className={[s.checkPanel, io(p > 0.28)].join(' ')}>
+          <div className={s.checkList}>
+            <p className={s.panelTitle}>Checks in this pipeline</p>
+            {checks.map((c, i) => (
+              <div key={c} className={[s.checkRow, i === x.checks.length ? s.checkRowNew : ''].join(' ')}>
+                <span className={[s.typeTag, i === x.checks.length ? s.typeCustom : s.typeRule].join(' ')}>{i === x.checks.length ? 'Yours' : 'Rule'}</span>{c}
+              </div>
+            ))}
+            {!composing && !saved && <button className={[s.addBtn, clickAdd ? s.pressed : ''].join(' ')}>+ Add a check</button>}
+          </div>
+          {composing && (
+            <div className={s.composer}>
+              <p className={s.panelTitle}>New check · in your own words</p>
+              <div className={s.composerBox}>{typed}<span className={s.caret} /></div>
+              <p className={s.composerHint}>The system turns this into a rule and shows you what it will do before it runs.</p>
+              <button className={[s.btnPrimary, clickSave ? s.pressed : ''].join(' ')} style={{ opacity: typedK >= 1 ? 1 : 0.4 }}>Add to pipeline</button>
+            </div>
+          )}
+          {saved && <div className={s.composer}><div className={s.doneBox}>✓ Added. Runs on every file from now on.</div></div>}
+        </div>
+      </div>
+    </Win>
+  )
+}
+
+/* ---------- Lookups: calls to outside services ---------- */
+
+function LookupsScene({ x, p }: { x: Extract<Scene, { kind: 'lookups' }>; p: number }) {
+  return (
+    <Win where={x.where} label={x.system}>
+      <ul className={s.calls}>
+        {x.calls.map((c, i) => {
+          const start = 0.06 + i * 0.17
+          const done = p > start + 0.14
+          const running = p > start && !done
+          return (
+            <li key={c.service} className={[s.call, io(p > start), done ? s.callDone : ''].join(' ')}>
+              <div className={s.callHead}>
+                <span className={s.apiTag}>API</span><strong>{c.service}</strong><span className={s.callQuery}>{c.query}</span>
+                <span className={s.callMs}>{done ? c.ms : running ? 'Calling…' : ''}</span>
+              </div>
+              <div className={s.callResult}>{done ? c.result : <span className={s.callBar}><i style={{ width: `${seg(p, start, start + 0.14) * 100}%` }} /></span>}</div>
+            </li>
+          )
+        })}
+      </ul>
+    </Win>
+  )
+}
+
+/* ---------- Checks: rules, lookups and the custom check ---------- */
+
+function ChecksScene({ x, p, company }: { x: Extract<Scene, { kind: 'checks' }>; p: number; company: string }) {
+  const n = x.checks.length
+  const issues = x.checks.filter((c, i) => !c.ok && p > 0.1 + ((i + 1) / n) * 0.7).length
+  const pill = <span className={[s.pill, issues ? s.pillWarn : s.pillOn].join(' ')}>{p > 0.82 ? `${issues} to look at` : 'Running…'}</span>
+  return (
+    <Win where={x.where} label={`${x.system} · ${company}`} right={pill}>
+      <ul className={s.checkRun}>
+        {x.checks.map((c, i) => {
+          const start = 0.1 + (i / n) * 0.7
+          const done = p > start + 0.12
+          const running = p > start && !done
+          return (
+            <li key={c.name} className={[s.checkRunRow, io(p > start), done ? (c.ok ? s.checkOk : s.checkWarn) : ''].join(' ')}>
+              <span className={[s.typeTag, c.type === 'custom' ? s.typeCustom : c.type === 'lookup' ? s.typeLookup : s.typeRule].join(' ')}>{c.type === 'custom' ? 'Yours' : c.type === 'lookup' ? 'Lookup' : 'Rule'}</span>
+              <span className={s.checkName}>{c.name}</span>
+              <span className={s.checkResult}>{done ? (c.ok ? '✓ ' : '! ') + c.result : running ? 'Checking…' : ''}</span>
+            </li>
+          )
+        })}
       </ul>
     </Win>
   )

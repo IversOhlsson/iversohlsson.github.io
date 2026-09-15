@@ -149,10 +149,11 @@ export default function Demo() {
           <div>
             <h2>What this shows</h2>
             <ul>
-              <li>Nothing new to learn. Work arrives by email or a form, the way it already does.</li>
-              <li>The AI fills in your records and suggests. A person decides, from a phone if they like.</li>
-              <li>When something is missing, the system asks instead of guessing. It never waits in silence.</li>
-              <li>Every step is on the record: what arrived, what the AI read, who decided.</li>
+              <li>Nothing new to learn. Work arrives by email, a form or a data room, the way it already does.</li>
+              <li>A pipeline of connected agents, designed around your steps. Readers, lookups, checks, report.</li>
+              <li>Checks you write in plain language become part of the pipeline and run on every file after that.</li>
+              <li>Outside sources are called automatically: registries, credit ratings, sanctions lists, your own systems.</li>
+              <li>A person decides, from a phone if they like. Every step is on the record.</li>
             </ul>
           </div>
           <div>

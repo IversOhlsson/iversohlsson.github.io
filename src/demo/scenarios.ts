@@ -15,6 +15,9 @@ export type Scene = Base & (
   | { kind: 'report'; reportTitle: string; areas: { area: string; level: 'green' | 'amber'; note: string }[]; findings: string[]; reviewer: string }
   | { kind: 'devices'; phase: 'offline' | 'synced'; devices: { name: string; where: string; ok: boolean; note: string }[]; toast?: string }
   | { kind: 'log'; entries: { who: string; what: string }[] }
+  | { kind: 'pipeline'; stages: { name: string; sub: string }[]; checksStage: number; checks: string[]; newCheck: string }
+  | { kind: 'lookups'; calls: { service: string; query: string; result: string; ms: string }[] }
+  | { kind: 'checks'; checks: { name: string; type: 'rule' | 'custom' | 'lookup'; result: string; ok: boolean }[] }
 )
 
 export type Scenario = { id: string; label: string; tagline: string; company: string; scenes: Scene[] }
@@ -40,21 +43,29 @@ export const SCENARIOS: Scenario[] = [
     ],
   },
   {
-    id: 'investment', label: 'Investment', tagline: 'A data room of PDFs becomes a report', company: 'Ather Capital',
+    id: 'investment', label: 'Investment', tagline: 'PDFs, outside lookups and your own checks', company: 'Ather Capital',
     scenes: [
-      { kind: 'portal', where: 'external', system: 'Data room · Halden Systems', title: 'The other side uploads their documents', caption: 'The company you are looking at drags its files into a shared data room. That is all they do.', ms: 8000,
+      { kind: 'portal', where: 'external', system: 'Data room · Halden Systems', title: 'The other side uploads their documents', caption: 'The company you are looking at drags its files into a shared data room. That is all they do.', ms: 7500,
         url: 'dataroom.athercapital.se/halden', heading: 'Halden Systems Ltd · Data room', lines: ['Shared with Ather Capital'], files: ['Annual accounts 2025.pdf', 'Customer contracts (12).pdf', 'Liability insurance.pdf', 'Tax certificate.pdf', 'Employee list.xlsx', 'ISO 9001 certificate.pdf'], action: 'Upload', done: '6 documents shared' },
-      { kind: 'readmany', where: 'internal', system: 'Deals · AI readers', title: 'One AI reader per document', caption: 'Six documents read at once. Every fact keeps a link to the page it came from.', ms: 9000,
+      { kind: 'pipeline', where: 'internal', system: 'Due diligence pipeline', title: 'A pipeline designed around how you work', caption: 'Connected agents and checks, in the order you decide. Maria adds a check in plain language. It runs from now on.', ms: 14000,
+        stages: [{ name: 'Data room', sub: 'Documents in' }, { name: 'Readers', sub: 'One per document' }, { name: 'Lookups', sub: 'Registry, credit, sanctions' }, { name: 'Checks', sub: 'Rules you decide' }, { name: 'Report', sub: 'Cited, approved by you' }],
+        checksStage: 3, checks: ['Revenue in accounts matches contract totals', 'Company number identical across documents', 'Insurance certificate valid today'],
+        newCheck: 'Flag any customer contract that can be ended if the company changes owner' },
+      { kind: 'readmany', where: 'internal', system: 'Readers', title: 'One AI reader per document', caption: 'Six documents read at once. Every fact keeps a link to the page it came from.', ms: 8500,
         docs: [{ name: 'Annual accounts 2025.pdf', facts: 14 }, { name: 'Customer contracts (12).pdf', facts: 18 }, { name: 'Liability insurance.pdf', facts: 5 }, { name: 'Tax certificate.pdf', facts: 3 }, { name: 'Employee list.xlsx', facts: 9 }, { name: 'ISO 9001 certificate.pdf', facts: 4 }],
         issue: 'Liability insurance certificate expired 31 Mar 2026' },
-      { kind: 'phone', where: 'phone', system: 'Your phone', title: 'Maria gets asked, not guessed for', caption: 'The system found a gap and asks a person what to do about it.', ms: 9500,
+      { kind: 'lookups', where: 'external', system: 'Outside sources · API', title: 'It asks outside sources too', caption: 'Company registry, credit rating, sanctions lists, court records. Called automatically, answers kept with the file.', ms: 9500,
+        calls: [{ service: 'Bolagsverket', query: 'Company 556743-2210', result: 'Registered 2014 · 3 board members · no changes this year', ms: '0.4 s' }, { service: 'UC credit rating', query: 'Halden Systems Ltd', result: 'Rating 4 of 5 · no payment remarks', ms: '0.6 s' }, { service: 'EU and OFAC sanctions', query: 'Company and 2 owners', result: 'No matches', ms: '0.3 s' }, { service: 'Court records', query: 'Last 5 years', result: 'No cases', ms: '0.8 s' }] },
+      { kind: 'checks', where: 'internal', system: 'Checks', title: 'Your checks run, including the new one', caption: 'Rules in code decide what passes. Maria’s check is what catches the contract clause.', ms: 10000,
+        checks: [{ name: 'Revenue in accounts matches contract totals', type: 'rule', result: 'Within 1%', ok: true }, { name: 'Company number identical across documents', type: 'rule', result: '6 of 6 documents', ok: true }, { name: 'Insurance certificate valid today', type: 'rule', result: 'Expired 31 Mar 2026', ok: false }, { name: 'No sanctions or court matches', type: 'lookup', result: 'Clear', ok: true }, { name: 'Contracts that end on change of owner', type: 'custom', result: '2 of 12 · pages 14, 31', ok: false }] },
+      { kind: 'phone', where: 'phone', system: 'Your phone', title: 'Maria gets asked, not guessed for', caption: 'The expired certificate becomes one question to a person.', ms: 9000,
         notifTitle: 'Halden Systems: insurance certificate expired', body: 'The certificate in the data room expired 31 March. Request a current one from Halden?', primary: 'Send request', secondary: 'Skip', result: 'Request sent to Halden Systems' },
-      { kind: 'portal', where: 'external', system: 'Data room · Halden Systems', title: 'Halden sees the request and uploads', caption: 'The request lands in their data room, not in someone’s inbox. They upload, the system continues.', ms: 8000,
-        url: 'dataroom.athercapital.se/halden', heading: 'Halden Systems Ltd · Data room', lines: ['Request from Ather Capital: a current liability insurance certificate'], files: ['Liability insurance 2026-27.pdf'], action: 'Upload', done: 'Uploaded · read automatically' },
-      { kind: 'report', where: 'internal', system: 'Deals', title: 'A report you can trust', caption: 'Risk by area, every finding cites its page. Maria approves before it goes to the team.', ms: 10000,
+      { kind: 'portal', where: 'external', system: 'Data room · Halden Systems', title: 'Halden uploads, the pipeline continues', caption: 'The request lands in their data room. They upload, the checks run again on their own.', ms: 6500,
+        url: 'dataroom.athercapital.se/halden', heading: 'Halden Systems Ltd · Data room', lines: ['Request from Ather Capital: a current liability insurance certificate'], files: ['Liability insurance 2026-27.pdf'], action: 'Upload', done: 'Uploaded · checks passed' },
+      { kind: 'report', where: 'internal', system: 'Deals', title: 'A report you can trust', caption: 'Risk by area, every finding cites its page or its source. Maria approves before it goes to the team.', ms: 10000,
         reportTitle: 'Due diligence · Halden Systems Ltd', reviewer: 'Maria',
-        areas: [{ area: 'Finance', level: 'green', note: 'Stable revenue, low debt' }, { area: 'Legal', level: 'amber', note: '2 contracts end on change of owner' }, { area: 'Insurance', level: 'green', note: 'Valid to 31 Mar 2027' }, { area: 'People', level: 'green', note: 'Key staff on long notice' }],
-        findings: ['2 of 12 customer contracts end on change of ownership (pages 14, 31)', 'Liability insurance renewed, valid to 31 Mar 2027 (new certificate)', 'Revenue 2025 matches signed contract values within 1% (accounts p. 6)'] },
+        areas: [{ area: 'Finance', level: 'green', note: 'Stable revenue, credit 4 of 5' }, { area: 'Legal', level: 'amber', note: '2 contracts end on change of owner' }, { area: 'Insurance', level: 'green', note: 'Valid to 31 Mar 2027' }, { area: 'Compliance', level: 'green', note: 'No sanctions, no court cases' }],
+        findings: ['2 of 12 customer contracts end on change of ownership (pages 14, 31 · your check)', 'Liability insurance renewed, valid to 31 Mar 2027 (new certificate)', 'No sanctions or court matches for the company or owners (EU, OFAC, courts · lookups)', 'Revenue 2025 matches signed contract values within 1% (accounts p. 6)'] },
     ],
   },
   {
