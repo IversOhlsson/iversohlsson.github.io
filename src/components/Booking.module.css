@@ -1,0 +1,18 @@
+.wrap { display: grid; gap: 22px; }
+.days { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.day { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 8px; align-content: start; }
+.dayName { margin: 0 0 2px; font-size: 13px; font-weight: 600; }
+.slots { display: grid; gap: 6px; }
+.slot { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--line); background: #fff; border-radius: 9px; padding: 8px 10px; font-size: 13.5px; font-weight: 500; cursor: pointer; transition: border-color 150ms, background 150ms; color: var(--ink); }
+.slot:hover:not(:disabled) { border-color: var(--ink); }
+.slotOn { border-color: var(--accent); background: #EAF0FF; color: var(--accent); }
+.slotTaken { cursor: default; color: #B8B8B0; background: #FAFAF8; text-decoration: line-through; }
+.slotTaken span { font-size: 10.5px; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em; }
+.action { display: grid; gap: 10px; justify-items: start; }
+.note { margin: 0; font-size: 14px; color: var(--muted); }
+.btn { display: inline-block; padding: 13px 22px; border-radius: 999px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 500; font-size: 15px; }
+.btnOff { background: #E6E6E1; color: var(--muted); }
+.alt { margin: 0; font-size: 13.5px; color: var(--muted); }
+.alt a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+@media (max-width: 960px) { .days { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) { .days { grid-template-columns: repeat(2, 1fr); gap: 8px; } .btn { width: 100%; text-align: center; } }

@@ -3,16 +3,14 @@ export const SITE = {
   email: 'philip.iversohlsson@gmail.com',
   linkedin: 'https://www.linkedin.com/in/philip-ivers-ohlsson-9874a313b/',
   location: 'Stockholm, Sweden',
-  /** Paste a Calendly or Google Calendar booking link here. Empty falls back to email. */
-  booking: '',
 }
 
-export const bookHref = SITE.booking || `mailto:${SITE.email}?subject=${encodeURIComponent('Book a meeting')}`
+export const bookHref = '#book'
 
 export const NAV = [
   { href: '#services', label: 'Services' },
-  { href: '#fields', label: 'Your field' },
-  { href: '#example', label: 'Example' },
+  { href: '#see', label: 'See it work' },
+  { href: '#blocks', label: 'Building blocks' },
   { href: '#process', label: 'How we work' },
   { href: '#about', label: 'About' },
 ]
@@ -42,17 +40,6 @@ export const FIELDS = [
   { title: 'Professional services', text: 'Client intake, contract review and the admin around it, with a person approving.' },
 ]
 
-export const EXAMPLE = {
-  label: 'A recent example',
-  title: 'Less admin, fewer mistakes',
-  steps: [
-    { icon: 'doc', title: 'A document comes in', text: 'A customer sends a PDF, the way they always have.' },
-    { icon: 'read', title: 'The system reads it', text: 'It picks out what matters and asks about anything missing.' },
-    { icon: 'check', title: 'Your team gets clean data', text: 'Ready to search, compare and act on. No retyping.' },
-  ],
-  caption: 'Built for a marketplace that matches satellite companies with rocket launches.',
-}
-
 export const PROCESS = [
   { n: '1', title: 'Book a call', text: 'Thirty minutes about what you need and who will use it.' },
   { n: '2', title: 'We build it', text: 'You see it working within weeks and shape it as we go.' },
@@ -67,5 +54,10 @@ export const ABOUT = {
 
 export const CONTACT = {
   title: 'Let’s talk about your business.',
-  text: 'A short call, no obligation. You tell me what slows you down, I tell you what would help.',
+  text: 'A short call, no obligation. You tell me what slows you down, I tell you what would help. Wednesdays and Thursdays are open.',
+}
+
+export const SEE = {
+  title: 'Watch AI work inside a system like yours.',
+  text: 'Pick your field. Something arrives, agents read and check it, outside sources are called, a person verifies and decides, and the work moves on.',
 }

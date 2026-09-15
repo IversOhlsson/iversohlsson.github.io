@@ -1,6 +1,9 @@
 import s from './App.module.css'
 import Icon from './components/Icon'
-import { ABOUT, CONTACT, EXAMPLE, FIELDS, HERO, NAV, PROCESS, SERVICES, SITE, bookHref } from './content/site'
+import { ABOUT, CONTACT, FIELDS, HERO, NAV, PROCESS, SEE, SERVICES, SITE, bookHref } from './content/site'
+import Workflow from './components/Workflow'
+import Capabilities from './components/Capabilities'
+import Booking from './components/Booking'
 
 const mail = `mailto:${SITE.email}`
 
@@ -26,7 +29,7 @@ export default function App() {
               <p className={s.sub}>{HERO.sub}</p>
               <div className={s.ctas}>
                 <a href={bookHref} className={s.btn}>Book a meeting</a>
-                <a href="#services" className={s.btnGhost}>See services</a>
+                <a href="#see" className={s.btnGhost}>See it work</a>
               </div>
               <p className={s.trust}>{HERO.trust}</p>
             </div>
@@ -70,27 +73,24 @@ export default function App() {
           </div>
         </section>
 
-        <section id="example" className={s.section}>
+        <section id="see" className={s.section}>
           <div className={s.wrap}>
             <div className={s.head}>
-              <p className={s.eyebrow}>{EXAMPLE.label}</p>
-              <h2 className={s.h2}>{EXAMPLE.title}</h2>
+              <p className={s.eyebrow}>See it work</p>
+              <h2 className={s.h2}>{SEE.title}</h2>
+              <p className={s.p + ' ' + s.headText}>{SEE.text}</p>
             </div>
-            <ol className={s.flow}>
-              {EXAMPLE.steps.map((st, i) => (
-                <li key={st.title} className={s.card}>
-                  <span className={s.flowNum}>{i + 1}</span>
-                  <span className={s.iconBox}><Icon name={st.icon} /></span>
-                  <h3 className={s.h3}>{st.title}</h3>
-                  <p className={s.p}>{st.text}</p>
-                </li>
-              ))}
-            </ol>
-            <p className={s.caption}>{EXAMPLE.caption}</p>
+            <Workflow />
           </div>
         </section>
 
-        <section id="process" className={s.section + ' ' + s.tint}>
+        <section id="blocks" className={s.section + ' ' + s.tint}>
+          <div className={s.wrap}>
+            <Capabilities />
+          </div>
+        </section>
+
+        <section id="process" className={s.section}>
           <div className={s.wrap}>
             <div className={s.head}>
               <p className={s.eyebrow}>How we work</p>
@@ -108,7 +108,7 @@ export default function App() {
           </div>
         </section>
 
-        <section id="about" className={s.section}>
+        <section id="about" className={s.section + ' ' + s.tint}>
           <div className={s.wrap + ' ' + s.aboutGrid}>
             <div>
               <p className={s.eyebrow}>About</p>
@@ -121,18 +121,14 @@ export default function App() {
           </div>
         </section>
 
-        <section className={s.section + ' ' + s.tint}>
+        <section id="book" className={s.section}>
           <div className={s.wrap}>
-            <div className={s.band}>
-              <div>
-                <h2 className={s.bandTitle}>{CONTACT.title}</h2>
-                <p className={s.bandText}>{CONTACT.text}</p>
-              </div>
-              <div className={s.bandActions}>
-                <a href={bookHref} className={s.btnLight}>Book a meeting</a>
-                <a href={mail} className={s.bandMail}>{SITE.email}</a>
-              </div>
+            <div className={s.head}>
+              <p className={s.eyebrow}>Book a meeting</p>
+              <h2 className={s.h2}>{CONTACT.title}</h2>
+              <p className={s.p + ' ' + s.headText}>{CONTACT.text}</p>
             </div>
+            <Booking />
           </div>
         </section>
       </main>
