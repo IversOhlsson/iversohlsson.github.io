@@ -3,12 +3,29 @@
 .window { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 24px 60px -24px rgba(21, 23, 26, 0.25), 0 2px 6px rgba(21, 23, 26, 0.04); overflow: hidden; }
 .bar { display: flex; align-items: center; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
 .bar > span { width: 9px; height: 9px; border-radius: 50%; background: #E3E3DE; }
-.jobTitle { margin-left: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: fade 300ms ease; }
-.live, .doneTag { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
-.live { color: #157347; background: #E6F5EC; }
-.live::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #2DB36B; margin-right: 6px; vertical-align: 1px; animation: pulse 1.2s ease-in-out infinite; }
-.doneTag { color: var(--muted); background: #F2F2EE; }
-.feed { list-style: none; margin: 0; padding: 16px 16px 8px; min-height: 340px; display: grid; align-content: start; gap: 10px; }
+.jobTitle { margin-left: 8px; flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: fade 300ms ease; }
+.tabs { margin-left: auto; flex: none; display: inline-flex; gap: 4px; background: #F2F2EE; border-radius: 999px; padding: 3px; }
+.tabs i { font-style: normal; font-size: 11px; font-weight: 600; color: var(--muted); padding: 2px 9px; border-radius: 999px; transition: background 250ms, color 250ms; }
+.tabs .tabOn { color: var(--ink); background: #fff; box-shadow: 0 1px 2px rgba(21, 23, 26, 0.08); }
+.body { position: relative; height: 356px; }
+.feed { list-style: none; margin: 0; padding: 16px 16px 8px; display: grid; align-content: start; gap: 10px; animation: fade 300ms ease; }
+.flow { position: absolute; inset: 0; padding: 6px 10px 4px; animation: fade 350ms ease; }
+.svg { width: 100%; height: 100%; display: block; }
+.colHead { font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; fill: var(--accent); }
+.colLine { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
+.edge { fill: none; stroke: #DEDED9; stroke-width: 1.6; transition: stroke 300ms; }
+.edgeLoop { stroke-dasharray: 4 4; }
+.edgeOn { stroke: var(--accent); }
+.node rect { fill: #fff; stroke: #DEDED9; stroke-width: 1.4; transition: fill 300ms, stroke 300ms; }
+.node text { font-size: 12.5px; font-weight: 500; fill: var(--muted); transition: fill 300ms; }
+.n_agent.nodeOn rect { fill: #EAF0FF; stroke: var(--accent); }
+.n_agent.nodeOn text { fill: var(--accent); }
+.n_person.nodeOn rect { fill: #E6F5EC; stroke: #2DB36B; }
+.n_person.nodeOn text { fill: #157347; }
+.n_system.nodeOn rect { fill: #F2F2EE; stroke: #B4B8C0; }
+.n_system.nodeOn text { fill: var(--ink); }
+.nodeNow rect { stroke-width: 2.2; }
+.shape { font-size: 12px; fill: var(--muted); }
 .line { display: grid; grid-template-columns: 74px 1fr; gap: 10px; align-items: start; animation: up 320ms cubic-bezier(0.2, 0.7, 0.2, 1); }
 .noAnim { animation: none; }
 .chip { font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 999px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
@@ -26,5 +43,5 @@
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-@media (max-width: 640px) { .feed { min-height: 300px; padding: 12px 12px 6px; } .line { grid-template-columns: 62px 1fr; gap: 8px; } .msg { font-size: 13.5px; } .jobTitle { display: none; } }
-@media (prefers-reduced-motion: reduce) { .line, .jobTitle, .live::before, .dots i { animation: none; } }
+@media (max-width: 640px) { .body { height: 320px; } .feed { padding: 12px 12px 6px; } .line { grid-template-columns: 62px 1fr; gap: 8px; } .msg { font-size: 13.5px; } .jobTitle { display: none; } .shape { font-size: 13px; } .colHead { font-size: 11.5px; } }
+@media (prefers-reduced-motion: reduce) { .line, .jobTitle, .feed, .flow, .dots i { animation: none; } }

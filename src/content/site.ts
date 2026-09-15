@@ -17,9 +17,9 @@ export const NAV = [
 
 export const HERO = {
   eyebrow: 'LLM and agentic systems · Stockholm',
-  title: 'AI agents that do the work inside your systems, with a person deciding.',
-  sub: 'Something arrives. Agents read it, check it, call outside sources and ask a person when it matters. Then the work moves on. Built on today’s language models, connected to the tools you already run, and looked after.',
-  trust: 'LLM and agent systems built for pharma research, manufacturing, IoT and start-ups.',
+  title: 'Software with agents that do the work.',
+  sub: 'Something arrives. The agents read it, check it and act on it, inside the systems you already use. A person decides when it matters. Built, hosted and looked after.',
+  trust: 'Built for pharma research, manufacturing, IoT and start-ups.',
 }
 
 export const SERVICES = [

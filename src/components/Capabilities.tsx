@@ -22,7 +22,7 @@ export default function Capabilities() {
       <div className={s.head}>
         <p className={s.eyebrow}>Agent building blocks</p>
         <h2 className={s.h2}>The building blocks behind every agent flow.</h2>
-        <p className={s.sub}>Pick the ones your work needs. Each has been built before and can be combined with the others.</p>
+        <p className={s.sub}>Pick the ones your work needs and combine them into a flow of any shape: one straight line, six readers at once, a branch to a person, a weekly re-check.</p>
       </div>
       <ul className={s.grid}>
         {ITEMS.map(it => (
