@@ -1,6 +1,6 @@
 import s from './App.module.css'
 import Icon from './components/Icon'
-import { ABOUT, CONTACT, EXAMPLE, HERO, NAV, PROCESS, SERVICES, SITE } from './content/site'
+import { ABOUT, CONTACT, EXAMPLE, HERO, NAV, PROCESS, SERVICES, SITE, bookHref } from './content/site'
 
 const mail = `mailto:${SITE.email}`
 
@@ -13,7 +13,7 @@ export default function App() {
           <nav className={s.links} aria-label="Sections">
             {NAV.map(l => <a key={l.href} href={l.href}>{l.label}</a>)}
           </nav>
-          <a href={mail} className={s.btnSmall}>Get in touch</a>
+          <a href={bookHref} className={s.btnSmall}>Book a meeting</a>
         </div>
       </header>
 
@@ -25,8 +25,8 @@ export default function App() {
               <h1 className={s.h1}>{HERO.title}</h1>
               <p className={s.sub}>{HERO.sub}</p>
               <div className={s.ctas}>
-                <a href={mail} className={s.btn}>Let’s talk</a>
-                <a href="#process" className={s.btnGhost}>How it works</a>
+                <a href={bookHref} className={s.btn}>Book a meeting</a>
+                <a href="#services" className={s.btnGhost}>See services</a>
               </div>
               <p className={s.trust}>{HERO.trust}</p>
             </div>
@@ -38,7 +38,7 @@ export default function App() {
           <div className={s.wrap}>
             <div className={s.head}>
               <p className={s.eyebrow}>Services</p>
-              <h2 className={s.h2}>Everything a product needs, from one person.</h2>
+              <h2 className={s.h2}>Everything your system needs, from one partner.</h2>
             </div>
             <ul className={s.services}>
               {SERVICES.map(x => (
@@ -75,7 +75,7 @@ export default function App() {
         <section id="process" className={s.section}>
           <div className={s.wrap}>
             <div className={s.head}>
-              <p className={s.eyebrow}>Process</p>
+              <p className={s.eyebrow}>How we work</p>
               <h2 className={s.h2}>Three steps. No surprises.</h2>
             </div>
             <ol className={s.process}>
@@ -110,7 +110,10 @@ export default function App() {
                 <h2 className={s.bandTitle}>{CONTACT.title}</h2>
                 <p className={s.bandText}>{CONTACT.text}</p>
               </div>
-              <a href={mail} className={s.btnLight}>{SITE.email}</a>
+              <div className={s.bandActions}>
+                <a href={bookHref} className={s.btnLight}>Book a meeting</a>
+                <a href={mail} className={s.bandMail}>{SITE.email}</a>
+              </div>
             </div>
           </div>
         </section>

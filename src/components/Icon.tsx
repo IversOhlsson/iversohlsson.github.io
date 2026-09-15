@@ -9,6 +9,10 @@ export default function Icon({ name, size = 24 }: Props) {
   switch (name) {
     case 'app':
       return <svg {...p}><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M3 9h18M9 9v11" /></svg>
+    case 'edge':
+      return <svg {...p}><rect x="4" y="9" width="16" height="10" rx="2" /><path d="M8 9V6a4 4 0 0 1 8 0v3M9 14h.01M12 14h.01M15 14h.01" /></svg>
+    case 'link':
+      return <svg {...p}><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1" /><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1" /></svg>
     case 'ai':
       return <svg {...p}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" /></svg>
     case 'host':

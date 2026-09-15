@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import s from './Demo.module.css'
 import { FullStack, Distributed, Agents, Hosting, Care } from './scenes'
+import { bookHref } from '../content/site'
 
 const SCENES = [
-  { id: 'stack', title: 'Every layer, one person', caption: 'From the screen people use to the database behind it. Nothing falls between teams.', ms: 8000, View: FullStack },
+  { id: 'stack', title: 'Every layer, one partner', caption: 'From the screen people use to the database behind it. Nothing falls between teams.', ms: 8000, View: FullStack },
   { id: 'dist', title: 'Built to keep working', caption: 'Parts talk through a shared log. If one stops, the rest carry on and it catches up.', ms: 11000, View: Distributed },
   { id: 'agents', title: 'AI agents you can trust', caption: 'The model plans and reads. Code checks the result. A person approves anything that leaves the building.', ms: 14000, View: Agents },
   { id: 'host', title: 'Runs where you need it', caption: 'The same system in the cloud, on your own servers, or both. Deploy on push, roll back in one step.', ms: 9000, View: Hosting },
@@ -129,7 +130,7 @@ export default function Demo() {
         <div>
           <h2>How an engagement starts</h2>
           <ul>
-            <li>A short call about what you need and who will use it.</li>
+            <li>A thirty-minute call about what you need and who will use it.</li>
             <li>A written plan with the shape of the system and where it will run.</li>
             <li>Something working within weeks, on a preview address you can open.</li>
           </ul>
@@ -137,7 +138,7 @@ export default function Demo() {
       </section>
 
       <footer className={s.foot}>
-        <a href="mailto:philip.iversohlsson@gmail.com" className={s.cta}>Let’s talk about your system</a>
+        <a href={bookHref} className={s.cta}>Book a meeting</a>
       </footer>
     </div>
   )

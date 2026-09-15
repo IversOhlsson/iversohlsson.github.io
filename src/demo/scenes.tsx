@@ -21,7 +21,7 @@ function Arrow({ show, vertical }: { show: boolean; vertical?: boolean }) {
 /* 1. Full-stack: three layers build up, then a request travels through. */
 export function FullStack({ p }: { p: number }) {
   const cols = [
-    { t: 'What people use', items: [['Web app', 'Customers'], ['Internal tool', 'Your team'], ['Phone', 'On the go']] },
+    { t: 'What people use', items: [['Web app', 'Customers'], ['Internal tool', 'Your team'], ['Devices in the field', 'Sensors, machines']] },
     { t: 'The core', items: [['Front door', 'Login, permissions'], ['Services', 'The rules of your business'], ['AI agents', 'Read, plan, ask']] },
     { t: 'Where data lives', items: [['Database', 'Records'], ['Files', 'Documents, images'], ['Log', 'What happened, when']] },
   ]
@@ -170,7 +170,7 @@ export function Care({ p }: { p: number }) {
           <li key={it.t} className={[on(p > it.at, s.show), it.ok ? '' : s.checkWarn].join(' ')}>{it.ok ? '✓' : '!'} {it.t}</li>
         ))}
       </ul>
-      <p className={[s.note, on(p > 0.78, s.show)].join(' ')}>One person to call. I already know your system.</p>
+      <p className={[s.note, on(p > 0.78, s.show)].join(' ')}>One partner to call, who already knows your system.</p>
     </div>
   )
 }
