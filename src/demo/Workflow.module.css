@@ -220,6 +220,42 @@
 .checkWarn { background: #FFF8EA; border-color: #F2D9A6; }
 .checkWarn .checkResult { color: #8A5A00; font-weight: 500; }
 
+/* Automation */
+.auto { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; padding: 16px 18px 18px; }
+.autoLeft, .autoRight { display: grid; gap: 10px; align-content: start; }
+.autoHead { display: flex; justify-content: space-between; align-items: center; }
+.toggle { width: 38px; height: 22px; border-radius: 999px; background: #D9D9D3; position: relative; transition: background 300ms; }
+.toggle i { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 300ms; }
+.toggleOn { background: #2DB36B; }
+.toggleOn i { transform: translateX(16px); }
+.triggers { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.triggers li { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; font-size: 13px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #FAFAF8; }
+.trigWhen { font-weight: 500; }
+.trigThen { color: var(--muted); }
+.trigArrow { width: 16px; height: 2px; background: var(--accent); position: relative; }
+.trigArrow::after { content: ''; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left-color: var(--accent); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 2px; }
+.stat strong { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+.stat span { font-size: 11.5px; color: var(--muted); line-height: 1.3; }
+.recent { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.recent li { display: grid; grid-template-columns: auto auto 1fr; gap: 10px; align-items: center; font-size: 12.5px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; }
+.recentWhen { color: var(--muted); white-space: nowrap; }
+
+/* Verify */
+.verify { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; padding: 16px 18px 18px; animation: fade 400ms ease; }
+.page { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: #FAFAF8; font-size: 13px; line-height: 1.55; }
+.page p { margin: 0 0 8px; }
+.pageTitle { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 10px !important; }
+.page mark { background: transparent; color: inherit; border-radius: 3px; padding: 0 2px; transition: background 400ms, box-shadow 400ms; }
+.page mark.in { background: #FFE9A8; box-shadow: 0 0 0 2px #FFE9A8; }
+.valueCard { border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 6px; align-content: start; }
+.valueLabel { font-size: 12.5px; color: var(--muted); }
+.valueBig { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+.valueSrc { margin: 2px 0 6px; font-size: 12px; color: var(--muted); }
+.verifyBtns { position: relative; display: flex; gap: 8px; }
+.btnGhost { background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 500; }
+
 /* Controls */
 .controls { display: flex; align-items: center; gap: 14px; padding: 16px 4px 0; }
 .playBtn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: #fff; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
@@ -250,7 +286,9 @@
   .column { grid-template-columns: 1fr 1fr; }
   .colTitle { grid-column: 1 / -1; }
   .log li { grid-template-columns: 70px 1fr; font-size: 13px; }
-  .areas, .readGrid, .devices, .checkPanel { grid-template-columns: 1fr; }
+  .areas, .readGrid, .devices, .checkPanel, .auto, .verify { grid-template-columns: 1fr; }
+  .triggers li { grid-template-columns: 1fr; gap: 4px; }
+  .trigArrow { display: none; }
   .stages { flex-direction: column; gap: 6px; }
   .stageItem { flex-direction: column; align-items: stretch; }
   .stageArrow { display: none; }

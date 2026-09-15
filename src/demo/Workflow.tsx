@@ -102,6 +102,8 @@ function SceneView({ scene, p, company }: { scene: Scene; p: number; company: st
     case 'pipeline': return <PipelineScene x={scene} p={p} company={company} />
     case 'lookups': return <LookupsScene x={scene} p={p} />
     case 'checks': return <ChecksScene x={scene} p={p} company={company} />
+    case 'automation': return <AutomationScene x={scene} p={p} />
+    case 'verify': return <VerifyScene x={scene} p={p} company={company} />
   }
 }
 
@@ -445,6 +447,88 @@ function ChecksScene({ x, p, company }: { x: Extract<Scene, { kind: 'checks' }>;
           )
         })}
       </ul>
+    </Win>
+  )
+}
+
+
+/* ---------- Automation: triggers, schedule, and the run history ---------- */
+
+function AutomationScene({ x, p }: { x: Extract<Scene, { kind: 'automation' }>; p: number }) {
+  const on = p > 0.08
+  return (
+    <Win where={x.where} label={x.system} wide>
+      <div className={s.auto}>
+        <div className={s.autoLeft}>
+          <div className={s.autoHead}>
+            <p className={s.panelTitle}>Runs automatically</p>
+            <span className={[s.toggle, on ? s.toggleOn : ''].join(' ')}><i /></span>
+          </div>
+          <ul className={s.triggers}>
+            {x.triggers.map((t, i) => (
+              <li key={t.when} className={io(p > 0.15 + i * 0.12)}>
+                <span className={s.trigWhen}>{t.when}</span><span className={s.trigArrow} /><span className={s.trigThen}>{t.then}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className={s.autoRight}>
+          <div className={s.stats}>
+            {x.stats.map((st, i) => (
+              <div key={st.label} className={[s.stat, io(p > 0.5 + i * 0.08)].join(' ')}><strong>{st.value}</strong><span>{st.label}</span></div>
+            ))}
+          </div>
+          <ul className={s.recent}>
+            {x.recent.map((r, i) => (
+              <li key={r.what} className={io(p > 0.7 + i * 0.08)}>
+                <span className={r.ok ? s.dotOk : s.dotWarn} /><span className={s.recentWhen}>{r.when}</span><span>{r.what}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </Win>
+  )
+}
+
+/* ---------- Verify: a person checks each value against its highlighted source ---------- */
+
+function VerifyScene({ x, p, company }: { x: Extract<Scene, { kind: 'verify' }>; p: number; company: string }) {
+  const n = x.items.length
+  const slot = 1 / n
+  const i = Math.min(n - 1, Math.floor(p / slot))
+  const q = (p - i * slot) / slot
+  const it = x.items[i]
+  const confirmedNow = q > 0.78
+  const clicking = q > 0.72 && q <= 0.78
+  const confirmedCount = i + (confirmedNow ? 1 : 0)
+  const pill = <span className={[s.pill, confirmedCount === n ? s.pillOk : s.pillOn].join(' ')}>{confirmedCount} of {n} confirmed</span>
+  const [a, b] = it.lines.find(l => l.includes(it.hit))?.split(it.hit) ?? ['', '']
+  return (
+    <Win where={x.where} label={`${x.system} · ${company}`} right={pill} wide>
+      <div className={s.verify} key={i}>
+        <div className={s.page}>
+          <p className={s.pageTitle}>{it.source}</p>
+          {it.lines.map(l => (
+            l.includes(it.hit)
+              ? <p key={l}>{a}<mark className={io(q > 0.18)}>{it.hit}</mark>{b}</p>
+              : <p key={l}>{l}</p>
+          ))}
+        </div>
+        <div className={s.valueCard}>
+          <p className={s.panelTitle}>Extracted value</p>
+          <span className={s.valueLabel}>{it.label}</span>
+          <strong className={s.valueBig}>{it.value}</strong>
+          <p className={s.valueSrc}>From: {it.source}</p>
+          {!confirmedNow ? (
+            <div className={s.verifyBtns}>
+              <button className={[s.btnPrimary, clicking ? s.pressed : ''].join(' ')}>Confirm</button>
+              <button className={s.btnGhost}>Correct</button>
+              {q > 0.55 && <span className={s.cursorDot} style={{ left: 20, top: 8, transform: `translate(${(1 - ease(seg(q, 0.55, 0.72))) * 70}px, ${(1 - ease(seg(q, 0.55, 0.72))) * 50}px)` }} />}
+            </div>
+          ) : <div className={s.doneBox}>✓ Confirmed by {x.reviewer}</div>}
+        </div>
+      </div>
     </Win>
   )
 }

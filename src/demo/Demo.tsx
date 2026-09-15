@@ -153,7 +153,8 @@ export default function Demo() {
               <li>A pipeline of connected agents, designed around your steps. Readers, lookups, checks, report.</li>
               <li>Checks you write in plain language become part of the pipeline and run on every file after that.</li>
               <li>Outside sources are called automatically: registries, credit ratings, sanctions lists, your own systems.</li>
-              <li>A person decides, from a phone if they like. Every step is on the record.</li>
+              <li>It runs on its own: when something arrives, on a schedule, and it only asks a person when a check flags something.</li>
+              <li>A person verifies each value against the highlighted passage it came from, and decides. Every step is on the record.</li>
             </ul>
           </div>
           <div>
