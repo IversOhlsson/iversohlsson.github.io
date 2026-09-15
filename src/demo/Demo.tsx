@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import s from './Demo.module.css'
 import { bookHref } from '../content/site'
+import Workflow from './Workflow'
 
 /* ---------- Data ---------- */
 
@@ -62,7 +63,11 @@ const TOUR = [
 
 type Phase = 'idle' | 'reading' | 'asking' | 'ready' | 'saved'
 
+type Mode = 'app' | 'workflow'
+
 export default function Demo() {
+  const [mode, setMode] = useState<Mode>(() => (window.location.hash === '#workflow' ? 'workflow' : 'app'))
+  const pickMode = (m: Mode) => { setMode(m); window.history.replaceState(null, '', m === 'workflow' ? '#workflow' : '#') }
   const [view, setView] = useState<View>('overview')
   const [tour, setTour] = useState(0)
   const [tourOpen, setTourOpen] = useState(true)
@@ -118,12 +123,50 @@ export default function Demo() {
       </header>
 
       <section className={s.intro}>
-        <p className={s.eyebrow}>Try a system like the ones I build</p>
-        <h1 className={s.h1}>This is what your team would open every morning.</h1>
-        <p className={s.sub}>A working example for a small manufacturer. Click around, or follow the short tour. Nothing here is real.</p>
+        <div className={s.modes} role="tablist">
+          <button role="tab" aria-selected={mode === 'app'} className={[s.mode, mode === 'app' ? s.modeOn : ''].join(' ')} onClick={() => pickMode('app')}>Try the system</button>
+          <button role="tab" aria-selected={mode === 'workflow'} className={[s.mode, mode === 'workflow' ? s.modeOn : ''].join(' ')} onClick={() => pickMode('workflow')}>Watch an AI workflow</button>
+        </div>
+        {mode === 'app' ? (
+          <>
+            <p className={s.eyebrow}>Try a system like the ones I build</p>
+            <h1 className={s.h1}>This is what your team would open every morning.</h1>
+            <p className={s.sub}>A working example for a small manufacturer. Click around, or follow the short tour. Nothing here is real.</p>
+          </>
+        ) : (
+          <>
+            <p className={s.eyebrow}>Watch an AI workflow</p>
+            <h1 className={s.h1}>Six documents in. A checked, cited report out.</h1>
+            <p className={s.sub}>Due diligence on a company, done by a team of AI agents that read, cross-check, ask you when unsure, and hand the result to a person for approval.</p>
+          </>
+        )}
       </section>
 
-      <section className={s.frame}>
+      {mode === 'workflow' && <Workflow />}
+
+      {mode === 'workflow' && (
+        <section className={s.notes}>
+          <div>
+            <h2>What this shows</h2>
+            <ul>
+              <li>Several agents work at once, each on one document, so a data room is read in minutes.</li>
+              <li>Facts are cross-checked by rules written in code. The AI does not decide what is correct.</li>
+              <li>When something is missing or out of date, an agent asks you and waits. It never guesses.</li>
+              <li>Every finding in the report links back to the page it came from, and a person approves it first.</li>
+            </ul>
+          </div>
+          <div>
+            <h2>Where it fits</h2>
+            <ul>
+              <li>Due diligence, supplier onboarding, tender reviews, claims handling, compliance checks.</li>
+              <li>Anywhere a team reads piles of documents and fills in the same forms by hand.</li>
+              <li>Runs in the cloud, on your own servers, or both. Your documents stay where you keep them.</li>
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {mode === 'app' && <section className={s.frame}>
         {tourOpen ? (
           <div className={s.tour}>
             <span className={s.tourStep}>{tour + 1} / {TOUR.length}</span>
@@ -173,11 +216,10 @@ export default function Demo() {
             {view === 'devices' && <Devices devices={devices} reconnect={reconnect} />}
             {view === 'activity' && <Activity log={log} />}
           </main>
-
         </div>
-      </section>
+      </section>}
 
-      <section className={s.notes}>
+      {mode === 'app' && <section className={s.notes}>
         <div>
           <h2>What this shows</h2>
           <ul>
@@ -194,7 +236,7 @@ export default function Demo() {
             <li>Running in the cloud, on your own servers, or both.</li>
           </ul>
         </div>
-      </section>
+      </section>}
 
       <footer className={s.foot}>
         <a href={bookHref} className={s.cta}>Book a meeting</a>
