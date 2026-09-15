@@ -16,7 +16,7 @@ export const HERO = {
   eyebrow: 'Independent software studio · Uppsala, Sweden',
   title: 'Software for your business, built and looked after.',
   sub: 'You explain what you need. I design and build it, run it wherever suits you, and keep it working.',
-  trust: 'Experience from AstraZeneca, Fraunhofer, Raven ’n Crow and LAR AI.',
+  trust: 'Experience from pharma research, manufacturing, IoT and AI start-ups.',
 }
 
 export const SERVICES = [
