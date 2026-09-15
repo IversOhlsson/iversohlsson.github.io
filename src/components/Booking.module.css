@@ -16,7 +16,7 @@
 .slot:hover:not(:disabled) { border-color: var(--ink); }
 .slotOn { border-color: var(--accent); background: #EAF0FF; color: var(--accent); }
 .slotTaken { cursor: default; color: #C4C4BD; background: #FAFAF8; text-decoration: line-through; }
-.fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .field { display: grid; gap: 5px; font-size: 12.5px; color: var(--muted); }
 .field input { font: inherit; font-size: 14.5px; color: var(--ink); padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; width: 100%; }
 .field input:focus { outline: 2px solid rgba(31, 91, 255, 0.35); outline-offset: 1px; border-color: var(--accent); }

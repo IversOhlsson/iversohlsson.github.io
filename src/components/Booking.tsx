@@ -30,7 +30,7 @@ const fmt = (d: Date) => `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth
 const pad = (n: number) => String(n).padStart(2, '0')
 
 /** Google Calendar event link: 30 minutes, Stockholm time, Philip as guest. Saving it sends him the invite. */
-function inviteUrl(date: Date, time: string, name: string, email: string, company: string): string {
+function inviteUrl(date: Date, time: string, name: string, company: string): string {
   const ymd = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`
   const [h, m] = time.split(':').map(Number)
   const who = company.trim() || name.trim()
@@ -39,7 +39,7 @@ function inviteUrl(date: Date, time: string, name: string, email: string, compan
     text: `${who} / Philip Ivers Ohlsson`,
     dates: `${ymd}T${pad(h)}${pad(m)}00/${ymd}T${pad(h)}${pad(m + 30)}00`,
     ctz: 'Europe/Stockholm',
-    details: `30-minute video call.\n\n${name.trim()}${company.trim() ? `, ${company.trim()}` : ''}\n${email.trim()}\n\nBooked via iversohlsson.github.io`,
+    details: `30-minute video call.\n\n${name.trim()}${company.trim() ? `, ${company.trim()}` : ''}\n\nBooked via iversohlsson.github.io`,
     add: SITE.email,
   })
   return `https://calendar.google.com/calendar/render?${q.toString()}`
@@ -49,11 +49,10 @@ export default function BookingModal({ open, onClose }: { open: boolean; onClose
   const days = useMemo(() => upcoming(), [])
   const [pick, setPick] = useState<{ d: number; t: string } | null>(null)
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
   const [company, setCompany] = useState('')
   const [done, setDone] = useState(false)
   const chosen = pick ? `${fmt(days[pick.d].date)}, ${pick.t}` : null
-  const ready = !!pick && name.trim().length > 1 && /.+@.+\..+/.test(email)
+  const ready = !!pick && name.trim().length > 1
 
   useEffect(() => {
     if (!open) return
@@ -68,7 +67,7 @@ export default function BookingModal({ open, onClose }: { open: boolean; onClose
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!ready || !pick) return
-    window.open(inviteUrl(days[pick.d].date, pick.t, name, email, company), '_blank', 'noopener')
+    window.open(inviteUrl(days[pick.d].date, pick.t, name, company), '_blank', 'noopener')
     setDone(true)
   }
 
@@ -83,7 +82,7 @@ export default function BookingModal({ open, onClose }: { open: boolean; onClose
         {done ? (
           <div className={s.done}>
             <strong>Invite opened for {chosen}.</strong>
-            <p>Save it in Google Calendar and it lands with me. I confirm within a day and send the video link.</p>
+            <p>Save it in Google Calendar and it lands with me. I confirm from your calendar email within a day and send the video link.</p>
             <button type="button" className={s.btn} onClick={onClose}>Close</button>
           </div>
         ) : (
@@ -110,7 +109,6 @@ export default function BookingModal({ open, onClose }: { open: boolean; onClose
             <p className={s.step}><span>2</span>Your details</p>
             <div className={s.fields}>
               <label className={s.field}><span>Name</span><input value={name} onChange={e => setName(e.target.value)} autoComplete="name" required /></label>
-              <label className={s.field}><span>Email</span><input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required /></label>
               <label className={s.field}><span>Company</span><input value={company} onChange={e => setCompany(e.target.value)} autoComplete="organization" /></label>
             </div>
 
