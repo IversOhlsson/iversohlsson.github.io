@@ -1,4 +1,4 @@
-.wrap { display: grid; gap: 20px; }
+.wrap { display: grid; gap: 16px; }
 .days { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
 .day { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 8px; align-content: start; }
 .dayName { margin: 0 0 2px; font-size: 13px; font-weight: 600; }
@@ -8,25 +8,7 @@
 .slotOn { border-color: var(--accent); background: #EAF0FF; color: var(--accent); }
 .slotTaken { cursor: default; color: #B8B8B0; background: #FAFAF8; text-decoration: line-through; }
 .slotTaken span { font-size: 10.5px; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em; }
-
-.form { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: grid; gap: 14px; }
-.picked { margin: 0; font-size: 14.5px; color: var(--muted); }
-.picked strong { color: var(--ink); font-weight: 600; }
-.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.field { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
-.field input, .field textarea { font: inherit; font-size: 15px; color: var(--ink); padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; width: 100%; }
-.field input:focus, .field textarea:focus { outline: 2px solid rgba(31, 91, 255, 0.35); outline-offset: 1px; border-color: var(--accent); }
-.field textarea { resize: vertical; }
-.fieldWide { grid-column: 1 / -1; }
-.actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.btn { border: 0; padding: 13px 22px; border-radius: 999px; background: var(--accent); color: #fff; font: inherit; font-weight: 500; font-size: 15px; cursor: pointer; }
-.btn:disabled { background: #E6E6E1; color: var(--muted); cursor: default; }
-.note { font-size: 13.5px; color: var(--muted); }
-.info { margin: 0; font-size: 13.5px; color: var(--muted); }
-.info a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
-.done { background: #F3FAF5; border: 1px solid #CFE0D6; border-radius: 16px; padding: 22px; display: grid; gap: 6px; }
-.done strong { font-size: 18px; }
-.done p { margin: 0; color: var(--muted); }
-
+.note { margin: 0; font-size: 14px; color: var(--muted); }
+.note strong { color: var(--ink); font-weight: 600; }
 @media (max-width: 960px) { .days { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 560px) { .days { grid-template-columns: repeat(2, 1fr); gap: 8px; } .fields { grid-template-columns: 1fr; } .form { padding: 16px; } .btn { width: 100%; } }
+@media (max-width: 560px) { .days { grid-template-columns: repeat(2, 1fr); gap: 8px; } }

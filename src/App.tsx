@@ -134,7 +134,7 @@ export default function App() {
             {bookOpen ? (
               <div className={s.bookOpen}>
                 <Booking />
-                <p className={s.bookNote}>Prefer email? Write to <a href={mail}>{SITE.email}</a> with a time that suits you.</p>
+                <p className={s.bookNote}>No Google account, or none of these work? Write to <a href={mail}>{SITE.email}</a> with a time that suits you.</p>
               </div>
             ) : (
               <div className={s.ctas}>

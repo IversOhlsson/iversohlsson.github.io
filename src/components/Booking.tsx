@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import s from './Booking.module.css'
-import { FORM_ENDPOINT, SITE } from '../content/site'
+import { SITE } from '../content/site'
 
 /** Wednesday and Thursday afternoons over the next three weeks. Some slots are already taken. */
 const SLOT_TIMES = ['13:00', '14:00', '15:00', '16:00']
@@ -27,53 +27,37 @@ function upcoming(): Day[] {
 }
 
 const fmt = (d: Date) => `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`
+const pad = (n: number) => String(n).padStart(2, '0')
 
-type Status = 'idle' | 'sending' | 'sent' | 'mail' | 'error'
+/** Google Calendar event link: 30 minutes, Stockholm time, Philip as guest. Saving it sends him the invite. */
+function inviteUrl(date: Date, time: string): string {
+  const ymd = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`
+  const [h, m] = time.split(':').map(Number)
+  const start = `${ymd}T${pad(h)}${pad(m)}00`
+  const end = `${ymd}T${pad(h)}${pad(m + 30)}00`
+  const q = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: 'Intro call · Philip Ivers Ohlsson',
+    dates: `${start}/${end}`,
+    ctz: 'Europe/Stockholm',
+    details: 'A 30-minute video call about your business and what software could take off your plate. Philip sends the video link once the invite arrives.',
+    add: SITE.email,
+  })
+  return `https://calendar.google.com/calendar/render?${q.toString()}`
+}
 
 export default function Booking() {
   const days = useMemo(() => upcoming(), [])
   const [pick, setPick] = useState<{ d: number; t: string } | null>(null)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [about, setAbout] = useState('')
-  const [status, setStatus] = useState<Status>('idle')
   const chosen = pick ? `${fmt(days[pick.d].date)}, ${pick.t}` : null
-  const ready = !!chosen && name.trim().length > 1 && /.+@.+\..+/.test(email)
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!ready || !chosen) return
-    const subject = `Meeting request: ${chosen} (Stockholm time)`
-    const body = `Requested time: ${chosen} (Stockholm time)\nName: ${name}\nEmail: ${email}\n\nAbout the business:\n${about}\n`
-    if (FORM_ENDPOINT) {
-      setStatus('sending')
-      try {
-        const res = await fetch(FORM_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ _subject: subject, slot: chosen, name, email, about, _replyto: email }),
-        })
-        setStatus(res.ok ? 'sent' : 'error')
-      } catch {
-        setStatus('error')
-      }
-      return
-    }
-    window.location.href = `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    setStatus('mail')
-  }
-
-  if (status === 'sent') {
-    return (
-      <div className={s.done}>
-        <strong>Request sent for {chosen}.</strong>
-        <p>I confirm by email to {email} within a day, with a calendar invite.</p>
-      </div>
-    )
+  const choose = (di: number, time: string) => {
+    setPick({ d: di, t: time })
+    window.open(inviteUrl(days[di].date, time), '_blank', 'noopener')
   }
 
   return (
-    <form className={s.wrap} onSubmit={submit}>
+    <div className={s.wrap}>
       <div className={s.days}>
         {days.map((day, di) => (
           <div key={day.date.toISOString()} className={s.day}>
@@ -84,7 +68,7 @@ export default function Booking() {
                 return (
                   <button key={sl.time} type="button" disabled={sl.taken} aria-pressed={on}
                     className={[s.slot, on ? s.slotOn : '', sl.taken ? s.slotTaken : ''].join(' ')}
-                    onClick={() => setPick({ d: di, t: sl.time })}>
+                    onClick={() => choose(di, sl.time)}>
                     {sl.time}{sl.taken && <span>Taken</span>}
                   </button>
                 )
@@ -93,23 +77,11 @@ export default function Booking() {
           </div>
         ))}
       </div>
-
-      <div className={s.form}>
-        <p className={s.picked}>{chosen ? <>Requesting <strong>{chosen}</strong>, Stockholm time · 30 minutes on a video call</> : 'Pick a time above, then leave your details.'}</p>
-        <div className={s.fields}>
-          <label className={s.field}><span>Name</span><input value={name} onChange={e => setName(e.target.value)} autoComplete="name" required /></label>
-          <label className={s.field}><span>Email</span><input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required /></label>
-          <label className={[s.field, s.fieldWide].join(' ')}><span>A line about your business and what slows you down</span><textarea value={about} onChange={e => setAbout(e.target.value)} rows={3} /></label>
-        </div>
-        <div className={s.actions}>
-          <button type="submit" className={s.btn} disabled={!ready || status === 'sending'}>
-            {status === 'sending' ? 'Sending…' : chosen ? `Request ${chosen}` : 'Request this time'}
-          </button>
-          <span className={s.note}>I confirm by email within a day and send the calendar invite.</span>
-        </div>
-        {status === 'mail' && <p className={s.info}>Your email app should have opened with the request. If not, write to <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>}
-        {status === 'error' && <p className={s.info}>Something went wrong sending that. Please email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> with your time.</p>}
-      </div>
-    </form>
+      <p className={s.note}>
+        {chosen
+          ? <>Google Calendar opened with <strong>{chosen}</strong>. Save the invite and it lands with me. I confirm within a day.</>
+          : <>Times are Stockholm time, 30 minutes on a video call. Pick one and it opens as a Google Calendar invite with me as guest.</>}
+      </p>
+    </div>
   )
 }

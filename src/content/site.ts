@@ -5,13 +5,7 @@ export const SITE = {
   location: 'Stockholm, Sweden',
 }
 
-/**
- * Booking. Every "Book a meeting" button scrolls to the picker on the page.
- * Requests are sent through FORM_ENDPOINT when set (a Formspree form URL such as
- * https://formspree.io/f/xxxxxxxx works as is). When empty, the request opens the visitor's
- * email app with everything prefilled instead.
- */
-export const FORM_ENDPOINT = ''
+/** Every "Book a meeting" button scrolls to the picker; a chosen slot opens as a Google Calendar invite. */
 export const bookHref = '#book'
 
 
@@ -62,7 +56,7 @@ export const ABOUT = {
 
 export const CONTACT = {
   title: 'Let’s talk about your business.',
-  text: 'A short call, no obligation. You tell me what slows you down, I tell you what would help. Pick a time, leave your details, and I confirm by email.',
+  text: 'A short call, no obligation. You tell me what slows you down, I tell you what would help. Pick a time and it opens as a calendar invite.',
 }
 
 export const SEE = {
