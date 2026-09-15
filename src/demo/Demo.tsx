@@ -136,8 +136,8 @@ export default function Demo() {
         ) : (
           <>
             <p className={s.eyebrow}>Watch an AI workflow</p>
-            <h1 className={s.h1}>A folder of documents in. A checked, cited report out.</h1>
-            <p className={s.sub}>Pick your field. A team of AI agents reads the documents, cross-checks them, asks you when unsure, and hands the result to a person for approval. Same system, your workflow.</p>
+            <h1 className={s.h1}>See how AI works inside a system like yours.</h1>
+            <p className={s.sub}>Pick your field. Something arrives, the AI fills in the record, you get a notification and decide with one tap, and the work moves on. Under a minute.</p>
           </>
         )}
       </section>
@@ -149,10 +149,10 @@ export default function Demo() {
           <div>
             <h2>What this shows</h2>
             <ul>
-              <li>Several agents work at once, each on one document, so a data room is read in minutes.</li>
-              <li>Facts are cross-checked by rules written in code. The AI does not decide what is correct.</li>
-              <li>When something is missing or out of date, an agent asks you and waits. It never guesses.</li>
-              <li>Every finding in the report links back to the page it came from, and a person approves it first.</li>
+              <li>Nothing new to learn. Work arrives by email or a form, the way it already does.</li>
+              <li>The AI fills in your records and suggests. A person decides, from a phone if they like.</li>
+              <li>When something is missing, the system asks instead of guessing. It never waits in silence.</li>
+              <li>Every step is on the record: what arrived, what the AI read, who decided.</li>
             </ul>
           </div>
           <div>

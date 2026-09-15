@@ -1,167 +1,26 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import s from './Workflow.module.css'
-import { SCENARIOS, type Scenario, type Score } from './scenarios'
+import { SCENARIOS, type Scenario } from './scenarios'
 
-/* ---------- State built from a timeline of events ---------- */
+/* ---------- Timeline ---------- */
 
-type Status = 'idle' | 'working' | 'waiting' | 'done'
-type Doc = { name: string; status: 'waiting' | 'reading' | 'done'; facts?: string }
-type Item = { who: string; text: string; kind?: 'ask' | 'answer' | 'ok' | 'warn' | 'me'; typedAt?: number }
+const SCENES = [
+  { id: 'email', title: 'It arrives the way it always has', caption: 'An email with an attachment. Nobody has to learn a new tool.', ms: 6500 },
+  { id: 'record', title: 'AI fills in the record inside your system', caption: 'The fields you care about, filled in where they belong. Nothing copied by hand.', ms: 9500 },
+  { id: 'phone', title: 'You get a notification. One tap decides.', caption: 'The AI suggests. A person decides. Anywhere, in seconds.', ms: 10500 },
+  { id: 'board', title: 'It lands where the work happens', caption: 'The plan updates and the other side gets a confirmation. No one had to remember.', ms: 8000 },
+  { id: 'log', title: 'Everything is on the record', caption: 'What arrived, what the AI read, who decided. Easy to read later.', ms: 7000 },
+] as const
 
-type State = {
-  docs: Doc[]
-  coordinator: { status: Status; text: string }
-  readers: { status: Status; text: string }
-  checker: { status: Status; text: string; results: { ok: boolean; text: string }[] }
-  risk: { status: Status; text: string; scores: Score[] }
-  extra: { status: Status; text: string } | null
-  question: { text: string; answer: string; answeredAt: number } | null
-  report: { status: 'none' | 'draft' | 'review' | 'approved'; findings: string[] }
-  stream: Item[]
-}
+const TOTAL = SCENES.reduce((a, sc) => a + sc.ms, 0)
+const clamp = (v: number) => Math.max(0, Math.min(1, v))
+const seg = (p: number, a: number, b: number) => clamp((p - a) / (b - a))
+const ease = (k: number) => 1 - Math.pow(1 - k, 3)
 
-const initial = (sc: Scenario): State => ({
-  docs: sc.docs.map(name => ({ name, status: 'waiting' as const })),
-  coordinator: { status: 'idle', text: 'Waiting for a task' },
-  readers: { status: 'idle', text: 'Idle' },
-  checker: { status: 'idle', text: 'Idle', results: [] },
-  risk: { status: 'idle', text: 'Idle', scores: [] },
-  extra: null,
-  question: null,
-  report: { status: 'none', findings: [] },
-  stream: [],
-})
-
-const T = 1.25 // global slow-down factor
-const at = (ms: number) => Math.round(ms * T)
-/** Length of the opening scene: chat message + files dragged into the data room. */
-const INTRO = 9000
-const E = (ms: number) => at(INTRO + ms)
-const FILE_START = 3400
-const FILE_GAP = 700
-const FILE_FLY = 600
-
-type Ev = { t: number; run: (st: State) => void }
-
-function buildEvents(sc: Scenario): Ev[] {
-  const order = [3, 5, 2, 4, 0, 1] // which document finishes first
-  const total = sc.facts.reduce((a, b) => a + b, 0)
-  const readDone = order.map((di, i) => ({
-    t: E(2900 + i * 560),
-    run: (st: State) => { st.docs[di] = { ...st.docs[di], status: 'done', facts: `${sc.facts[di]} facts` } },
-  }))
-  return [
-    { t: at(1400), run: st => { st.stream.push({ who: sc.requester, text: sc.message, kind: 'me', typedAt: at(1400) }) } },
-    { t: at(FILE_START + 5 * FILE_GAP + FILE_FLY + 500), run: st => { st.stream.push({ who: 'Coordinator', text: 'Got all six. Starting now. I will ask if anything is missing.' }) } },
-    { t: E(900), run: st => { st.coordinator = { status: 'working', text: `Planning: ${sc.plan}` } } },
-    { t: E(2000), run: st => {
-      st.coordinator = { status: 'done', text: `Plan ready. ${sc.areasCount} areas, 6 documents.` }
-      st.readers = { status: 'working', text: 'Reading 6 documents in parallel' }
-      st.docs.forEach(d => { d.status = 'reading' })
-      st.stream.push({ who: 'Coordinator', text: `Split the work into ${sc.areasCount} areas and started one reader per document.` })
-    } },
-    ...readDone,
-    { t: E(5700), run: st => {
-      st.readers = { status: 'done', text: `${total} facts, each linked to its page` }
-      st.stream.push({ who: 'Readers', text: `${total} facts collected. Every one keeps a link to the page it came from.` })
-    } },
-    { t: E(6600), run: st => { st.checker = { status: 'working', text: `Cross-checking ${total} facts`, results: [] } } },
-    { t: E(7800), run: st => {
-      st.checker = { status: 'done', text: '1 issue found', results: [
-        { ok: true, text: sc.checksOk[0] }, { ok: true, text: sc.checksOk[1] }, { ok: false, text: sc.checkFail },
-      ] }
-      st.stream.push({ who: 'Checks', text: sc.failStream, kind: 'warn' })
-    } },
-    { t: E(9600), run: st => {
-      st.coordinator = { status: 'waiting', text: 'Waiting for your answer' }
-      st.question = { text: sc.question, answer: '', answeredAt: 0 }
-      st.stream.push({ who: 'Coordinator', text: sc.question, kind: 'ask' })
-    } },
-    { t: E(12400), run: st => { if (st.question) { st.question.answer = sc.answer; st.question.answeredAt = E(12400) } } },
-    { t: E(14400), run: st => {
-      st.stream.push({ who: 'You', text: sc.answer, kind: 'answer' })
-      st.docs.push({ name: sc.newDoc, status: 'reading' })
-      st.coordinator = { status: 'working', text: 'Answer received. Reading the new document.' }
-      st.readers = { status: 'working', text: 'Reading 1 new document' }
-    } },
-    { t: E(15800), run: st => {
-      st.docs[6] = { ...st.docs[6], status: 'done', facts: `${sc.newDocFacts} facts` }
-      st.readers = { status: 'done', text: `${total + sc.newDocFacts} facts, each linked to its page` }
-      st.checker = { status: 'working', text: 'Re-checking', results: st.checker.results }
-    } },
-    { t: E(16900), run: st => {
-      st.checker = { status: 'done', text: 'All checks pass', results: [
-        { ok: true, text: sc.checksOk[0] }, { ok: true, text: sc.checksOk[1] }, { ok: true, text: sc.recheck },
-      ] }
-      st.coordinator = { status: 'done', text: 'All areas covered' }
-      st.stream.push({ who: 'Checks', text: sc.recheckStream, kind: 'ok' })
-    } },
-    // The requester asks for one more check. The coordinator adds an agent for it.
-    { t: E(18600), run: st => { st.stream.push({ who: sc.requester, text: sc.extraRequest, kind: 'me', typedAt: E(18600) }) } },
-    { t: E(21000), run: st => {
-      st.coordinator = { status: 'working', text: `Adding a check: ${sc.extraAgent.name.toLowerCase()}` }
-      st.extra = { status: 'working', text: sc.extraAgent.working }
-      st.stream.push({ who: 'Coordinator', text: `Adding a ${sc.extraAgent.name.toLowerCase()} agent. One moment.` })
-    } },
-    { t: E(23400), run: st => {
-      st.extra = { status: 'done', text: sc.extraAgent.done }
-      st.checker = { ...st.checker, results: [...st.checker.results, { ok: true, text: sc.extraCheck }] }
-      st.coordinator = { status: 'done', text: 'All areas covered' }
-      st.stream.push({ who: sc.extraAgent.name, text: sc.extraStream, kind: 'ok' })
-    } },
-    { t: E(25000), run: st => { st.risk = { status: 'working', text: `Scoring ${sc.areasCount} areas`, scores: [] } } },
-    ...sc.scores.map((score, i) => ({ t: E(26000 + i * 700), run: (st: State) => { st.risk.scores.push(score) } })),
-    { t: E(28400), run: st => {
-      st.risk = { ...st.risk, status: 'done', text: '1 area to look at' }
-      st.stream.push({ who: 'Risk', text: sc.riskStream, kind: 'warn' })
-    } },
-    { t: E(30200), run: st => {
-      st.report = { status: 'draft', findings: [...sc.findings, sc.extraFinding] }
-      st.stream.push({ who: 'Report', text: 'Draft report ready. Every finding links to the page it came from.' })
-    } },
-    { t: E(32000), run: st => { st.report.status = 'review'; st.stream.push({ who: 'Report', text: `Sent to ${sc.reviewer} for review before anyone else sees it.` }) } },
-    { t: E(34800), run: st => { st.report.status = 'approved'; st.stream.push({ who: sc.reviewer, text: `Approved. Shared with the ${sc.team}.`, kind: 'ok' }) } },
-  ]
-}
-
-const TOTAL = E(37500)
-
-const CHAPTERS = [
-  { t: 0, title: 'Documents come in', caption: 'A message and a few files dragged into the data room. That is all your team needs to do.' },
-  { t: E(2000), title: 'Agents read in parallel', caption: 'One reader per document. Every fact keeps a link to its page.' },
-  { t: E(6600), title: 'Code cross-checks the facts', caption: 'Numbers and dates are compared by rules, not by the AI.' },
-  { t: E(9600), title: 'It asks instead of guessing', caption: 'Something is missing. The coordinator asks you, then carries on.' },
-  { t: E(18600), title: 'You can ask for more', caption: 'One message adds a new check. The coordinator brings in another agent for it.' },
-  { t: E(25000), title: 'Risk by area', caption: 'Green, amber, red. Each with a one-line reason.' },
-  { t: E(30200), title: 'A report you can trust', caption: 'Every finding cites its source. A person approves before it goes anywhere.' },
-]
-
-/** The flow strip at the top: who does what, in order. */
-const FLOW: { label: string; who: 'you' | 'ai'; from: number; to: number }[] = [
-  { label: 'Send documents', who: 'you', from: 0, to: at(INTRO) },
-  { label: 'Plan', who: 'ai', from: E(900), to: E(2000) },
-  { label: 'Read', who: 'ai', from: E(2000), to: E(6600) },
-  { label: 'Check', who: 'ai', from: E(6600), to: E(9600) },
-  { label: 'Answer a question', who: 'you', from: E(9600), to: E(14400) },
-  { label: 'Re-check', who: 'ai', from: E(14400), to: E(18600) },
-  { label: 'Ask for more', who: 'you', from: E(18600), to: E(21000) },
-  { label: 'Extra check', who: 'ai', from: E(21000), to: E(25000) },
-  { label: 'Score risk', who: 'ai', from: E(25000), to: E(30200) },
-  { label: 'Write report', who: 'ai', from: E(30200), to: E(32000) },
-  { label: 'Approve', who: 'you', from: E(32000), to: E(34800) },
-]
-
-function stateAt(events: Ev[], sc: Scenario, t: number): State {
-  const st = initial(sc)
-  for (const e of events) { if (e.t <= t) e.run(st) }
-  return st
-}
-
-/* ---------- Component ---------- */
+/* ---------- Player ---------- */
 
 export default function Workflow() {
   const [sc, setSc] = useState<Scenario>(SCENARIOS[0])
-  const events = useMemo(() => buildEvents(sc), [sc])
   const [elapsed, setElapsed] = useState(0)
   const [playing, setPlaying] = useState(true)
   const last = useRef<number | null>(null)
@@ -181,21 +40,18 @@ export default function Workflow() {
     return () => cancelAnimationFrame(raf)
   }, [playing])
 
-  const st = stateAt(events, sc, elapsed)
+  const starts: number[] = []
+  let acc = 0
+  for (const x of SCENES) { starts.push(acc); acc += x.ms }
+  let index = SCENES.length - 1
+  for (let i = 0; i < SCENES.length; i++) if (elapsed < starts[i] + SCENES[i].ms) { index = i; break }
+  const p = clamp((elapsed - starts[index]) / SCENES[index].ms)
+  const scene = SCENES[index]
   const ended = elapsed >= TOTAL
-  let ci = 0
-  for (let i = 0; i < CHAPTERS.length; i++) if (elapsed >= CHAPTERS[i].t) ci = i
-  const chapter = CHAPTERS[ci]
+
   const seek = useCallback((t: number) => { setElapsed(t); setPlaying(true) }, [])
   const restart = useCallback(() => { setElapsed(0); setPlaying(true) }, [])
   const pick = (x: Scenario) => { setSc(x); setElapsed(0); setPlaying(true) }
-
-  // Typed answer
-  const q = st.question
-  const typedAnswer = q && q.answeredAt ? q.answer.slice(0, Math.round(q.answer.length * Math.min(1, (elapsed - q.answeredAt) / at(1500)))) : ''
-  const streamRef = useRef<HTMLDivElement>(null)
-  const streamLen = st.stream.length + (q ? 1 : 0)
-  useEffect(() => { const el = streamRef.current; if (el) el.scrollTop = el.scrollHeight }, [streamLen])
 
   return (
     <div>
@@ -206,106 +62,14 @@ export default function Workflow() {
           </button>
         ))}
       </div>
+
       <div className={s.stage}>
-        <ol className={s.flow} aria-label="Where we are">
-          {FLOW.map(f => {
-            const state = elapsed >= f.to ? 'done' : elapsed >= f.from ? 'active' : 'todo'
-            return (
-              <li key={f.label} className={[s.flowStep, s['f_' + state], s['w_' + f.who]].join(' ')}>
-                <span className={s.flowWho}>{f.who === 'you' ? 'You' : 'AI'}</span>
-                <span>{f.label}</span>
-              </li>
-            )
-          })}
-        </ol>
-        <div className={s.grid}>
-          {elapsed < at(INTRO) ? <Intro elapsed={elapsed} sc={sc} /> : (
-          <div className={s.left}>
-            <div className={s.task}>
-              <span className={s.taskLabel}>Task</span>
-              <strong>{sc.task}</strong>
-              <span className={s.taskMeta}>Requested by the {sc.team} · {st.docs.length} documents</span>
-            </div>
-
-            <div className={s.agents}>
-              <Agent name="Coordinator" role="Plans and asks" st={st.coordinator} />
-              <Agent name="Readers" role="One per document" st={st.readers} />
-              <Agent name="Checks" role="Rules in code" st={st.checker} />
-              <Agent name="Risk and report" role="Scores and writes" st={st.risk} />
-              {st.extra && <Agent name={sc.extraAgent.name} role={sc.extraAgent.role} st={st.extra} added />}
-            </div>
-
-            {st.report.status === 'none' ? (
-              <div className={s.docs}>
-                {st.docs.map(d => (
-                  <div key={d.name} className={[s.doc, s['doc_' + d.status]].join(' ')}>
-                    <span className={s.docIcon} />
-                    <span className={s.docName}>{d.name}</span>
-                    <span className={s.docState}>{d.status === 'done' ? d.facts : d.status === 'reading' ? 'Reading…' : ''}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className={s.report}>
-                <div className={s.reportHead}>
-                  <strong>Report · {sc.task}</strong>
-                  <span className={[s.pill, st.report.status === 'approved' ? s.pillOk : st.report.status === 'review' ? s.pillWarn : ''].join(' ')}>
-                    {st.report.status === 'approved' ? `Approved by ${sc.reviewer}` : st.report.status === 'review' ? `With ${sc.reviewer} for review` : 'Draft'}
-                  </span>
-                </div>
-                <div className={s.scores}>
-                  {st.risk.scores.map(sc => (
-                    <div key={sc.area} className={[s.score, s['lvl_' + sc.level]].join(' ')}><strong>{sc.area}</strong><span>{sc.note}</span></div>
-                  ))}
-                </div>
-                <ul className={s.findings}>
-                  {st.report.findings.map(f => <li key={f}>{f}</li>)}
-                </ul>
-              </div>
-            )}
-
-            {st.report.status === 'none' && st.risk.scores.length > 0 && (
-              <div className={s.scores}>
-                {st.risk.scores.map(sc => (
-                  <div key={sc.area} className={[s.score, s['lvl_' + sc.level]].join(' ')}><strong>{sc.area}</strong><span>{sc.note}</span></div>
-                ))}
-              </div>
-            )}
-
-            {st.checker.results.length > 0 && st.report.status === 'none' && (
-              <ul className={s.checks}>
-                {st.checker.results.map(r => <li key={r.text} className={r.ok ? s.checkOk : s.checkWarn}>{r.ok ? '✓' : '!'} {r.text}</li>)}
-              </ul>
-            )}
-          </div>
-          )}
-
-          <div className={s.right}>
-            <p className={s.streamTitle}>Conversation</p>
-            <div className={s.stream} ref={streamRef}>
-              {elapsed < at(1400) && (
-                <div className={[s.item, s.k_me].join(' ')}>
-                  <span className={s.who}>{sc.requester}</span>
-                  <span className={s.typing}><i /><i /><i /></span>
-                </div>
-              )}
-              {st.stream.map((it, i) => (
-                <div key={i} className={[s.item, it.kind ? s['k_' + it.kind] : ''].join(' ')}>
-                  <span className={s.who}>{it.who}</span>
-                  <span>{it.typedAt ? it.text.slice(0, Math.round(it.text.length * Math.min(1, (elapsed - it.typedAt) / at(1700)))) : it.text}</span>
-                </div>
-              ))}
-              {q && elapsed < E(14400) && (
-                <div className={s.ask}>
-                  <span className={s.askLabel}>Needs your answer</span>
-                  <p>{q.text}</p>
-                  {q.answeredAt > 0 && (
-                    <div className={s.answerBox}>{typedAnswer}<span className={s.caret} /></div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+        <div className={s.scene} key={sc.id + scene.id}>
+          {scene.id === 'email' && <EmailScene sc={sc} p={p} />}
+          {scene.id === 'record' && <RecordScene sc={sc} p={p} />}
+          {scene.id === 'phone' && <PhoneScene sc={sc} p={p} />}
+          {scene.id === 'board' && <BoardScene sc={sc} p={p} />}
+          {scene.id === 'log' && <LogScene sc={sc} p={p} />}
         </div>
         {ended && <button className={s.replay} onClick={restart}>Replay</button>}
       </div>
@@ -315,11 +79,10 @@ export default function Workflow() {
           {ended ? '↻' : playing ? '❚❚' : '▶'}
         </button>
         <div className={s.chapters}>
-          {CHAPTERS.map((c, i) => {
-            const end = i < CHAPTERS.length - 1 ? CHAPTERS[i + 1].t : TOTAL
-            const fill = Math.max(0, Math.min(1, (elapsed - c.t) / (end - c.t)))
+          {SCENES.map((x, i) => {
+            const fill = i < index ? 1 : i === index ? p : 0
             return (
-              <button key={c.title} className={s.chapter} style={{ flex: end - c.t }} onClick={() => seek(c.t)} title={c.title}>
+              <button key={x.id} className={s.chapter} style={{ flex: x.ms }} onClick={() => seek(starts[i])} title={x.title}>
                 <span className={s.track}><span className={s.fill} style={{ transform: `scaleX(${fill})` }} /></span>
               </button>
             )
@@ -327,75 +90,164 @@ export default function Workflow() {
         </div>
         <span className={s.time}>{Math.floor(elapsed / 1000)}s / {Math.round(TOTAL / 1000)}s</span>
       </div>
-      <div className={s.caption} key={ci}>
-        <span className={s.stepNo}>{ci + 1} / {CHAPTERS.length}</span>
-        <div><strong>{chapter.title}</strong><p>{chapter.caption}</p></div>
+      <div className={s.caption} key={scene.id}>
+        <span className={s.stepNo}>{index + 1} / {SCENES.length}</span>
+        <div><strong>{scene.title}</strong><p>{scene.caption}</p></div>
       </div>
     </div>
   )
 }
 
-function Agent({ name, role, st, added }: { name: string; role: string; st: { status: Status; text: string }; added?: boolean }) {
+/* ---------- Scene 1: email ---------- */
+
+function EmailScene({ sc, p }: { sc: Scenario; p: number }) {
+  const arrived = p > 0.25
+  const opened = p > 0.6
   return (
-    <div className={[s.agent, s['a_' + st.status], added ? s.agentAdded : ''].join(' ')}>
-      {added && <span className={s.addedTag}>Added by you</span>}
-      <div className={s.agentHead}><strong>{name}</strong><span className={s.dot} /></div>
-      <em>{role}</em>
-      <p>{st.text}</p>
+    <div className={s.window}>
+      <div className={s.winBar}><span className={s.dots}><i /><i /><i /></span><span>Inbox · {sc.company}</span></div>
+      <div className={s.mail}>
+        <ul className={s.mailList}>
+          <li className={[s.mailItem, s.mailNew, arrived ? s.in : s.out].join(' ')}>
+            <span className={s.unread} />
+            <span><strong>{sc.email.from}</strong><em>{sc.email.subject}</em></span>
+            <span className={s.when}>now</span>
+          </li>
+          {sc.older.map(m => (
+            <li key={m.subject} className={s.mailItem}><span /><span><strong>{m.from}</strong><em>{m.subject}</em></span><span className={s.when}>yesterday</span></li>
+          ))}
+        </ul>
+        <div className={[s.mailBody, opened ? s.in : s.out].join(' ')}>
+          <h4>{sc.email.subject}</h4>
+          <p className={s.mailFrom}>{sc.email.from}</p>
+          <p>{sc.email.preview}</p>
+          <span className={s.attachment}><span className={s.docIcon} />{sc.email.attachment}</span>
+        </div>
+      </div>
     </div>
   )
 }
 
+/* ---------- Scene 2: the record fills itself in ---------- */
 
-/* ---------- Opening scene: files dragged into the data room ---------- */
-
-function Intro({ elapsed, sc }: { elapsed: number; sc: Scenario }) {
-  const files = sc.docs
-  const state = files.map((_, i) => {
-    const start = at(FILE_START + i * FILE_GAP)
-    const end = start + at(FILE_FLY)
-    if (elapsed < start) return { phase: 'waiting' as const, k: 0 }
-    if (elapsed < end) return { phase: 'flying' as const, k: (elapsed - start) / (end - start) }
-    return { phase: 'landed' as const, k: 1 }
-  })
-  const flying = state.findIndex(f => f.phase === 'flying')
-  const landed = state.filter(f => f.phase === 'landed').length
-  const ease = (k: number) => 1 - Math.pow(1 - k, 3)
+function RecordScene({ sc, p }: { sc: Scenario; p: number }) {
+  const n = sc.record.fields.length
+  const filled = sc.record.fields.map((_, i) => p > 0.22 + (i / n) * 0.5)
+  const done = p > 0.8
   return (
-    <div className={s.intro}>
-      <div className={s.introCol}>
-        <p className={s.introTitle}>Your files</p>
-        <ul className={s.fileList}>
-          {files.map((f, i) => (
-            <li key={f} className={[s.file, state[i].phase !== 'waiting' ? s.fileGone : ''].join(' ')}>
-              <span className={s.docIcon} /><span className={s.docName}>{f}</span>
-            </li>
-          ))}
-        </ul>
+    <div className={s.window}>
+      <div className={s.winBar}>
+        <span className={s.dots}><i /><i /><i /></span>
+        <span>{sc.record.system} · {sc.company}</span>
+        <span className={[s.pill, done ? s.pillWarn : s.pillOn].join(' ')}>{done ? `${n} of ${n + 1} · 1 question` : p > 0.15 ? 'AI reading…' : 'New'}</span>
       </div>
-      <div className={[s.dropzone, flying >= 0 ? s.dropActive : '', landed === files.length ? s.dropDone : ''].join(' ')}>
-        <p className={s.introTitle}>{sc.room}</p>
-        {landed === 0 && flying < 0 && <p className={s.dropHint}>Drag documents here</p>}
-        <ul className={s.fileList}>
-          {files.map((f, i) => state[i].phase === 'landed' && (
-            <li key={f} className={[s.file, s.fileIn].join(' ')}>
-              <span className={s.docIcon} /><span className={s.docName}>{f}</span><span className={s.fileOk}>✓</span>
-            </li>
+      <div className={s.record}>
+        <div className={s.docCard}>
+          <span className={s.docIcon} /><span>{sc.email.attachment}</span>
+          <div className={s.scan} style={{ top: `${20 + seg(p, 0.15, 0.75) * 70}%`, opacity: p > 0.15 && p < 0.78 ? 1 : 0 }} />
+          <div className={s.docLines}>{Array.from({ length: 9 }, (_, i) => <i key={i} style={{ width: `${55 + ((i * 37) % 40)}%` }} />)}</div>
+        </div>
+        <div className={s.form}>
+          <h4>{sc.record.title}</h4>
+          {sc.record.fields.map((f, i) => (
+            <div key={f.label} className={[s.fieldRow, filled[i] ? s.fieldOn : ''].join(' ')}>
+              <span>{f.label}</span><strong>{filled[i] ? f.value : ''}</strong>
+            </div>
           ))}
-        </ul>
-        {landed === files.length && <p className={s.dropHint}>{files.length} documents · shared with the AI team</p>}
-      </div>
-      {flying >= 0 && (() => {
-        const k = ease(state[flying].k)
-        const x = 8 + k * 52
-        const y = 58 + flying * 44 + (110 - (58 + flying * 44)) * k - Math.sin(k * Math.PI) * 24
-        return (
-          <div className={s.ghost} style={{ left: `${x}%`, top: y }}>
-            <span className={s.docIcon} /><span className={s.docName}>{files[flying]}</span>
-            <span className={s.cursor} />
+          <div className={[s.fieldRow, done ? s.fieldMissing : ''].join(' ')}>
+            <span>{sc.record.missing}</span><strong>{done ? `Missing · asking ${sc.person}` : ''}</strong>
           </div>
-        )
-      })()}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- Scene 3: phone notification, one tap ---------- */
+
+function PhoneScene({ sc, p }: { sc: Scenario; p: number }) {
+  const notif = p > 0.1
+  const open = p > 0.42
+  const tapK = seg(p, 0.6, 0.72)
+  const tapped = p > 0.72
+  return (
+    <div className={s.phoneWrap}>
+      <div className={s.phone}>
+        <div className={s.phoneTop}><span>09:41</span><span className={s.statusIcons}>●●● ▲ ▮</span></div>
+        {!open ? (
+          <div className={s.lock}>
+            <div className={s.clock}>09:41</div>
+            <div className={[s.notif, notif ? s.in : s.out].join(' ')}>
+              <span className={s.notifApp}><i />{sc.company}</span>
+              <strong>{sc.phone.title}</strong>
+              <em>Tap to decide</em>
+            </div>
+          </div>
+        ) : (
+          <div className={s.app}>
+            <p className={s.appHead}>{sc.company}</p>
+            <div className={s.question}>
+              <strong>{sc.phone.title}</strong>
+              <p>{sc.phone.body}</p>
+              {!tapped ? (
+                <div className={s.choices}>
+                  <button className={[s.choice, s.choicePrimary, tapK > 0.5 ? s.pressed : ''].join(' ')}>{sc.phone.primary}</button>
+                  <button className={s.choice}>{sc.phone.secondary}</button>
+                </div>
+              ) : (
+                <div className={s.doneBox}>✓ {sc.phone.result}</div>
+              )}
+            </div>
+            {!tapped && p > 0.5 && (
+              <span className={s.finger} style={{ transform: `translate(${(1 - ease(tapK)) * 40}px, ${(1 - ease(tapK)) * 60}px) scale(${tapK > 0.5 ? 0.9 : 1})` }} />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ---------- Scene 4: it lands in the plan ---------- */
+
+function BoardScene({ sc, p }: { sc: Scenario; p: number }) {
+  const landed = p > 0.3
+  const toast = p > 0.62
+  return (
+    <div className={s.window}>
+      <div className={s.winBar}><span className={s.dots}><i /><i /><i /></span><span>{sc.board.system} · {sc.company}</span></div>
+      <div className={s.board}>
+        {sc.board.columns.map((col, ci) => (
+          <div key={col} className={s.column}>
+            <p className={s.colTitle}>{col}</p>
+            {sc.board.cards.filter(c => c.col === ci).map(c => (
+              <div key={c.title} className={s.cardItem}><strong>{c.title}</strong><span>{c.sub}</span></div>
+            ))}
+            {ci === sc.board.into && (
+              <div className={[s.cardItem, s.cardNew, landed ? s.in : s.out].join(' ')}><strong>{sc.board.card}</strong><span>{sc.board.cardSub}</span></div>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className={[s.toast, toast ? s.in : s.out].join(' ')}>✓ {sc.board.toast}</div>
+    </div>
+  )
+}
+
+/* ---------- Scene 5: the log ---------- */
+
+function LogScene({ sc, p }: { sc: Scenario; p: number }) {
+  return (
+    <div className={s.window}>
+      <div className={s.winBar}><span className={s.dots}><i /><i /><i /></span><span>Activity · {sc.company}</span></div>
+      <ul className={s.log}>
+        {sc.log.map((l, i) => (
+          <li key={l.what} className={p > 0.1 + i * 0.14 ? s.in : s.out}>
+            <span className={[s.logWho, l.who === 'AI' ? s.logAi : ''].join(' ')}>{l.who}</span>
+            <span>{l.what}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
