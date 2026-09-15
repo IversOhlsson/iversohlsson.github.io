@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import s from './Booking.module.css'
 import { SITE } from '../content/site'
 
-/** Wednesday and Thursday afternoons over the next three weeks. Some slots are already taken. */
+/** Wednesday and Thursday afternoons over the next three weeks. */
 const SLOT_TIMES = ['13:00', '14:00', '15:00', '16:00']
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-type Day = { date: Date; slots: { time: string; taken: boolean }[] }
+type Day = { date: Date; slots: string[] }
 
 function upcoming(): Day[] {
   const out: Day[] = []
@@ -19,9 +19,7 @@ function upcoming(): Day[] {
     day.setDate(d.getDate() + i)
     const wd = day.getDay()
     if (wd !== 3 && wd !== 4) continue
-    const h = (day.getDate() * 7 + day.getMonth() * 3 + wd) % 4
-    const taken = new Set([h, (h + 2) % 4].slice(0, 1 + (h % 2)))
-    out.push({ date: day, slots: SLOT_TIMES.map((t, k) => ({ time: t, taken: taken.has(k) })) })
+    out.push({ date: day, slots: SLOT_TIMES })
   }
   return out
 }
@@ -45,14 +43,28 @@ function inviteUrl(date: Date, time: string, name: string, company: string): str
   return `https://calendar.google.com/calendar/render?${q.toString()}`
 }
 
+/** Prefilled email as the alternative to a calendar slot. */
+function mailUrl(name: string, company: string, message: string): string {
+  const who = [name.trim(), company.trim()].filter(Boolean).join(', ')
+  const q = new URLSearchParams({
+    subject: `Hello from ${who || 'your website'}`,
+    body: `${message.trim()}\n\n${who}`,
+  })
+  return `mailto:${SITE.email}?${q.toString().replace(/\+/g, '%20')}`
+}
+
+type Mode = 'meeting' | 'email'
+
 export default function BookingModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const days = useMemo(() => upcoming(), [])
+  const [mode, setMode] = useState<Mode>('meeting')
   const [pick, setPick] = useState<{ d: number; t: string } | null>(null)
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
-  const [done, setDone] = useState(false)
+  const [message, setMessage] = useState('')
+  const [done, setDone] = useState<Mode | null>(null)
   const chosen = pick ? `${fmt(days[pick.d].date)}, ${pick.t}` : null
-  const ready = !!pick && name.trim().length > 1
+  const ready = mode === 'meeting' ? !!pick && name.trim().length > 1 : name.trim().length > 1 && message.trim().length > 3
 
   useEffect(() => {
     if (!open) return
@@ -66,55 +78,89 @@ export default function BookingModal({ open, onClose }: { open: boolean; onClose
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!ready || !pick) return
-    window.open(inviteUrl(days[pick.d].date, pick.t, name, company), '_blank', 'noopener')
-    setDone(true)
+    if (!ready) return
+    if (mode === 'meeting') {
+      if (!pick) return
+      window.open(inviteUrl(days[pick.d].date, pick.t, name, company), '_blank', 'noopener')
+    } else {
+      window.location.href = mailUrl(name, company, message)
+    }
+    setDone(mode)
   }
 
   return (
     <div className={s.backdrop} onClick={onClose} role="presentation">
       <div className={s.modal} role="dialog" aria-modal="true" aria-labelledby="book-title" onClick={e => e.stopPropagation()}>
         <div className={s.head}>
-          <h2 id="book-title">Book a meeting</h2>
+          <h2 id="book-title">Get in touch</h2>
           <button type="button" className={s.close} onClick={onClose} aria-label="Close">×</button>
         </div>
 
-        {done ? (
+        {done === 'meeting' ? (
           <div className={s.done}>
             <strong>Invite opened for {chosen}.</strong>
             <p>Save it in Google Calendar and it lands with me. I confirm from your calendar email within a day and send the video link.</p>
             <button type="button" className={s.btn} onClick={onClose}>Close</button>
           </div>
+        ) : done === 'email' ? (
+          <div className={s.done}>
+            <strong>Your email app should be open.</strong>
+            <p>Send it and I reply within a day. If nothing opened, write to <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+            <button type="button" className={s.btn} onClick={onClose}>Close</button>
+          </div>
         ) : (
           <form onSubmit={submit} className={s.body}>
+            <div className={s.modes} role="tablist" aria-label="How to get in touch">
+              <button type="button" role="tab" aria-selected={mode === 'meeting'} className={[s.mode, mode === 'meeting' ? s.modeOn : ''].join(' ')} onClick={() => setMode('meeting')}>
+                <strong>Book a meeting</strong><span>30 minutes on a video call</span>
+              </button>
+              <button type="button" role="tab" aria-selected={mode === 'email'} className={[s.mode, mode === 'email' ? s.modeOn : ''].join(' ')} onClick={() => setMode('email')}>
+                <strong>Send an email</strong><span>Write a few lines, I reply within a day</span>
+              </button>
+            </div>
+
+            {mode === 'meeting' && <>
             <p className={s.step}><span>1</span>Pick a time <em>Stockholm time, 30 minutes</em></p>
             <div className={s.days}>
               {days.map((day, di) => (
                 <div key={day.date.toISOString()} className={s.day}>
                   <p className={s.dayName}>{fmt(day.date)}</p>
-                  {day.slots.map(sl => {
-                    const on = pick?.d === di && pick.t === sl.time
+                  {day.slots.map(time => {
+                    const on = pick?.d === di && pick.t === time
                     return (
-                      <button key={sl.time} type="button" disabled={sl.taken} aria-pressed={on}
-                        className={[s.slot, on ? s.slotOn : '', sl.taken ? s.slotTaken : ''].join(' ')}
-                        onClick={() => setPick({ d: di, t: sl.time })}>
-                        {sl.time}
+                      <button key={time} type="button" aria-pressed={on}
+                        className={[s.slot, on ? s.slotOn : ''].join(' ')}
+                        onClick={() => setPick({ d: di, t: time })}>
+                        {time}
                       </button>
                     )
                   })}
                 </div>
               ))}
             </div>
+            </>}
 
-            <p className={s.step}><span>2</span>Your details</p>
+            <p className={s.step}><span>{mode === 'meeting' ? '2' : '1'}</span>Your details</p>
             <div className={s.fields}>
               <label className={s.field}><span>Name</span><input value={name} onChange={e => setName(e.target.value)} autoComplete="name" required /></label>
               <label className={s.field}><span>Company</span><input value={company} onChange={e => setCompany(e.target.value)} autoComplete="organization" /></label>
+              {mode === 'email' && (
+                <label className={s.field + ' ' + s.fieldWide}><span>Message</span><textarea value={message} onChange={e => setMessage(e.target.value)} rows={4} placeholder="What you do, and what eats the week." required /></label>
+              )}
             </div>
 
             <div className={s.actions}>
-              <button type="submit" className={s.btn} disabled={!ready}>{chosen ? `Add ${chosen} to Google Calendar` : 'Add to Google Calendar'}</button>
-              <span className={s.note}>Opens a prefilled invite with me as guest. No Google account? Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</span>
+              {mode === 'meeting' ? (
+                <>
+                  <button type="submit" className={s.btn} disabled={!ready}>{chosen ? `Add ${chosen} to Google Calendar` : 'Add to Google Calendar'}</button>
+                  <span className={s.note}>Opens a prefilled invite with me as guest. No Google account? Use <button type="button" className={s.linkBtn} onClick={() => setMode('email')}>Send an email</button> instead.</span>
+                </>
+              ) : (
+                <>
+                  <button type="submit" className={s.btn} disabled={!ready}>Open email</button>
+                  <span className={s.note}>Opens your email app with the message filled in, to <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</span>
+                </>
+              )}
             </div>
           </form>
         )}

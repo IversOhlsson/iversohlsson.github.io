@@ -15,8 +15,18 @@
 .slot { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 4px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--ink); transition: border-color 150ms, background 150ms; }
 .slot:hover:not(:disabled) { border-color: var(--ink); }
 .slotOn { border-color: var(--accent); background: #EAF0FF; color: var(--accent); }
-.slotTaken { cursor: default; color: #C4C4BD; background: #FAFAF8; text-decoration: line-through; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.mode { display: grid; gap: 2px; text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font: inherit; color: var(--ink); cursor: pointer; transition: border-color 150ms, background 150ms; }
+.mode strong { font-size: 14.5px; font-weight: 600; }
+.mode span { font-size: 12.5px; color: var(--muted); }
+.mode:hover { border-color: var(--ink); }
+.modeOn { border-color: var(--accent); background: #EAF0FF; }
+.modeOn strong { color: var(--accent); }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fieldWide { grid-column: 1 / -1; }
+.field textarea { font: inherit; font-size: 14.5px; color: var(--ink); padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; width: 100%; resize: vertical; }
+.field textarea:focus { outline: 2px solid rgba(31, 91, 255, 0.35); outline-offset: 1px; border-color: var(--accent); }
+.linkBtn { background: none; border: 0; padding: 0; font: inherit; color: var(--ink); cursor: pointer; border-bottom: 1px solid var(--line); }
 .field { display: grid; gap: 5px; font-size: 12.5px; color: var(--muted); }
 .field input { font: inherit; font-size: 14.5px; color: var(--ink); padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; width: 100%; }
 .field input:focus { outline: 2px solid rgba(31, 91, 255, 0.35); outline-offset: 1px; border-color: var(--accent); }
@@ -28,4 +38,4 @@
 .done { padding: 16px 24px 24px; display: grid; gap: 8px; justify-items: start; }
 .done strong { font-size: 17px; }
 .done p { margin: 0 0 6px; color: var(--muted); }
-@media (max-width: 720px) { .days { grid-template-columns: repeat(3, 1fr); } .fields { grid-template-columns: 1fr; } .modal { border-radius: 16px; } .body, .head, .done { padding-left: 16px; padding-right: 16px; } .btn { width: 100%; } }
+@media (max-width: 720px) { .days { grid-template-columns: repeat(3, 1fr); } .fields { grid-template-columns: 1fr; } .modes { grid-template-columns: 1fr; } .modal { border-radius: 16px; } .body, .head, .done { padding-left: 16px; padding-right: 16px; } .btn { width: 100%; } }
