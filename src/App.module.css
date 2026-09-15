@@ -1,11 +1,211 @@
 .page {
-  position: relative;
-  z-index: 5;
-  max-width: 1160px;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 0 48px 48px;
+  padding: 0 32px 40px;
 }
 
-@media (max-width: 720px) {
+/* Nav */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 26px 0;
+}
+.brand {
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+.navBtn {
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--ink);
+  padding: 9px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  transition: border-color 150ms ease;
+}
+.navBtn:hover { border-color: var(--ink); }
+
+/* Hero */
+.hero {
+  padding: 96px 0 72px;
+  max-width: 760px;
+}
+.h1 {
+  font-size: clamp(38px, 6vw, 64px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0 0 24px;
+}
+.sub {
+  font-size: clamp(18px, 2.2vw, 22px);
+  color: var(--muted);
+  margin: 0 0 36px;
+  max-width: 34ch;
+  line-height: 1.45;
+}
+.ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+.primary {
+  display: inline-block;
+  padding: 14px 24px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+  transition: filter 150ms ease;
+}
+.primary:hover { filter: brightness(1.08); }
+.secondary {
+  display: inline-block;
+  padding: 14px 22px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+  background: var(--surface);
+  transition: border-color 150ms ease;
+}
+.secondary:hover { border-color: var(--ink); }
+
+/* Sections */
+.section { padding: 56px 0; border-top: 1px solid var(--line); }
+.h2 {
+  font-size: clamp(28px, 3.4vw, 38px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  margin: 0 0 28px;
+}
+.h3 {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+}
+.p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+  max-width: 48ch;
+}
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+}
+
+/* Offer */
+.offer {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+.icon {
+  display: inline-flex;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+
+/* Example card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 40px;
+}
+.flow {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 28px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+.flow li { position: relative; }
+.num {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.caption {
+  margin: 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* Steps */
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+.steps li { display: flex; gap: 16px; align-items: flex-start; }
+.stepNum {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  padding-top: 5px;
+  letter-spacing: 0.04em;
+}
+
+/* About */
+.about { max-width: 620px; }
+.about .h2 { margin-bottom: 14px; }
+.meta { margin: 16px 0 0; font-size: 15px; color: var(--muted); }
+
+/* Contact */
+.contact { padding-bottom: 80px; }
+.contact .h2 { margin-bottom: 10px; }
+.contact .p { margin-bottom: 28px; }
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--muted);
+}
+.footer a { text-decoration: none; }
+.footer a:hover { color: var(--ink); }
+
+@media (max-width: 760px) {
   .page { padding: 0 20px 32px; }
+  .nav { padding: 18px 0; }
+  .hero { padding: 56px 0 48px; }
+  .section { padding: 44px 0; }
+  .offer, .flow, .steps { grid-template-columns: 1fr; gap: 28px; }
+  .card { padding: 28px 22px; border-radius: 16px; }
+  .ctas a { width: 100%; text-align: center; }
+  .contact .primary { width: 100%; text-align: center; word-break: break-all; }
 }
