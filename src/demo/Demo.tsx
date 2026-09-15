@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import s from './Demo.module.css'
 import { bookHref } from '../content/site'
 import Workflow from './Workflow'
+import Capabilities from './Capabilities'
 
 /* ---------- Data ---------- */
 
@@ -240,6 +241,8 @@ export default function Demo() {
           </ul>
         </div>
       </section>}
+
+      <Capabilities />
 
       <footer className={s.foot}>
         <a href={bookHref} className={s.cta}>Book a meeting</a>

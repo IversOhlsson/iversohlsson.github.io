@@ -1,0 +1,94 @@
+.wrap { padding: 56px 0 8px; border-top: 1px solid var(--line); margin-top: 48px; }
+.head { margin-bottom: 28px; max-width: 640px; }
+.eyebrow { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+.h2 { font-size: clamp(26px, 3vw, 34px); font-weight: 600; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 10px; }
+.sub { margin: 0; color: var(--muted); font-size: 16px; }
+
+.grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 16px 18px; display: grid; gap: 6px; align-content: start; }
+.card h3 { margin: 6px 0 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.card p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+.art { height: 84px; border-radius: 10px; background: #F7F7F4; display: flex; align-items: center; justify-content: center; color: var(--ink); overflow: hidden; }
+.svg { width: 130px; height: 78px; }
+
+/* Palette helpers */
+.faint { stroke: #C9CBD3; }
+.accent { stroke: var(--accent); }
+.ok { stroke: #2DB36B; }
+.dot { fill: var(--accent); }
+.fillAccent { fill: var(--accent); }
+.fillWarn { fill: #F2A33C; }
+.bar { fill: var(--ink); opacity: 0.7; }
+.barFaint { fill: #DADAD4; }
+.hl { fill: #FFE9A8; }
+.label { font-size: 9px; font-weight: 600; fill: var(--muted); font-family: inherit; }
+.labelWhite { font-size: 8px; font-weight: 700; fill: #fff; letter-spacing: 0.08em; font-family: inherit; }
+
+/* Animations (all loop; disabled under reduced motion) */
+.animHuman { animation: human 4s ease-in-out infinite; }
+@keyframes human { 0% { transform: translate(8px, 36px); opacity: 0; } 8% { opacity: 1; } 35% { transform: translate(44px, 36px); } 62% { transform: translate(44px, 36px); } 90% { transform: translate(112px, 36px); opacity: 1; } 100% { transform: translate(112px, 36px); opacity: 0; } }
+.animHumanTick { stroke-dasharray: 14; stroke-dashoffset: 14; animation: tick 4s ease infinite; }
+@keyframes tick { 0%, 45% { stroke-dashoffset: 14; } 60%, 100% { stroke-dashoffset: 0; } }
+
+.animPop { animation: pop 3.5s ease infinite; }
+.animPipeNew { animation: pipeNew 3.5s ease infinite; }
+@keyframes pop { 0% { opacity: 0; } 15%, 100% { opacity: 1; } }
+@keyframes pipeNew { 0%, 55% { opacity: 0; transform: translateY(6px); } 70%, 100% { opacity: 1; transform: none; } }
+
+.animTravel { offset-distance: 0%; animation: travel 2.4s linear infinite; }
+@keyframes travel { 0% { offset-distance: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
+
+.animReq { animation: req 3s ease-in-out infinite; }
+.animRes { animation: res 3s ease-in-out infinite; }
+.animFadeLoop { animation: fadeLoop 3s ease infinite; }
+@keyframes req { 0% { transform: translate(40px, 31px); opacity: 0; } 5% { opacity: 1; } 40% { transform: translate(76px, 31px); opacity: 1; } 45%, 100% { opacity: 0; } }
+@keyframes res { 0%, 50% { transform: translate(76px, 41px); opacity: 0; } 55% { opacity: 1; } 90% { transform: translate(40px, 41px); opacity: 1; } 95%, 100% { opacity: 0; } }
+@keyframes fadeLoop { 0%, 55% { opacity: 0; } 65%, 90% { opacity: 1; } 100% { opacity: 0; } }
+
+.animType { animation: type1 4s ease infinite; }
+.animType2 { animation: type2 4s ease infinite; }
+.animRule { animation: rule 4s ease infinite; transform-origin: 87px 36px; }
+@keyframes type1 { 0% { width: 0; } 30%, 100% { width: 46px; } }
+@keyframes type2 { 0%, 30% { width: 0; } 55%, 100% { width: 30px; } }
+@keyframes rule { 0%, 60% { opacity: 0; transform: scale(0.8); } 72%, 100% { opacity: 1; transform: none; } }
+
+.animHl { animation: hl 3.5s ease infinite; transform-origin: 20px 37px; }
+.animTick { stroke-dasharray: 14; stroke-dashoffset: 14; animation: tick2 3.5s ease infinite; }
+@keyframes hl { 0% { transform: scaleX(0); } 25%, 100% { transform: scaleX(1); } }
+@keyframes tick2 { 0%, 50% { stroke-dashoffset: 14; } 65%, 100% { stroke-dashoffset: 0; } }
+
+.animHand { animation: hand 6s linear infinite; }
+.animPulse { animation: pulse 3s ease infinite; }
+@keyframes hand { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 40% { fill: transparent; } 50% { fill: #EAF0FF; } 70%, 100% { fill: transparent; } }
+
+.animNotif { animation: notif 3.5s ease infinite; transform-origin: 60px 26px; }
+.animBadge { animation: badge 3.5s ease infinite; transform-origin: 76px 12px; }
+@keyframes notif { 0% { opacity: 0; transform: translateY(-8px); } 15%, 100% { opacity: 1; transform: none; } }
+@keyframes badge { 0%, 10% { transform: scale(0); } 25% { transform: scale(1.2); } 35%, 100% { transform: scale(1); } }
+
+.animDown { animation: down 5s ease infinite; }
+.animBus { animation: bus 2.5s linear infinite; }
+@keyframes down { 0%, 30% { stroke: currentColor; } 40%, 70% { stroke: #E5B4B4; stroke-dasharray: 3 3; } 80%, 100% { stroke: currentColor; } }
+@keyframes bus { 0% { transform: translate(14px, 51px); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translate(106px, 51px); opacity: 0; } }
+
+.animBuf { animation: buf 3s ease infinite; transform-origin: 50% 100%; }
+.animDash { stroke-dasharray: 4 4; animation: dash 1.2s linear infinite; }
+@keyframes buf { 0% { transform: scaleY(0.2); } 50% { transform: scaleY(1); } 60%, 100% { transform: scaleY(0.2); } }
+@keyframes dash { to { stroke-dashoffset: -8; } }
+
+.animAlt { animation: alt 4s ease infinite; }
+.a2 { animation-delay: 2s; }
+@keyframes alt { 0%, 40% { stroke: var(--accent); } 50%, 90% { stroke: #C9CBD3; } 100% { stroke: var(--accent); } }
+
+.animLine { animation: line 4s ease infinite; }
+@keyframes line { 0% { opacity: 0; transform: translateX(-4px); } 15%, 85% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .art * { animation: none !important; }
+  .animHuman { transform: translate(44px, 36px); }
+  .animReq, .animRes, .animBus { opacity: 0; }
+}
+@media (max-width: 1000px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 760px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } .card { padding: 12px 12px 14px; } .art { height: 72px; } }
+@media (max-width: 460px) { .grid { grid-template-columns: 1fr; } }
