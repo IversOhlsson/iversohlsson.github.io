@@ -1,61 +1,114 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import s from './Demo.module.css'
-import { FullStack, Distributed, Agents, Hosting, Care } from './scenes'
 import { bookHref } from '../content/site'
 
-const SCENES = [
-  { id: 'stack', title: 'Every layer, one partner', caption: 'From the screen people use to the database behind it. Nothing falls between teams.', ms: 8000, View: FullStack },
-  { id: 'dist', title: 'Built to keep working', caption: 'Parts talk through a shared log. If one stops, the rest carry on and it catches up.', ms: 11000, View: Distributed },
-  { id: 'agents', title: 'AI agents you can trust', caption: 'The model plans and reads. Code checks the result. A person approves anything that leaves the building.', ms: 14000, View: Agents },
-  { id: 'host', title: 'Runs where you need it', caption: 'The same system in the cloud, on your own servers, or both. Deploy on push, roll back in one step.', ms: 9000, View: Hosting },
-  { id: 'care', title: 'Looked after', caption: 'Monitoring, backups and updates. If something needs attention, I see it first.', ms: 7000, View: Care },
+/* ---------- Data ---------- */
+
+type View = 'overview' | 'inbox' | 'orders' | 'devices' | 'activity'
+
+type Order = { id: string; customer: string; item: string; qty: string; due: string; status: 'Confirmed' | 'In production' | 'Shipped' | 'New' }
+
+const ORDERS0: Order[] = [
+  { id: 'PO-4468', customer: 'Lindqvist Bygg', item: 'Steel bracket S-110', qty: '800', due: '2 Oct 2026', status: 'In production' },
+  { id: 'PO-4469', customer: 'Norrland Energi', item: 'Mounting rail R-40', qty: '2 400', due: '9 Oct 2026', status: 'Confirmed' },
+  { id: 'PO-4470', customer: 'Hansa Marine', item: 'Hinge set H-7', qty: '150', due: '28 Sep 2026', status: 'Shipped' },
 ]
 
-const TOTAL = SCENES.reduce((a, sc) => a + sc.ms, 0)
-const clamp = (v: number) => Math.max(0, Math.min(1, v))
+const DOC = {
+  name: 'PO-4471 Bergström Verkstad.pdf',
+  from: 'inkop@bergstromverkstad.se',
+  received: 'Today 08:12',
+  lines: [
+    'Purchase order from Bergström Verkstad AB.',
+    'Item: aluminium bracket, part no. AB-220, quantity 1 200 pcs.',
+    'Surface treatment: anodised, natural.',
+    'Payment terms: 30 days net.',
+    'Please confirm receipt of this order.',
+  ],
+}
+
+const FIELDS = [
+  { label: 'Customer', value: 'Bergström Verkstad AB', quote: 'Bergström Verkstad AB' },
+  { label: 'Part', value: 'AB-220 aluminium bracket', quote: 'aluminium bracket, part no. AB-220' },
+  { label: 'Quantity', value: '1 200 pcs', quote: '1 200 pcs' },
+  { label: 'Payment terms', value: '30 days net', quote: '30 days net' },
+  { label: 'Delivery date', value: '', quote: '' },
+]
+
+type Device = { id: string; name: string; where: string; online: boolean; buffered: number; last: string }
+const DEVICES0: Device[] = [
+  { id: 'd1', name: 'Line 1 sensor', where: 'Factory floor', online: true, buffered: 0, last: 'just now' },
+  { id: 'd2', name: 'Warehouse gateway', where: 'Warehouse B', online: true, buffered: 0, last: 'just now' },
+  { id: 'd3', name: 'Truck 12', where: 'On the road', online: false, buffered: 42, last: '18 min ago' },
+  { id: 'd4', name: 'Cold room', where: 'Warehouse A', online: true, buffered: 0, last: 'just now' },
+]
+
+type Log = { t: string; who: string; what: string }
+const LOG0: Log[] = [
+  { t: '07:55', who: 'System', what: 'Nightly backup completed' },
+  { t: '08:12', who: 'Email', what: 'New document received: PO-4471 Bergström Verkstad.pdf' },
+  { t: '08:14', who: 'Truck 12', what: 'Lost connection. Readings are being stored on the device.' },
+]
+
+const TOUR = [
+  { view: 'inbox' as View, title: 'A new order arrives by email', text: 'Open the document and press Read with AI. Watch it fill in the fields.' },
+  { view: 'inbox' as View, title: 'It asks when something is missing', text: 'The delivery date is not in the document. Answer the question, then approve.' },
+  { view: 'orders' as View, title: 'The order is in your system', text: 'No retyping. Everyone sees the same, correct data.' },
+  { view: 'devices' as View, title: 'Devices in the field keep working', text: 'Truck 12 lost its connection. It keeps recording and catches up when it is back.' },
+  { view: 'activity' as View, title: 'Everything is logged', text: 'Who did what, and what the AI read and wrote. Nothing happens in the dark.' },
+]
+
+/* ---------- App ---------- */
+
+type Phase = 'idle' | 'reading' | 'asking' | 'ready' | 'saved'
 
 export default function Demo() {
-  const [elapsed, setElapsed] = useState(0)
-  const [playing, setPlaying] = useState(true)
-  const last = useRef<number | null>(null)
+  const [view, setView] = useState<View>('overview')
+  const [tour, setTour] = useState(0)
+  const [tourOpen, setTourOpen] = useState(true)
+  const [orders, setOrders] = useState<Order[]>(ORDERS0)
+  const [devices, setDevices] = useState<Device[]>(DEVICES0)
+  const [log, setLog] = useState<Log[]>(LOG0)
+  const [phase, setPhase] = useState<Phase>('idle')
+  const [filled, setFilled] = useState(0)
+  const [answer, setAnswer] = useState('')
+  const [docOpen, setDocOpen] = useState(false)
 
-  useEffect(() => {
-    if (!playing) { last.current = null; return }
-    let raf = 0
-    const tick = (now: number) => {
-      if (last.current !== null) {
-        const dt = now - last.current
-        setElapsed(e => {
-          const n = e + dt
-          if (n >= TOTAL) { setPlaying(false); return TOTAL }
-          return n
-        })
-      }
-      last.current = now
-      raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [playing])
-
-  const starts = useMemo(() => {
-    const out: number[] = []
-    let acc = 0
-    for (const sc of SCENES) { out.push(acc); acc += sc.ms }
-    return out
+  const addLog = useCallback((who: string, what: string) => {
+    const d = new Date()
+    const t = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+    setLog(l => [...l, { t, who, what }])
   }, [])
 
-  let index = SCENES.length - 1
-  for (let i = 0; i < SCENES.length; i++) {
-    if (elapsed < starts[i] + SCENES[i].ms) { index = i; break }
-  }
-  const p = clamp((elapsed - starts[index]) / SCENES[index].ms)
-  const ended = elapsed >= TOTAL
-  const scene = SCENES[index]
-  const View = scene.View
+  // Reading: fill fields one by one, then ask.
+  useEffect(() => {
+    if (phase !== 'reading') return
+    if (filled >= 4) {
+      const t = setTimeout(() => { setPhase('asking'); addLog('AI agent', 'Read PO-4471. Found 4 of 5 fields. Asked for the delivery date.'); setTour(1) }, 500)
+      return () => clearTimeout(t)
+    }
+    const t = setTimeout(() => setFilled(f => f + 1), 650)
+    return () => clearTimeout(t)
+  }, [phase, filled, addLog])
 
-  const seek = useCallback((i: number) => { setElapsed(starts[i]); setPlaying(true) }, [starts])
-  const restart = useCallback(() => { setElapsed(0); setPlaying(true) }, [])
+  const startRead = () => { setPhase('reading'); setFilled(0); addLog('Anna', 'Started AI reading of PO-4471') }
+  const submitAnswer = () => { if (!answer.trim()) return; setPhase('ready'); addLog('Anna', `Answered: delivery date ${answer.trim()}`) }
+  const approve = () => {
+    setPhase('saved')
+    setOrders(o => [{ id: 'PO-4471', customer: 'Bergström Verkstad AB', item: 'AB-220 aluminium bracket', qty: '1 200', due: answer.trim(), status: 'New' }, ...o])
+    addLog('Anna', 'Approved PO-4471. Order created.')
+    setTour(2)
+  }
+  const reconnect = () => {
+    setDevices(d => d.map(x => x.id === 'd3' ? { ...x, online: true, buffered: 0, last: 'just now' } : x))
+    addLog('Truck 12', 'Back online. 42 stored readings synced.')
+    setTour(4)
+  }
+  const goTour = (i: number) => { const k = Math.max(0, Math.min(TOUR.length - 1, i)); setTour(k); setView(TOUR[k].view); if (TOUR[k].view === 'inbox') setDocOpen(true) }
+  const reset = () => { setOrders(ORDERS0); setDevices(DEVICES0); setLog(LOG0); setPhase('idle'); setFilled(0); setAnswer(''); setDocOpen(false); setView('overview'); setTour(0); setTourOpen(true) }
+
+  const offline = devices.filter(d => !d.online).length
+  const nav: [View, string, number?][] = [['overview', 'Overview'], ['inbox', 'Inbox', phase === 'saved' ? 0 : 1], ['orders', 'Orders'], ['devices', 'Devices', offline], ['activity', 'Activity']]
 
   return (
     <div className={s.page}>
@@ -65,74 +118,80 @@ export default function Demo() {
       </header>
 
       <section className={s.intro}>
-        <p className={s.eyebrow}>How I build systems</p>
-        <h1 className={s.h1}>The whole system, from the screen to the server room.</h1>
-        <p className={s.sub}>Five short chapters, under a minute. Press play or jump to any chapter.</p>
+        <p className={s.eyebrow}>Try a system like the ones I build</p>
+        <h1 className={s.h1}>This is what your team would open every morning.</h1>
+        <p className={s.sub}>A working example for a small manufacturer. Click around, or follow the short tour. Nothing here is real.</p>
       </section>
 
-      <section className={s.player}>
-        <div className={s.stage}>
-          <div className={s.card} key={scene.id}>
-            <View p={p} />
+      <section className={s.frame}>
+        {tourOpen ? (
+          <div className={s.tour}>
+            <span className={s.tourStep}>{tour + 1} / {TOUR.length}</span>
+            <div className={s.tourText}>
+              <strong>{TOUR[tour].title}</strong>
+              <p>{TOUR[tour].text}</p>
+            </div>
+            <div className={s.tourBtns}>
+              <button onClick={() => goTour(tour - 1)} disabled={tour === 0}>Back</button>
+              {view !== TOUR[tour].view
+                ? <button className={s.tourNext} onClick={() => goTour(tour)}>Show me</button>
+                : tour < TOUR.length - 1
+                  ? <button className={s.tourNext} onClick={() => goTour(tour + 1)}>Next</button>
+                  : <button className={s.tourNext} onClick={reset}>Start over</button>}
+              <button className={s.tourClose} onClick={() => setTourOpen(false)} aria-label="Close tour">×</button>
+            </div>
           </div>
-          {ended && <button className={s.replay} onClick={restart}>Replay</button>}
-        </div>
-
-        <div className={s.controls}>
-          <button className={s.playBtn} onClick={() => (ended ? restart() : setPlaying(v => !v))} aria-label={playing ? 'Pause' : 'Play'}>
-            {ended ? '↻' : playing ? '❚❚' : '▶'}
-          </button>
-          <div className={s.chapters}>
-            {SCENES.map((sc, i) => {
-              const fill = i < index ? 1 : i === index ? p : 0
-              return (
-                <button key={sc.id} className={s.chapter} onClick={() => seek(i)} title={sc.title} style={{ flex: sc.ms }}>
-                  <span className={s.track}><span className={s.fill} style={{ transform: `scaleX(${fill})` }} /></span>
+        ) : (
+          <div className={s.tour}><button className={s.tourOpenBtn} onClick={() => setTourOpen(true)}>Show tour</button></div>
+        )}
+        <div className={s.app}>
+          <aside className={s.side}>
+            <div className={s.brand}><span className={s.logo}>N</span> Nordic Parts AB</div>
+            <nav className={s.menu}>
+              {nav.map(([v, label, n]) => (
+                <button key={v} className={[s.menuItem, view === v ? s.menuOn : ''].join(' ')} onClick={() => setView(v)}>
+                  {label}{n ? <span className={s.count}>{n}</span> : null}
                 </button>
-              )
-            })}
-          </div>
-          <span className={s.time}>{Math.floor(elapsed / 1000)}s / {Math.round(TOTAL / 1000)}s</span>
-        </div>
+              ))}
+            </nav>
+            <div className={s.sideFoot}>
+              <span className={s.avatar}>A</span>
+              <span><strong>Anna Ek</strong><em>Operations</em></span>
+            </div>
+          </aside>
 
-        <div className={s.caption} key={scene.id}>
-          <span className={s.stepNo}>{index + 1} / {SCENES.length}</span>
-          <div>
-            <strong>{scene.title}</strong>
-            <p>{scene.caption}</p>
-          </div>
+          <main className={s.main}>
+            {view === 'overview' && <Overview orders={orders} offline={offline} phase={phase} go={() => { setView('inbox'); setDocOpen(true) }} />}
+            {view === 'inbox' && (
+              <Inbox
+                docOpen={docOpen} setDocOpen={setDocOpen} phase={phase} filled={filled}
+                answer={answer} setAnswer={setAnswer} startRead={startRead} submitAnswer={submitAnswer} approve={approve}
+                goOrders={() => setView('orders')}
+              />
+            )}
+            {view === 'orders' && <Orders orders={orders} />}
+            {view === 'devices' && <Devices devices={devices} reconnect={reconnect} />}
+            {view === 'activity' && <Activity log={log} />}
+          </main>
+
         </div>
       </section>
-
-      <ol className={s.chapterList}>
-        {SCENES.map((sc, i) => (
-          <li key={sc.id}>
-            <button className={[s.chapterBtn, i === index ? s.chapterOn : ''].join(' ')} onClick={() => seek(i)}>
-              <span className={s.chapterNo}>{i + 1}</span>
-              <span>
-                <strong>{sc.title}</strong>
-                <em>{sc.caption}</em>
-              </span>
-            </button>
-          </li>
-        ))}
-      </ol>
 
       <section className={s.notes}>
         <div>
-          <h2>Where this comes from</h2>
+          <h2>What this shows</h2>
           <ul>
-            <li>A two-sided marketplace where customers upload documents and AI agents turn them into structured requests, negotiations and agreements.</li>
-            <li>Industrial IoT systems: sensors in the field, real-time processing at the edge, dashboards in the office.</li>
-            <li>A phone app for running AI coding agents at home over a private network, with approval prompts before anything runs.</li>
+            <li>Documents that arrive by email become records in your system, with a person approving each one.</li>
+            <li>Devices in the field keep working without a connection and catch up on their own.</li>
+            <li>Every action, by people or by AI, is logged and easy to read.</li>
           </ul>
         </div>
         <div>
-          <h2>How an engagement starts</h2>
+          <h2>Yours would be different</h2>
           <ul>
-            <li>A thirty-minute call about what you need and who will use it.</li>
-            <li>A written plan with the shape of the system and where it will run.</li>
-            <li>Something working within weeks, on a preview address you can open.</li>
+            <li>Your words, your fields, your documents. Built around how your team already works.</li>
+            <li>Connected to the tools you use today, not replacing them.</li>
+            <li>Running in the cloud, on your own servers, or both.</li>
           </ul>
         </div>
       </section>
@@ -140,6 +199,159 @@ export default function Demo() {
       <footer className={s.foot}>
         <a href={bookHref} className={s.cta}>Book a meeting</a>
       </footer>
+    </div>
+  )
+}
+
+/* ---------- Views ---------- */
+
+function Overview({ orders, offline, phase, go }: { orders: Order[]; offline: number; phase: Phase; go: () => void }) {
+  return (
+    <div className={s.view}>
+      <h2 className={s.viewTitle}>Good morning, Anna</h2>
+      <div className={s.tiles}>
+        <div className={s.tile}><span>Open orders</span><strong>{orders.filter(o => o.status !== 'Shipped').length}</strong></div>
+        <div className={s.tile}><span>Documents to review</span><strong>{phase === 'saved' ? 0 : 1}</strong></div>
+        <div className={[s.tile, offline ? s.tileWarn : ''].join(' ')}><span>Devices offline</span><strong>{offline}</strong></div>
+        <div className={s.tile}><span>Last backup</span><strong>07:55</strong></div>
+      </div>
+      <div className={s.panel}>
+        <p className={s.panelTitle}>Needs your attention</p>
+        {phase !== 'saved'
+          ? <button className={s.rowBtn} onClick={go}><span className={s.dotNew} /> New purchase order from Bergström Verkstad. <em>Open →</em></button>
+          : <p className={s.empty}>Nothing right now.</p>}
+        {offline > 0 && <p className={s.rowText}><span className={s.dotWarn} /> Truck 12 is offline. Readings are stored on the device.</p>}
+      </div>
+    </div>
+  )
+}
+
+function Inbox(props: {
+  docOpen: boolean; setDocOpen: (v: boolean) => void; phase: Phase; filled: number
+  answer: string; setAnswer: (v: string) => void; startRead: () => void; submitAnswer: () => void; approve: () => void; goOrders: () => void
+}) {
+  const { docOpen, setDocOpen, phase, filled, answer, setAnswer, startRead, submitAnswer, approve, goOrders } = props
+  const isFilled = (i: number) => (i < 4 ? (phase === 'reading' ? i < filled : phase !== 'idle') : phase === 'ready' || phase === 'saved')
+  return (
+    <div className={s.view}>
+      <h2 className={s.viewTitle}>Inbox</h2>
+      <div className={s.inbox}>
+        <ul className={s.docList}>
+          <li>
+            <button className={[s.docItem, docOpen ? s.docItemOn : ''].join(' ')} onClick={() => setDocOpen(true)}>
+              {phase !== 'saved' && <span className={s.dotNew} />}
+              <span><strong>{DOC.name}</strong><em>{DOC.from} · {DOC.received}</em></span>
+            </button>
+          </li>
+          <li><button className={s.docItem} disabled><span><strong>Invoice 2026-0912.pdf</strong><em>Handled yesterday</em></span></button></li>
+          <li><button className={s.docItem} disabled><span><strong>Delivery note 8812.pdf</strong><em>Handled yesterday</em></span></button></li>
+        </ul>
+
+        {docOpen ? (
+          <div className={s.docPane}>
+            <div className={s.doc}>
+              <p className={s.docHead}>{DOC.name}</p>
+              {DOC.lines.map((line, i) => {
+                const f = FIELDS.find(f => f.quote && line.includes(f.quote))
+                const fi = f ? FIELDS.indexOf(f) : -1
+                if (!f?.quote) return <p key={i}>{line}</p>
+                const [a, b] = line.split(f.quote)
+                return <p key={i}>{a}<mark className={isFilled(fi) ? s.hot : ''}>{f.quote}</mark>{b}</p>
+              })}
+            </div>
+            <div className={s.extract}>
+              <div className={s.extractHead}>
+                <span>Order details</span>
+                {phase === 'idle' && <button className={s.primary} onClick={startRead}>Read with AI</button>}
+                {phase === 'reading' && <span className={s.pill}>Reading…</span>}
+                {phase === 'asking' && <span className={[s.pill, s.pillWarn].join(' ')}>1 question</span>}
+                {phase === 'ready' && <button className={s.primary} onClick={approve}>Approve and create order</button>}
+                {phase === 'saved' && <span className={[s.pill, s.pillOk].join(' ')}>Saved</span>}
+              </div>
+              <ul className={s.fields}>
+                {FIELDS.map((f, i) => {
+                  const on = isFilled(i)
+                  const missing = i === 4 && phase === 'asking'
+                  return (
+                    <li key={f.label} className={[s.field, on ? s.fieldOn : '', missing ? s.fieldMissing : ''].join(' ')}>
+                      <span>{f.label}</span>
+                      <strong>{on ? (i === 4 ? answer : f.value) : missing ? 'Missing' : ''}</strong>
+                    </li>
+                  )
+                })}
+              </ul>
+              {phase === 'asking' && (
+                <div className={s.ask}>
+                  <p><span className={s.who}>AI agent</span>The order has no delivery date. When should it be delivered?</p>
+                  <form className={s.askForm} onSubmit={e => { e.preventDefault(); submitAnswer() }}>
+                    <input value={answer} onChange={e => setAnswer(e.target.value)} placeholder="e.g. 30 Oct 2026" />
+                    <button type="submit" className={s.primary} disabled={!answer.trim()}>Answer</button>
+                  </form>
+                  <button type="button" className={s.suggest} onClick={() => setAnswer('30 Oct 2026')}>Use 30 Oct 2026</button>
+                </div>
+              )}
+              {phase === 'saved' && (
+                <div className={s.saved}>✓ Order PO-4471 created. <button className={s.link} onClick={goOrders}>Open in Orders →</button></div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className={s.docPane}><p className={s.empty}>Select a document.</p></div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Orders({ orders }: { orders: Order[] }) {
+  return (
+    <div className={s.view}>
+      <h2 className={s.viewTitle}>Orders</h2>
+      <div className={s.tableWrap}>
+        <table className={s.table}>
+          <thead><tr><th>Order</th><th>Customer</th><th>Item</th><th>Qty</th><th>Due</th><th>Status</th></tr></thead>
+          <tbody>
+            {orders.map(o => (
+              <tr key={o.id} className={o.status === 'New' ? s.rowNew : ''}>
+                <td>{o.id}</td><td>{o.customer}</td><td>{o.item}</td><td>{o.qty}</td><td>{o.due}</td>
+                <td><span className={[s.status, s['st_' + o.status.replace(' ', '')]].join(' ')}>{o.status}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function Devices({ devices, reconnect }: { devices: Device[]; reconnect: () => void }) {
+  return (
+    <div className={s.view}>
+      <h2 className={s.viewTitle}>Devices</h2>
+      <div className={s.devices}>
+        {devices.map(d => (
+          <div key={d.id} className={[s.device, d.online ? '' : s.deviceOff].join(' ')}>
+            <div className={s.deviceHead}><strong>{d.name}</strong><span className={d.online ? s.dotOk : s.dotWarn} /></div>
+            <em>{d.where}</em>
+            <p>{d.online ? `Online · last reading ${d.last}` : `Offline · ${d.buffered} readings stored on the device`}</p>
+            {!d.online && <button className={s.primary} onClick={reconnect}>Simulate connection back</button>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Activity({ log }: { log: Log[] }) {
+  const items = useMemo(() => [...log].reverse(), [log])
+  return (
+    <div className={s.view}>
+      <h2 className={s.viewTitle}>Activity</h2>
+      <ul className={s.log}>
+        {items.map((l, i) => (
+          <li key={i}><span className={s.logT}>{l.t}</span><span className={s.logWho}>{l.who}</span><span>{l.what}</span></li>
+        ))}
+      </ul>
     </div>
   )
 }
