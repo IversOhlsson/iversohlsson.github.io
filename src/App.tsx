@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import s from './App.module.css'
 import Icon from './components/Icon'
-import { ABOUT, CONTACT, FIELDS, HERO, NAV, PROCESS, SEE, SERVICES, SITE, bookHref } from './content/site'
+import { ABOUT, CONTACT, FIELDS, HERO, NAV, PROCESS, SEE, SERVICES, SITE } from './content/site'
 import Workflow from './components/Workflow'
 import Capabilities from './components/Capabilities'
-import Booking from './components/Booking'
+import BookingModal from './components/Booking'
 
 const mail = `mailto:${SITE.email}`
 
@@ -19,7 +19,7 @@ export default function App() {
           <nav className={s.links} aria-label="Sections">
             {NAV.map(l => <a key={l.href} href={l.href}>{l.label}</a>)}
           </nav>
-          <a href={bookHref} className={s.btnSmall} onClick={openBook}>Book a meeting</a>
+          <button type="button" className={s.btnSmall} onClick={openBook}>Book a meeting</button>
         </div>
       </header>
 
@@ -31,7 +31,7 @@ export default function App() {
               <h1 className={s.h1}>{HERO.title}</h1>
               <p className={s.sub}>{HERO.sub}</p>
               <div className={s.ctas}>
-                <a href={bookHref} className={s.btn} onClick={openBook}>Book a meeting</a>
+                <button type="button" className={s.btn} onClick={openBook}>Book a meeting</button>
                 <a href="#see" className={s.btnGhost}>See it work</a>
               </div>
               <p className={s.trust}>{HERO.trust}</p>
@@ -131,20 +131,16 @@ export default function App() {
               <h2 className={s.h2}>{CONTACT.title}</h2>
               <p className={s.p + ' ' + s.headText}>{CONTACT.text}</p>
             </div>
-            {bookOpen ? (
-              <div className={s.bookOpen}>
-                <Booking />
-                <p className={s.bookNote}>No Google account, or none of these work? Write to <a href={mail}>{SITE.email}</a> with a time that suits you.</p>
-              </div>
-            ) : (
-              <div className={s.ctas}>
-                <button type="button" className={s.btn} onClick={openBook}>Book a meeting</button>
-                <a href={mail} className={s.btnGhost}>Send an email</a>
-              </div>
-            )}
+            <div className={s.ctas}>
+              <button type="button" className={s.btn} onClick={openBook}>Book a meeting</button>
+              <a href={mail} className={s.btnGhost}>Send an email</a>
+            </div>
+            <p className={s.bookNote}>30 minutes on a video call. Wednesday and Thursday afternoons, Stockholm time.</p>
           </div>
         </section>
       </main>
+
+      <BookingModal open={bookOpen} onClose={() => setBookOpen(false)} />
 
       <footer className={s.footer}>
         <div className={s.wrap + ' ' + s.footInner}>

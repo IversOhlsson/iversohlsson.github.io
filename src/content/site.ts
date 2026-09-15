@@ -5,8 +5,6 @@ export const SITE = {
   location: 'Stockholm, Sweden',
 }
 
-/** Every "Book a meeting" button scrolls to the picker; a chosen slot opens as a Google Calendar invite. */
-export const bookHref = '#book'
 
 
 export const NAV = [
@@ -55,8 +53,8 @@ export const ABOUT = {
 }
 
 export const CONTACT = {
-  title: 'Let’s talk about your business.',
-  text: 'A short call, no obligation. You tell me what slows you down, I tell you what would help. Pick a time and it opens as a calendar invite.',
+  title: 'Let’s talk.',
+  text: 'A short call about your business and what could be built. No obligation.',
 }
 
 export const SEE = {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import s from './Booking.module.css'
 import { SITE } from '../content/site'
 
@@ -30,58 +30,97 @@ const fmt = (d: Date) => `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth
 const pad = (n: number) => String(n).padStart(2, '0')
 
 /** Google Calendar event link: 30 minutes, Stockholm time, Philip as guest. Saving it sends him the invite. */
-function inviteUrl(date: Date, time: string): string {
+function inviteUrl(date: Date, time: string, name: string, email: string, company: string): string {
   const ymd = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`
   const [h, m] = time.split(':').map(Number)
-  const start = `${ymd}T${pad(h)}${pad(m)}00`
-  const end = `${ymd}T${pad(h)}${pad(m + 30)}00`
+  const who = company.trim() || name.trim()
   const q = new URLSearchParams({
     action: 'TEMPLATE',
-    text: 'Intro call · Philip Ivers Ohlsson',
-    dates: `${start}/${end}`,
+    text: `${who} / Philip Ivers Ohlsson`,
+    dates: `${ymd}T${pad(h)}${pad(m)}00/${ymd}T${pad(h)}${pad(m + 30)}00`,
     ctz: 'Europe/Stockholm',
-    details: 'A 30-minute video call about your business and what software could take off your plate. Philip sends the video link once the invite arrives.',
+    details: `30-minute video call.\n\n${name.trim()}${company.trim() ? `, ${company.trim()}` : ''}\n${email.trim()}\n\nBooked via iversohlsson.github.io`,
     add: SITE.email,
   })
   return `https://calendar.google.com/calendar/render?${q.toString()}`
 }
 
-export default function Booking() {
+export default function BookingModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const days = useMemo(() => upcoming(), [])
   const [pick, setPick] = useState<{ d: number; t: string } | null>(null)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [company, setCompany] = useState('')
+  const [done, setDone] = useState(false)
   const chosen = pick ? `${fmt(days[pick.d].date)}, ${pick.t}` : null
+  const ready = !!pick && name.trim().length > 1 && /.+@.+\..+/.test(email)
 
-  const choose = (di: number, time: string) => {
-    setPick({ d: di, t: time })
-    window.open(inviteUrl(days[di].date, time), '_blank', 'noopener')
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
+  }, [open, onClose])
+
+  if (!open) return null
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!ready || !pick) return
+    window.open(inviteUrl(days[pick.d].date, pick.t, name, email, company), '_blank', 'noopener')
+    setDone(true)
   }
 
   return (
-    <div className={s.wrap}>
-      <div className={s.days}>
-        {days.map((day, di) => (
-          <div key={day.date.toISOString()} className={s.day}>
-            <p className={s.dayName}>{fmt(day.date)}</p>
-            <div className={s.slots}>
-              {day.slots.map(sl => {
-                const on = pick?.d === di && pick.t === sl.time
-                return (
-                  <button key={sl.time} type="button" disabled={sl.taken} aria-pressed={on}
-                    className={[s.slot, on ? s.slotOn : '', sl.taken ? s.slotTaken : ''].join(' ')}
-                    onClick={() => choose(di, sl.time)}>
-                    {sl.time}{sl.taken && <span>Taken</span>}
-                  </button>
-                )
-              })}
-            </div>
+    <div className={s.backdrop} onClick={onClose} role="presentation">
+      <div className={s.modal} role="dialog" aria-modal="true" aria-labelledby="book-title" onClick={e => e.stopPropagation()}>
+        <div className={s.head}>
+          <h2 id="book-title">Book a meeting</h2>
+          <button type="button" className={s.close} onClick={onClose} aria-label="Close">×</button>
+        </div>
+
+        {done ? (
+          <div className={s.done}>
+            <strong>Invite opened for {chosen}.</strong>
+            <p>Save it in Google Calendar and it lands with me. I confirm within a day and send the video link.</p>
+            <button type="button" className={s.btn} onClick={onClose}>Close</button>
           </div>
-        ))}
+        ) : (
+          <form onSubmit={submit} className={s.body}>
+            <p className={s.step}><span>1</span>Pick a time <em>Stockholm time, 30 minutes</em></p>
+            <div className={s.days}>
+              {days.map((day, di) => (
+                <div key={day.date.toISOString()} className={s.day}>
+                  <p className={s.dayName}>{fmt(day.date)}</p>
+                  {day.slots.map(sl => {
+                    const on = pick?.d === di && pick.t === sl.time
+                    return (
+                      <button key={sl.time} type="button" disabled={sl.taken} aria-pressed={on}
+                        className={[s.slot, on ? s.slotOn : '', sl.taken ? s.slotTaken : ''].join(' ')}
+                        onClick={() => setPick({ d: di, t: sl.time })}>
+                        {sl.time}
+                      </button>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+
+            <p className={s.step}><span>2</span>Your details</p>
+            <div className={s.fields}>
+              <label className={s.field}><span>Name</span><input value={name} onChange={e => setName(e.target.value)} autoComplete="name" required /></label>
+              <label className={s.field}><span>Email</span><input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required /></label>
+              <label className={s.field}><span>Company</span><input value={company} onChange={e => setCompany(e.target.value)} autoComplete="organization" /></label>
+            </div>
+
+            <div className={s.actions}>
+              <button type="submit" className={s.btn} disabled={!ready}>{chosen ? `Add ${chosen} to Google Calendar` : 'Add to Google Calendar'}</button>
+              <span className={s.note}>Opens a prefilled invite with me as guest. No Google account? Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</span>
+            </div>
+          </form>
+        )}
       </div>
-      <p className={s.note}>
-        {chosen
-          ? <>Google Calendar opened with <strong>{chosen}</strong>. Save the invite and it lands with me. I confirm within a day.</>
-          : <>Times are Stockholm time, 30 minutes on a video call. Pick one and it opens as a Google Calendar invite with me as guest.</>}
-      </p>
     </div>
   )
 }

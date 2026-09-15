@@ -17,7 +17,7 @@
 .links a { text-decoration: none; color: var(--muted); transition: color 150ms; }
 .links a:hover { color: var(--ink); }
 .btnSmall {
-  justify-self: end;
+  justify-self: end; border: 0; cursor: pointer; font: inherit;
   font-size: 14.5px; font-weight: 500; text-decoration: none;
   padding: 9px 16px; border-radius: 999px;
   background: var(--ink); color: #fff;
@@ -161,8 +161,6 @@
 .bandMail:hover { color: #fff; }
 
 /* Footer */
-.bookOpen { animation: bookIn 400ms ease; }
-@keyframes bookIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .bookNote { margin: 16px 0 0; font-size: 14px; color: var(--muted); }
 .bookNote a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
 
