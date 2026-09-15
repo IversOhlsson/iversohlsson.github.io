@@ -136,8 +136,8 @@ export default function Demo() {
         ) : (
           <>
             <p className={s.eyebrow}>Watch an AI workflow</p>
-            <h1 className={s.h1}>Six documents in. A checked, cited report out.</h1>
-            <p className={s.sub}>Due diligence on a company, done by a team of AI agents that read, cross-check, ask you when unsure, and hand the result to a person for approval.</p>
+            <h1 className={s.h1}>A folder of documents in. A checked, cited report out.</h1>
+            <p className={s.sub}>Pick your field. A team of AI agents reads the documents, cross-checks them, asks you when unsure, and hands the result to a person for approval. Same system, your workflow.</p>
           </>
         )}
       </section>
@@ -158,8 +158,9 @@ export default function Demo() {
           <div>
             <h2>Where it fits</h2>
             <ul>
-              <li>Due diligence, supplier onboarding, tender reviews, claims handling, compliance checks.</li>
+              <li>Due diligence, supplier onboarding, claims, tender reviews, compliance checks, customer intake.</li>
               <li>Anywhere a team reads piles of documents and fills in the same forms by hand.</li>
+              <li>Built around your steps and your rules, so it fits the way your team already works.</li>
               <li>Runs in the cloud, on your own servers, or both. Your documents stay where you keep them.</li>
             </ul>
           </div>

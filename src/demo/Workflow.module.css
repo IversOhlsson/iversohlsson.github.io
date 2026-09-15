@@ -1,3 +1,10 @@
+.picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.chip { text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; cursor: pointer; display: grid; gap: 1px; transition: border-color 150ms, box-shadow 150ms; }
+.chip strong { font-size: 14px; font-weight: 600; }
+.chip span { font-size: 12.5px; color: var(--muted); }
+.chip:hover { border-color: var(--ink); }
+.chipOn { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(31, 91, 255, 0.15); }
+
 .stage { position: relative; background: #ECEEF3; border: 1px solid var(--line); border-radius: 18px; padding: 20px; box-shadow: 0 30px 70px -30px rgba(21, 23, 26, 0.3); }
 .grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
 .left { display: grid; gap: 12px; }
@@ -107,6 +114,7 @@
 .caption p { margin: 2px 0 0; color: var(--muted); }
 
 @media (max-width: 900px) {
+  .picker { grid-template-columns: repeat(2, 1fr); }
   .stage { padding: 10px; border-radius: 14px; }
   .grid { grid-template-columns: 1fr; }
   .agents { grid-template-columns: repeat(2, 1fr); }

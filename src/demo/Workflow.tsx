@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import s from './Workflow.module.css'
+import { SCENARIOS, type Scenario, type Score } from './scenarios'
 
 /* ---------- State built from a timeline of events ---------- */
 
 type Status = 'idle' | 'working' | 'waiting' | 'done'
 type Doc = { name: string; status: 'waiting' | 'reading' | 'done'; facts?: string }
-type Score = { area: string; level: 'green' | 'amber' | 'red'; note: string }
 type Item = { who: string; text: string; kind?: 'ask' | 'answer' | 'ok' | 'warn' | 'me'; typedAt?: number }
 
 type State = {
@@ -19,17 +19,8 @@ type State = {
   stream: Item[]
 }
 
-const DOCS0: Doc[] = [
-  { name: 'Annual accounts 2025.pdf', status: 'waiting' },
-  { name: 'Customer contracts (12).pdf', status: 'waiting' },
-  { name: 'Liability insurance.pdf', status: 'waiting' },
-  { name: 'Tax certificate.pdf', status: 'waiting' },
-  { name: 'Employee list.xlsx', status: 'waiting' },
-  { name: 'ISO 9001 certificate.pdf', status: 'waiting' },
-]
-
-const initial = (): State => ({
-  docs: DOCS0.map(d => ({ ...d })),
+const initial = (sc: Scenario): State => ({
+  docs: sc.docs.map(name => ({ name, status: 'waiting' as const })),
   coordinator: { status: 'idle', text: 'Waiting for a task' },
   readers: { status: 'idle', text: 'Idle' },
   checker: { status: 'idle', text: 'Idle', results: [] },
@@ -47,81 +38,76 @@ const E = (ms: number) => at(INTRO + ms)
 const FILE_START = 3400
 const FILE_GAP = 700
 const FILE_FLY = 600
-const MSG = 'Hi! Can you start due diligence on Halden Systems? I am putting everything in the data room now.'
 
-const EVENTS: { t: number; run: (st: State) => void }[] = [
-  { t: at(1400), run: st => { st.stream.push({ who: 'Maria, investment team', text: MSG, kind: 'me', typedAt: at(1400) }) } },
-  { t: at(FILE_START + 5 * FILE_GAP + FILE_FLY + 500), run: st => { st.stream.push({ who: 'Coordinator', text: 'Got all six. Starting now. I will ask if anything is missing.' }) } },
-  { t: E(900), run: st => { st.coordinator = { status: 'working', text: 'Planning: finance, legal, insurance, people' } } },
-  { t: E(2000), run: st => {
-    st.coordinator = { status: 'done', text: 'Plan ready. 4 areas, 6 documents.' }
-    st.readers = { status: 'working', text: 'Reading 6 documents in parallel' }
-    st.docs.forEach(d => { d.status = 'reading' })
-    st.stream.push({ who: 'Coordinator', text: 'Split the work into four areas and started one reader per document.' })
-  } },
-  { t: E(2900), run: st => { st.docs[3] = { ...st.docs[3], status: 'done', facts: '3 facts' } } },
-  { t: E(3400), run: st => { st.docs[5] = { ...st.docs[5], status: 'done', facts: '4 facts' } } },
-  { t: E(3900), run: st => { st.docs[2] = { ...st.docs[2], status: 'done', facts: '5 facts' } } },
-  { t: E(4500), run: st => { st.docs[4] = { ...st.docs[4], status: 'done', facts: '9 facts' } } },
-  { t: E(5100), run: st => { st.docs[0] = { ...st.docs[0], status: 'done', facts: '14 facts' } } },
-  { t: E(5700), run: st => {
-    st.docs[1] = { ...st.docs[1], status: 'done', facts: '18 facts' }
-    st.readers = { status: 'done', text: '53 facts, each linked to its page' }
-    st.stream.push({ who: 'Readers', text: '53 facts collected. Every one keeps a link to the page it came from.' })
-  } },
-  { t: E(6300), run: st => { st.checker = { status: 'working', text: 'Cross-checking 53 facts', results: [] } } },
-  { t: E(7400), run: st => {
-    st.checker = { status: 'done', text: '1 issue found', results: [
-      { ok: true, text: 'Revenue in accounts matches contract totals' },
-      { ok: true, text: 'Company number identical across all documents' },
-      { ok: false, text: 'Liability insurance expired 31 Mar 2026' },
-    ] }
-    st.stream.push({ who: 'Checks', text: 'Two checks passed. One issue: the liability insurance certificate expired on 31 March 2026.', kind: 'warn' })
-  } },
-  { t: E(8200), run: st => {
-    st.coordinator = { status: 'waiting', text: 'Waiting for your answer' }
-    st.question = { text: 'The liability insurance certificate in the data room expired on 31 March 2026. Do you have a current certificate?', answer: '', answeredAt: 0 }
-    st.stream.push({ who: 'Coordinator', text: 'The liability insurance certificate expired on 31 March 2026. Do you have a current one?', kind: 'ask' })
-  } },
-  { t: E(10600), run: st => {
-    if (st.question) { st.question.answer = 'Yes. Uploading Liability insurance 2026-27.pdf now.'; st.question.answeredAt = E(10600) }
-  } },
-  { t: E(12400), run: st => {
-    st.stream.push({ who: 'You', text: 'Yes. Uploading Liability insurance 2026-27.pdf now.', kind: 'answer' })
-    st.docs.push({ name: 'Liability insurance 2026-27.pdf', status: 'reading' })
-    st.coordinator = { status: 'working', text: 'Answer received. Re-reading insurance.' }
-    st.readers = { status: 'working', text: 'Reading 1 new document' }
-  } },
-  { t: E(13600), run: st => {
-    st.docs[6] = { ...st.docs[6], status: 'done', facts: '5 facts' }
-    st.readers = { status: 'done', text: '58 facts, each linked to its page' }
-    st.checker = { status: 'working', text: 'Re-checking insurance', results: st.checker.results }
-  } },
-  { t: E(14500), run: st => {
-    st.checker = { status: 'done', text: 'All checks pass', results: [
-      { ok: true, text: 'Revenue in accounts matches contract totals' },
-      { ok: true, text: 'Company number identical across all documents' },
-      { ok: true, text: 'Liability insurance valid until 31 Mar 2027' },
-    ] }
-    st.coordinator = { status: 'done', text: 'All areas covered' }
-    st.stream.push({ who: 'Checks', text: 'New certificate is valid until 31 March 2027. All checks pass.', kind: 'ok' })
-    st.risk = { status: 'working', text: 'Scoring 4 areas', scores: [] }
-  } },
-  { t: E(15600), run: st => { st.risk.scores = [{ area: 'Finance', level: 'green', note: 'Stable revenue, low debt' }] } },
-  { t: E(16200), run: st => { st.risk.scores.push({ area: 'Legal', level: 'amber', note: '2 contracts end on change of ownership' }) } },
-  { t: E(16800), run: st => { st.risk.scores.push({ area: 'Insurance', level: 'green', note: 'Valid cover, adequate limits' }) } },
-  { t: E(17400), run: st => {
-    st.risk.scores.push({ area: 'People', level: 'green', note: 'Key staff on long notice periods' })
-    st.risk = { ...st.risk, status: 'done', text: '1 area to look at' }
-    st.stream.push({ who: 'Risk', text: 'Legal needs a look: two customer contracts can be ended if the company changes owner.', kind: 'warn' })
-  } },
-  { t: E(18400), run: st => {
-    st.report = { status: 'draft', findings: ['2 of 12 customer contracts end on change of ownership (pages 14, 31)', 'Liability insurance renewed, valid to 31 Mar 2027 (new certificate)', 'Revenue 2025 matches signed contract values within 1% (accounts p. 6)'] }
-    st.stream.push({ who: 'Report', text: 'Draft report ready. Every finding links to the page it came from.' })
-  } },
-  { t: E(19800), run: st => { st.report.status = 'review'; st.stream.push({ who: 'Report', text: 'Sent to Anna for review before anyone else sees it.' }) } },
-  { t: E(22000), run: st => { st.report.status = 'approved'; st.stream.push({ who: 'Anna', text: 'Approved. Shared with the investment team.', kind: 'ok' }) } },
-]
+type Ev = { t: number; run: (st: State) => void }
+
+function buildEvents(sc: Scenario): Ev[] {
+  const order = [3, 5, 2, 4, 0, 1] // which document finishes first
+  const total = sc.facts.reduce((a, b) => a + b, 0)
+  const readDone = order.map((di, i) => ({
+    t: E(2900 + i * 560),
+    run: (st: State) => { st.docs[di] = { ...st.docs[di], status: 'done', facts: `${sc.facts[di]} facts` } },
+  }))
+  return [
+    { t: at(1400), run: st => { st.stream.push({ who: sc.requester, text: sc.message, kind: 'me', typedAt: at(1400) }) } },
+    { t: at(FILE_START + 5 * FILE_GAP + FILE_FLY + 500), run: st => { st.stream.push({ who: 'Coordinator', text: 'Got all six. Starting now. I will ask if anything is missing.' }) } },
+    { t: E(900), run: st => { st.coordinator = { status: 'working', text: `Planning: ${sc.plan}` } } },
+    { t: E(2000), run: st => {
+      st.coordinator = { status: 'done', text: `Plan ready. ${sc.areasCount} areas, 6 documents.` }
+      st.readers = { status: 'working', text: 'Reading 6 documents in parallel' }
+      st.docs.forEach(d => { d.status = 'reading' })
+      st.stream.push({ who: 'Coordinator', text: `Split the work into ${sc.areasCount} areas and started one reader per document.` })
+    } },
+    ...readDone,
+    { t: E(5700), run: st => {
+      st.readers = { status: 'done', text: `${total} facts, each linked to its page` }
+      st.stream.push({ who: 'Readers', text: `${total} facts collected. Every one keeps a link to the page it came from.` })
+    } },
+    { t: E(6300), run: st => { st.checker = { status: 'working', text: `Cross-checking ${total} facts`, results: [] } } },
+    { t: E(7400), run: st => {
+      st.checker = { status: 'done', text: '1 issue found', results: [
+        { ok: true, text: sc.checksOk[0] }, { ok: true, text: sc.checksOk[1] }, { ok: false, text: sc.checkFail },
+      ] }
+      st.stream.push({ who: 'Checks', text: sc.failStream, kind: 'warn' })
+    } },
+    { t: E(8200), run: st => {
+      st.coordinator = { status: 'waiting', text: 'Waiting for your answer' }
+      st.question = { text: sc.question, answer: '', answeredAt: 0 }
+      st.stream.push({ who: 'Coordinator', text: sc.question, kind: 'ask' })
+    } },
+    { t: E(10600), run: st => { if (st.question) { st.question.answer = sc.answer; st.question.answeredAt = E(10600) } } },
+    { t: E(12400), run: st => {
+      st.stream.push({ who: 'You', text: sc.answer, kind: 'answer' })
+      st.docs.push({ name: sc.newDoc, status: 'reading' })
+      st.coordinator = { status: 'working', text: 'Answer received. Reading the new document.' }
+      st.readers = { status: 'working', text: 'Reading 1 new document' }
+    } },
+    { t: E(13600), run: st => {
+      st.docs[6] = { ...st.docs[6], status: 'done', facts: `${sc.newDocFacts} facts` }
+      st.readers = { status: 'done', text: `${total + sc.newDocFacts} facts, each linked to its page` }
+      st.checker = { status: 'working', text: 'Re-checking', results: st.checker.results }
+    } },
+    { t: E(14500), run: st => {
+      st.checker = { status: 'done', text: 'All checks pass', results: [
+        { ok: true, text: sc.checksOk[0] }, { ok: true, text: sc.checksOk[1] }, { ok: true, text: sc.recheck },
+      ] }
+      st.coordinator = { status: 'done', text: 'All areas covered' }
+      st.stream.push({ who: 'Checks', text: sc.recheckStream, kind: 'ok' })
+      st.risk = { status: 'working', text: `Scoring ${sc.areasCount} areas`, scores: [] }
+    } },
+    ...sc.scores.map((score, i) => ({ t: E(15600 + i * 600), run: (st: State) => { st.risk.scores.push(score) } })),
+    { t: E(17400), run: st => {
+      st.risk = { ...st.risk, status: 'done', text: '1 area to look at' }
+      st.stream.push({ who: 'Risk', text: sc.riskStream, kind: 'warn' })
+    } },
+    { t: E(18400), run: st => {
+      st.report = { status: 'draft', findings: sc.findings }
+      st.stream.push({ who: 'Report', text: 'Draft report ready. Every finding links to the page it came from.' })
+    } },
+    { t: E(19800), run: st => { st.report.status = 'review'; st.stream.push({ who: 'Report', text: `Sent to ${sc.reviewer} for review before anyone else sees it.` }) } },
+    { t: E(22000), run: st => { st.report.status = 'approved'; st.stream.push({ who: sc.reviewer, text: `Approved. Shared with the ${sc.team}.`, kind: 'ok' }) } },
+  ]
+}
 
 const TOTAL = E(24500)
 
@@ -129,20 +115,22 @@ const CHAPTERS = [
   { t: 0, title: 'Documents come in', caption: 'A message and a few files dragged into the data room. That is all your team needs to do.' },
   { t: E(2000), title: 'Agents read in parallel', caption: 'One reader per document. Every fact keeps a link to its page.' },
   { t: E(6300), title: 'Code cross-checks the facts', caption: 'Numbers and dates are compared by rules, not by the AI.' },
-  { t: E(8200), title: 'It asks instead of guessing', caption: 'An expired certificate. The coordinator asks you, then carries on.' },
+  { t: E(8200), title: 'It asks instead of guessing', caption: 'Something is missing. The coordinator asks you, then carries on.' },
   { t: E(14500), title: 'Risk by area', caption: 'Green, amber, red. Each with a one-line reason.' },
   { t: E(18400), title: 'A report you can trust', caption: 'Every finding cites its source. A person approves before it goes anywhere.' },
 ]
 
-function stateAt(t: number): State {
-  const st = initial()
-  for (const e of EVENTS) { if (e.t <= t) e.run(st) }
+function stateAt(events: Ev[], sc: Scenario, t: number): State {
+  const st = initial(sc)
+  for (const e of events) { if (e.t <= t) e.run(st) }
   return st
 }
 
 /* ---------- Component ---------- */
 
 export default function Workflow() {
+  const [sc, setSc] = useState<Scenario>(SCENARIOS[0])
+  const events = useMemo(() => buildEvents(sc), [sc])
   const [elapsed, setElapsed] = useState(0)
   const [playing, setPlaying] = useState(true)
   const last = useRef<number | null>(null)
@@ -162,13 +150,14 @@ export default function Workflow() {
     return () => cancelAnimationFrame(raf)
   }, [playing])
 
-  const st = stateAt(elapsed)
+  const st = stateAt(events, sc, elapsed)
   const ended = elapsed >= TOTAL
   let ci = 0
   for (let i = 0; i < CHAPTERS.length; i++) if (elapsed >= CHAPTERS[i].t) ci = i
   const chapter = CHAPTERS[ci]
   const seek = useCallback((t: number) => { setElapsed(t); setPlaying(true) }, [])
   const restart = useCallback(() => { setElapsed(0); setPlaying(true) }, [])
+  const pick = (x: Scenario) => { setSc(x); setElapsed(0); setPlaying(true) }
 
   // Typed answer
   const q = st.question
@@ -179,14 +168,21 @@ export default function Workflow() {
 
   return (
     <div>
+      <div className={s.picker} role="tablist" aria-label="Field">
+        {SCENARIOS.map(x => (
+          <button key={x.id} role="tab" aria-selected={x.id === sc.id} className={[s.chip, x.id === sc.id ? s.chipOn : ''].join(' ')} onClick={() => pick(x)}>
+            <strong>{x.label}</strong><span>{x.tagline}</span>
+          </button>
+        ))}
+      </div>
       <div className={s.stage}>
         <div className={s.grid}>
-          {elapsed < at(INTRO) ? <Intro elapsed={elapsed} /> : (
+          {elapsed < at(INTRO) ? <Intro elapsed={elapsed} sc={sc} /> : (
           <div className={s.left}>
             <div className={s.task}>
               <span className={s.taskLabel}>Task</span>
-              <strong>Due diligence on Halden Systems Ltd</strong>
-              <span className={s.taskMeta}>Requested by the investment team · {st.docs.length} documents</span>
+              <strong>{sc.task}</strong>
+              <span className={s.taskMeta}>Requested by the {sc.team} · {st.docs.length} documents</span>
             </div>
 
             <div className={s.agents}>
@@ -209,9 +205,9 @@ export default function Workflow() {
             ) : (
               <div className={s.report}>
                 <div className={s.reportHead}>
-                  <strong>Due diligence report · Halden Systems Ltd</strong>
+                  <strong>Report · {sc.task}</strong>
                   <span className={[s.pill, st.report.status === 'approved' ? s.pillOk : st.report.status === 'review' ? s.pillWarn : ''].join(' ')}>
-                    {st.report.status === 'approved' ? 'Approved by Anna' : st.report.status === 'review' ? 'With Anna for review' : 'Draft'}
+                    {st.report.status === 'approved' ? `Approved by ${sc.reviewer}` : st.report.status === 'review' ? `With ${sc.reviewer} for review` : 'Draft'}
                   </span>
                 </div>
                 <div className={s.scores}>
@@ -246,7 +242,7 @@ export default function Workflow() {
             <div className={s.stream} ref={streamRef}>
               {elapsed < at(1400) && (
                 <div className={[s.item, s.k_me].join(' ')}>
-                  <span className={s.who}>Maria, investment team</span>
+                  <span className={s.who}>{sc.requester}</span>
                   <span className={s.typing}><i /><i /><i /></span>
                 </div>
               )}
@@ -309,8 +305,8 @@ function Agent({ name, role, st }: { name: string; role: string; st: { status: S
 
 /* ---------- Opening scene: files dragged into the data room ---------- */
 
-function Intro({ elapsed }: { elapsed: number }) {
-  const files = DOCS0.map(d => d.name)
+function Intro({ elapsed, sc }: { elapsed: number; sc: Scenario }) {
+  const files = sc.docs
   const state = files.map((_, i) => {
     const start = at(FILE_START + i * FILE_GAP)
     const end = start + at(FILE_FLY)
@@ -334,7 +330,7 @@ function Intro({ elapsed }: { elapsed: number }) {
         </ul>
       </div>
       <div className={[s.dropzone, flying >= 0 ? s.dropActive : '', landed === files.length ? s.dropDone : ''].join(' ')}>
-        <p className={s.introTitle}>Data room · Halden Systems Ltd</p>
+        <p className={s.introTitle}>{sc.room}</p>
         {landed === 0 && flying < 0 && <p className={s.dropHint}>Drag documents here</p>}
         <ul className={s.fileList}>
           {files.map((f, i) => state[i].phase === 'landed' && (

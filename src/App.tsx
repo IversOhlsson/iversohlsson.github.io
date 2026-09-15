@@ -1,6 +1,6 @@
 import s from './App.module.css'
 import Icon from './components/Icon'
-import { ABOUT, CONTACT, EXAMPLE, HERO, NAV, PROCESS, SERVICES, SITE, bookHref } from './content/site'
+import { ABOUT, CONTACT, EXAMPLE, FIELDS, HERO, NAV, PROCESS, SERVICES, SITE, bookHref } from './content/site'
 
 const mail = `mailto:${SITE.email}`
 
@@ -52,7 +52,25 @@ export default function App() {
           </div>
         </section>
 
-        <section id="example" className={s.section + ' ' + s.tint}>
+        <section id="fields" className={s.section + ' ' + s.tint}>
+          <div className={s.wrap}>
+            <div className={s.head}>
+              <p className={s.eyebrow}>Your field</p>
+              <h2 className={s.h2}>Built for your workflow, whatever the industry.</h2>
+              <p className={s.p + ' ' + s.headText}>Every business has a few workflows that eat the week. Documents that arrive by email, forms filled in twice, data that lives in five places. That is where we start.</p>
+            </div>
+            <ul className={s.fields2}>
+              {FIELDS.map(f => (
+                <li key={f.title}>
+                  <h3 className={s.h3}>{f.title}</h3>
+                  <p className={s.p}>{f.text}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section id="example" className={s.section}>
           <div className={s.wrap}>
             <div className={s.head}>
               <p className={s.eyebrow}>{EXAMPLE.label}</p>
@@ -72,7 +90,7 @@ export default function App() {
           </div>
         </section>
 
-        <section id="process" className={s.section}>
+        <section id="process" className={s.section + ' ' + s.tint}>
           <div className={s.wrap}>
             <div className={s.head}>
               <p className={s.eyebrow}>How we work</p>
@@ -90,7 +108,7 @@ export default function App() {
           </div>
         </section>
 
-        <section id="about" className={s.section + ' ' + s.tint}>
+        <section id="about" className={s.section}>
           <div className={s.wrap + ' ' + s.aboutGrid}>
             <div>
               <p className={s.eyebrow}>About</p>
@@ -103,7 +121,7 @@ export default function App() {
           </div>
         </section>
 
-        <section className={s.section}>
+        <section className={s.section + ' ' + s.tint}>
           <div className={s.wrap}>
             <div className={s.band}>
               <div>
