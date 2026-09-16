@@ -45,10 +45,10 @@ export const SCENARIOS: Scenario[] = [
     ],
   },
   {
-    id: 'investment', label: 'Investment', tagline: 'PDFs, outside lookups and your own checks', company: 'Ather Capital',
+    id: 'investment', label: 'Investment', tagline: 'PDFs, outside lookups and your own checks', company: 'Vinterhamn Capital',
     scenes: [
       { kind: 'portal', where: 'external', system: 'Data room · Halden Systems', title: 'The other side uploads their documents', caption: 'The company you are looking at drags its files into a shared data room. That is all they do.', ms: 6500,
-        url: 'dataroom.athercapital.se/halden', heading: 'Halden Systems Ltd · Data room', lines: ['Shared with Ather Capital'], files: ['Annual accounts 2025.pdf', 'Customer contracts (12).pdf', 'Liability insurance.pdf', 'Tax certificate.pdf', 'Employee list.xlsx', 'ISO 9001 certificate.pdf'], action: 'Upload', done: '6 documents shared' },
+        url: 'dataroom.vinterhamn.se/halden', heading: 'Halden Systems Ltd · Data room', lines: ['Shared with Vinterhamn Capital'], files: ['Annual accounts 2025.pdf', 'Customer contracts (12).pdf', 'Liability insurance.pdf', 'Tax certificate.pdf', 'Employee list.xlsx', 'ISO 9001 certificate.pdf'], action: 'Upload', done: '6 documents shared' },
       { kind: 'pipeline', where: 'internal', system: 'Due diligence pipeline', title: 'A pipeline designed around how you work', caption: 'Connected agents and checks, in the order you decide. Maria adds a check in plain language. It runs from now on.', ms: 13000,
         stages: [{ name: 'Data room', sub: 'Documents in' }, { name: 'Readers', sub: 'One per document' }, { name: 'Lookups', sub: 'Registry, credit, sanctions' }, { name: 'Checks', sub: 'Rules you decide' }, { name: 'Report', sub: 'Cited, approved by you' }],
         checksStage: 3, checks: ['Revenue in accounts matches contract totals', 'Company number identical across documents', 'Insurance certificate valid today'],
@@ -73,7 +73,7 @@ export const SCENARIOS: Scenario[] = [
       { kind: 'phone', where: 'phone', system: 'Your phone', title: 'Maria gets asked, not guessed for', caption: 'The expired certificate becomes one question to a person.', ms: 8000,
         notifTitle: 'Halden Systems: insurance certificate expired', body: 'The certificate in the data room expired 31 March. Request a current one from Halden?', primary: 'Send request', secondary: 'Skip', result: 'Request sent to Halden Systems' },
       { kind: 'portal', where: 'external', system: 'Data room · Halden Systems', title: 'Halden uploads, the pipeline continues', caption: 'The request lands in their data room. They upload, the checks run again on their own.', ms: 6500,
-        url: 'dataroom.athercapital.se/halden', heading: 'Halden Systems Ltd · Data room', lines: ['Request from Ather Capital: a current liability insurance certificate'], files: ['Liability insurance 2026-27.pdf'], action: 'Upload', done: 'Uploaded · checks passed' },
+        url: 'dataroom.vinterhamn.se/halden', heading: 'Halden Systems Ltd · Data room', lines: ['Request from Vinterhamn Capital: a current liability insurance certificate'], files: ['Liability insurance 2026-27.pdf'], action: 'Upload', done: 'Uploaded · checks passed' },
       { kind: 'report', where: 'internal', system: 'Deals', title: 'A report you can trust', caption: 'Risk by area, every finding cites its page or its source. Maria approves before it goes to the team.', ms: 9000,
         reportTitle: 'Due diligence · Halden Systems Ltd', reviewer: 'Maria',
         areas: [{ area: 'Finance', level: 'green', note: 'Stable revenue, credit 4 of 5' }, { area: 'Legal', level: 'amber', note: '2 contracts end on change of owner' }, { area: 'Insurance', level: 'green', note: 'Valid to 31 Mar 2027' }, { area: 'Compliance', level: 'green', note: 'No sanctions, no court cases' }],

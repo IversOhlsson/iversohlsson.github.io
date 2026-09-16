@@ -49,9 +49,9 @@ const JOBS: Job[] = [
       { tool: 'maria', kind: 'person', m: 'ASK', path: 'Maria · “Request a new certificate?”', res: 'yes · 6 min' },
     ],
     done: '6 calls · draft for approval · logged',
-    day: { company: 'Ather Capital', sources: ['Data room', 'Email', 'Schedule'], sinks: ['Report', 'Registry', 'Maria'], base: 84, asked: 2, incident: { kind: 'restart', at: 4300 },
+    day: { company: 'Vinterhamn Capital', sources: ['Data room', 'Email', 'Schedule'], sinks: ['Report', 'Registry', 'Maria'], base: 84, asked: 2, incident: { kind: 'restart', at: 4300 },
       feed: [
-        { at: 0, kind: 'event', m: 'LIVE', path: 'Ather Capital · today', res: '3 agents · 4 data rooms' },
+        { at: 0, kind: 'event', m: 'LIVE', path: 'Vinterhamn Capital · today', res: '3 agents · 4 data rooms' },
         { at: 2200, kind: 'api', m: 'GET', path: 'api.bolagsverket.se  ×41 today', res: 'all answered' },
         { at: 4700, kind: 'warn', m: 'DOWN', path: 'agent-2 restarted', res: 'runs picked up · nothing lost' },
         { at: 7300, kind: 'person', m: 'ASK', path: 'Maria · 2 findings to decide', res: 'both answered' },
