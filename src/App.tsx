@@ -27,9 +27,12 @@ export default function App() {
       <main id="top">
         <section className={s.hero}>
           <div className={s.wrap + ' ' + s.heroGrid}>
-            <div>
+            <div className={s.heroTitle}>
               <p className={s.eyebrow}>{HERO.eyebrow}</p>
               <h1 className={s.h1}>{HERO.title}</h1>
+            </div>
+            <div className={s.heroVisual}><AgentTalk /></div>
+            <div className={s.heroCopy}>
               <p className={s.sub}>{HERO.sub}</p>
               <div className={s.ctas}>
                 <button type="button" className={s.btn} onClick={openBook}>Book a meeting</button>
@@ -37,7 +40,6 @@ export default function App() {
               </div>
               <p className={s.trust}>{HERO.trust}</p>
             </div>
-            <AgentTalk />
           </div>
         </section>
 

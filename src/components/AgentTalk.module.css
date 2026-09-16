@@ -108,3 +108,15 @@
   .jobTitle, .row, .dots i, .ring, .arc, .status i { animation: none; }
   .body, .lines { transition: none; }
 }
+
+/* Story switcher under the window. The active chip fills left to right as its story plays. */
+.switch { display: flex; gap: 8px; margin-top: 12px; }
+.tab { position: relative; isolation: isolate; flex: 1; min-width: 0; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 9px 10px; font: inherit; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; overflow: hidden; transition: color 200ms, border-color 200ms; }
+.tab span { position: relative; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tab:hover { border-color: #C9D6FF; }
+.tabOn { color: var(--ink); border-color: #C9D6FF; }
+.prog { position: absolute; inset: 0; background: #EAF0FF; transform-origin: left; transform: scaleX(0); z-index: -1; }
+@media (max-width: 640px) {
+  .switch { margin-top: 10px; gap: 6px; }
+  .tab { font-size: 12.5px; padding: 9px 8px; }
+}

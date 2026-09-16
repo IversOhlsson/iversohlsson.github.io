@@ -302,3 +302,15 @@
   .phoneTag { display: inline-block; }
   .phone { width: 230px; }
 }
+
+/* Phone: a single row of label chips instead of the two-by-two picker. */
+@media (max-width: 640px) {
+  .picker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chip { padding: 8px 12px; border-radius: 999px; }
+  .chip strong { font-size: 13.5px; }
+  .chip span { display: none; }
+  .stage { border-radius: 14px; }
+  .controls { padding-top: 12px; }
+  .caption strong { font-size: 16px; }
+  .caption p { font-size: 14.5px; }
+}

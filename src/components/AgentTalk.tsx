@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type Ref } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type Ref, type TouchEvent } from 'react'
 import s from './AgentTalk.module.css'
 
 /**
@@ -16,10 +16,10 @@ type Call = { tool: string; kind: Kind; m: string; path: string; res: string; fl
 type DayRow = { at: number; kind: RowKind; m: string; path: string; res: string }
 type Incident = { kind: 'retry' | 'restart' | 'offline'; at: number }
 type Day = { company: string; sources: string[]; sinks: string[]; base: number; asked: number; incident: Incident; feed: DayRow[] }
-type Job = { title: string; input: string; output: string; tools: Tool[]; event: { path: string; res: string }; calls: Call[]; done: string; day: Day }
+type Job = { short: string; title: string; input: string; output: string; tools: Tool[]; event: { path: string; res: string }; calls: Call[]; done: string; day: Day }
 
 const JOBS: Job[] = [
-  { title: 'Order PO-4471 · Nordic Parts', input: 'Inbox', output: 'Portal',
+  { short: 'Orders', title: 'Order PO-4471 · Nordic Parts', input: 'Inbox', output: 'Portal',
     tools: [{ id: 'docs', label: 'Documents', who: 'system' }, { id: 'erp', label: 'ERP', who: 'system' }, { id: 'anna', label: 'Anna', who: 'person' }, { id: 'plan', label: 'Plan', who: 'system' }],
     event: { path: 'inbox · mail from Bergström Verkstad', res: 'PO-4471.pdf' },
     calls: [
@@ -37,7 +37,7 @@ const JOBS: Job[] = [
         { at: 7300, kind: 'person', m: 'ASK', path: 'Anna · 1 of 27 needed a decision', res: 'answered · 4 min' },
         { at: 9300, kind: 'done', m: 'DONE', path: 'day so far', res: '0 lost · every step logged' },
       ] } },
-  { title: 'Due diligence · Halden Systems', input: 'Data room', output: 'Report',
+  { short: 'Due diligence', title: 'Due diligence · Halden Systems', input: 'Data room', output: 'Report',
     tools: [{ id: 'docs', label: 'Documents', who: 'system' }, { id: 'reg', label: 'Registry', who: 'system' }, { id: 'credit', label: 'Credit', who: 'system' }, { id: 'sanc', label: 'Sanctions', who: 'system' }, { id: 'maria', label: 'Maria', who: 'person' }],
     event: { path: 'data room · Halden Systems', res: '6 documents' },
     calls: [
@@ -57,7 +57,7 @@ const JOBS: Job[] = [
         { at: 7300, kind: 'person', m: 'ASK', path: 'Maria · 2 findings to decide', res: 'both answered' },
         { at: 9300, kind: 'done', m: 'DONE', path: 'weekly re-check', res: 'Monday 07:00 · scheduled' },
       ] } },
-  { title: 'Fleet · Truck 12', input: 'Truck 12', output: 'Fleet log',
+  { short: 'Fleet', title: 'Fleet · Truck 12', input: 'Truck 12', output: 'Fleet log',
     tools: [{ id: 'local', label: 'Local store', who: 'system' }, { id: 'plan', label: 'Plan', who: 'system' }, { id: 'jonas', label: 'Jonas', who: 'person' }, { id: 'sync', label: 'Sync', who: 'system' }],
     event: { path: 'truck 12 · connection lost', res: '13:02' },
     calls: [
@@ -261,6 +261,8 @@ export default function AgentTalk() {
   const workerEls = useRef<(SVGGElement | null)[]>([])
   const srcEls = useRef<(SVGGElement | null)[]>([])
   const runsEl = useRef<HTMLElement>(null)
+  const progEls = useRef<(HTMLElement | null)[]>([])
+  const touch = useRef<{ x: number; y: number } | null>(null)
   const geoRef = useRef<Geo | null>(null)
   const planRef = useRef<DayPlan | null>(null)
   const elapsed = useRef(0)
@@ -290,6 +292,7 @@ export default function AgentTalk() {
     const total = last.start + last.dur
     const dayStart = segs.find(x => x.kind === 'day')!.start
     const start = performance.now() - elapsed.current
+    const prog = progEls.current[JOBS.indexOf(cur)]
     let lastIdx = -1
     let raf = 0
     /* The run: one packet between the agent and whatever it is talking to. */
@@ -343,6 +346,7 @@ export default function AgentTalk() {
     const frame = (now: number) => {
       const t = now - start
       elapsed.current = t
+      if (prog) prog.style.transform = `scaleX(${Math.min(1, t / total).toFixed(4)})`
       if (t >= total) { elapsed.current = 0; setJob(j => (j + 1) % JOBS.length); setSeg(0); return }
       let i = 0
       while (i < segs.length - 1 && t >= segs[i].start + segs[i].dur) i++
@@ -382,10 +386,27 @@ export default function AgentTalk() {
   const title = view === 'day' ? `${cur.day.company} · today` : cur.title
   const status = view === 'day' ? 'Live' : done ? 'Done' : 'Running'
 
+  /* Jump to another story: from the chips below the window, or by swiping the window. */
+  const go = (i: number) => {
+    const n = (i + JOBS.length) % JOBS.length
+    if (n === job) return
+    elapsed.current = 0
+    setSeg(0)
+    setJob(n)
+  }
+  const onTouchStart = (e: TouchEvent) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY } }
+  const onTouchEnd = (e: TouchEvent) => {
+    const t0 = touch.current
+    touch.current = null
+    if (!t0) return
+    const dx = e.changedTouches[0].clientX - t0.x, dy = e.changedTouches[0].clientY - t0.y
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) go(job + (dx < 0 ? 1 : -1))
+  }
+
   return (
-    <div className={s.visual} aria-hidden="true" ref={rootRef}>
+    <div className={s.visual} ref={rootRef}>
       <div className={s.glow} />
-      <div className={s.window}>
+      <div className={s.window} aria-hidden="true" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className={s.bar}>
           <i className={s.light} /><i className={s.light} /><i className={s.light} />
           <b className={s.jobTitle} key={title}>{title}</b>
@@ -463,6 +484,14 @@ export default function AgentTalk() {
             </ol>
           </div>
         </div>
+      </div>
+      <div className={s.switch} role="tablist" aria-label="Examples">
+        {JOBS.map((j, i) => (
+          <button key={j.short} type="button" role="tab" aria-selected={i === job} className={[s.tab, i === job ? s.tabOn : ''].join(' ')} onClick={() => go(i)}>
+            <i ref={el => { progEls.current[i] = el }} className={s.prog} style={i === job ? undefined : { transform: 'scaleX(0)' }} />
+            <span>{j.short}</span>
+          </button>
+        ))}
       </div>
     </div>
   )

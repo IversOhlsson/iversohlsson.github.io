@@ -62,9 +62,12 @@
 .ctas { display: flex; gap: 12px; flex-wrap: wrap; }
 .trust { margin: 28px 0 0; font-size: 14px; color: var(--muted); }
 
-/* Hero */
+/* Hero. Desktop: text left, animation right. Phone: headline, animation, then the copy. */
 .hero { padding: 88px 0 72px; overflow: hidden; }
-.heroGrid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+.heroGrid { display: grid; grid-template-columns: 1.05fr 0.95fr; grid-template-areas: 'title visual' 'copy visual'; gap: 0 56px; align-items: center; }
+.heroTitle { grid-area: title; align-self: end; }
+.heroCopy { grid-area: copy; align-self: start; }
+.heroVisual { grid-area: visual; min-width: 0; }
 
 
 /* Sections */
@@ -139,19 +142,47 @@
 @media (max-width: 960px) {
   .services { grid-template-columns: repeat(2, 1fr); }
   .fields2 { grid-template-columns: 1fr 1fr; }
-  .heroGrid, .aboutGrid { grid-template-columns: 1fr; gap: 40px; }
+  .heroGrid { grid-template-columns: 1fr; grid-template-areas: 'title' 'visual' 'copy'; gap: 28px; }
+  .heroTitle, .heroCopy { align-self: auto; }
+  .heroTitle .h1 { margin-bottom: 0; }
+  .aboutGrid { grid-template-columns: 1fr; gap: 40px; }
   .links { display: none; }
   .navInner { grid-template-columns: 1fr auto; }
 }
+
+/* Phone: the animation first, then short copy; sections as compact lists and tiles. */
 @media (max-width: 640px) {
-  .wrap, .navInner { padding: 0 20px; }
-  .hero { padding: 48px 0 56px; }
-  .section { padding: 64px 0; }
-  .services, .flow, .process, .fields2 { grid-template-columns: 1fr; gap: 14px; }
-  .fields2 { gap: 0; }
-  .process { gap: 40px; }
+  .wrap, .navInner { padding: 0 16px; }
+  .navInner { height: 60px; }
+  .brand { font-size: 15px; }
+  .btnSmall { font-size: 14px; padding: 8px 14px; }
+  .hero { padding: 26px 0 44px; }
+  .heroGrid { gap: 18px; }
+  .eyebrow { font-size: 12px; margin-bottom: 10px; }
+  .h1 { font-size: 34px; max-width: none; letter-spacing: -0.025em; }
+  .heroCopy { margin-top: 6px; }
+  .sub { font-size: 16.5px; margin: 0 0 18px; max-width: none; }
+  .ctas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ctas a, .ctas button { width: 100%; text-align: center; padding: 13px 12px; font-size: 15px; }
+  .trust { margin-top: 18px; font-size: 13.5px; }
+  .section { padding: 56px 0; }
+  .head { margin-bottom: 24px; }
+  .h2 { font-size: 27px; }
+  .headText { font-size: 15.5px; margin-top: 10px; }
+  .services { grid-template-columns: 1fr; gap: 10px; }
+  .card { display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; column-gap: 14px; row-gap: 2px; padding: 14px 16px; border-radius: 14px; }
+  .iconBox { grid-row: 1 / 3; width: 40px; height: 40px; border-radius: 10px; margin: 0; }
+  .card .h3 { font-size: 15.5px; margin: 0; align-self: center; }
+  .card .p { font-size: 14px; }
+  .fields2 { grid-template-columns: 1fr 1fr; gap: 10px; border-top: 0; }
+  .fields2 li { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+  .fields2 .h3 { font-size: 14.5px; margin-bottom: 4px; }
+  .fields2 .p { font-size: 13px; line-height: 1.45; }
+  .flow { grid-template-columns: 1fr; gap: 14px; }
+  .process { grid-template-columns: 1fr; gap: 32px; }
   .process li::before { right: 0; }
-  .ctas a, .ctas button { width: 100%; text-align: center; }
+  .process .h3 { margin-top: 14px; }
+  .facts li { font-size: 15px; padding: 12px 14px; }
   .band { padding: 36px 24px; border-radius: 20px; }
   .bandActions { width: 100%; }
   .btnLight { width: 100%; text-align: center; }

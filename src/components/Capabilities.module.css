@@ -92,3 +92,15 @@
 @media (max-width: 1000px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } .card { padding: 12px 12px 14px; } .art { height: 72px; } }
 @media (max-width: 460px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } .card { padding: 10px 10px 12px; border-radius: 12px; } .art { height: 60px; border-radius: 8px; } .svg { width: 96px; height: 58px; } .card h3 { font-size: 13px; margin-top: 4px; } .card p { font-size: 12px; line-height: 1.4; } }
+
+/* Phone: one row of cards to swipe through instead of a long grid. */
+@media (max-width: 640px) {
+  .head { margin-bottom: 18px; }
+  .grid { display: flex; overflow-x: auto; gap: 10px; margin: 0 -16px; padding: 0 16px 8px; scroll-snap-type: x mandatory; scroll-padding-left: 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .grid::-webkit-scrollbar { display: none; }
+  .card { flex: 0 0 236px; scroll-snap-align: start; padding: 14px 14px 16px; border-radius: 14px; }
+  .art { height: 84px; border-radius: 10px; }
+  .svg { width: 130px; height: 78px; }
+  .card h3 { font-size: 14.5px; margin-top: 6px; }
+  .card p { font-size: 13px; line-height: 1.45; }
+}
