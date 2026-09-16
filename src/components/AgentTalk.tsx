@@ -1,191 +1,274 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import s from './AgentTalk.module.css'
 
 /**
- * Hero animation. For each job it shows the conversation first (agents, systems and a person passing
- * the job along), then flips to the shape of that flow inside a Read / Check / Act frame. Then the next job.
+ * Hero animation: one agent run at a time. Something arrives, the agent calls its tools and a person,
+ * then hands the result on. A packet glides along the graph while the trace below logs every call.
+ * One requestAnimationFrame clock drives it, so motion is continuous rather than a chain of timeouts.
  */
-type Who = 'agent' | 'person' | 'system'
-type Line = { who: Who; name: string; text: string }
-type Node = { id: string; who: Who; label: string; col: 0 | 1 | 2; row: number }
-type Edge = { from: string; to: string; loop?: boolean }
-type Job = { title: string; shape: string; lines: Line[]; nodes: Node[]; edges: Edge[]; order: string[] }
+type Who = 'system' | 'person'
+type Kind = 'api' | 'llm' | 'person' | 'io'
+type Tool = { id: string; label: string; who: Who }
+type Call = { tool: string; kind: Kind; m: string; path: string; res: string; flag?: boolean }
+type Job = { title: string; input: string; output: string; tools: Tool[]; event: { path: string; res: string }; calls: Call[]; done: string }
 
 const JOBS: Job[] = [
-  { title: 'Order PO-4471 · Nordic Parts', shape: 'One in, one out. A person on the missing piece.',
-    lines: [
-      { who: 'system', name: 'Inbox', text: 'New email from Bergström Verkstad. PO-4471.pdf attached.' },
-      { who: 'agent', name: 'Reader', text: 'Read the order. Customer, part, 1 200 pcs, 30 days net. Delivery date missing.' },
-      { who: 'agent', name: 'Planner', text: 'Usual lead time gives 30 Oct. Asking Anna before I commit.' },
-      { who: 'person', name: 'Anna', text: 'Use 30 Oct.' },
-      { who: 'agent', name: 'Writer', text: 'Order in the production plan. Confirmation published to the customer portal.' },
-      { who: 'system', name: 'Log', text: 'Done in 41 s. Every step on the record.' },
+  { title: 'Order PO-4471 · Nordic Parts', input: 'Inbox', output: 'Portal',
+    tools: [{ id: 'docs', label: 'Documents', who: 'system' }, { id: 'erp', label: 'ERP', who: 'system' }, { id: 'anna', label: 'Anna', who: 'person' }, { id: 'plan', label: 'Plan', who: 'system' }],
+    event: { path: 'inbox · mail from Bergström Verkstad', res: 'PO-4471.pdf' },
+    calls: [
+      { tool: 'docs', kind: 'llm', m: 'POST', path: '/documents/parse  PO-4471.pdf', res: '4 of 5 fields · date missing', flag: true },
+      { tool: 'erp', kind: 'api', m: 'GET', path: '/erp/parts/AB-220/lead-time', res: '30 Oct · 64 ms' },
+      { tool: 'anna', kind: 'person', m: 'ASK', path: 'Anna · “Deliver 30 Oct?”', res: 'approved · 2 min' },
+      { tool: 'plan', kind: 'api', m: 'POST', path: '/plan/orders  PO-4471', res: '201 · 210 ms' },
     ],
-    nodes: [
-      { id: 'inbox', who: 'system', label: 'Inbox', col: 0, row: 0 }, { id: 'reader', who: 'agent', label: 'Reader', col: 0, row: 2 },
-      { id: 'planner', who: 'agent', label: 'Planner', col: 1, row: 0 }, { id: 'anna', who: 'person', label: 'Anna', col: 1, row: 2 },
-      { id: 'writer', who: 'agent', label: 'Writer', col: 2, row: 0 }, { id: 'portal', who: 'system', label: 'Portal', col: 2, row: 2 },
+    done: 'confirmed · 41 s · logged' },
+  { title: 'Due diligence · Halden Systems', input: 'Data room', output: 'Report',
+    tools: [{ id: 'docs', label: 'Documents', who: 'system' }, { id: 'reg', label: 'Registry', who: 'system' }, { id: 'credit', label: 'Credit', who: 'system' }, { id: 'sanc', label: 'Sanctions', who: 'system' }, { id: 'maria', label: 'Maria', who: 'person' }],
+    event: { path: 'data room · Halden Systems', res: '6 documents' },
+    calls: [
+      { tool: 'docs', kind: 'llm', m: 'POST', path: '/documents/parse  6 files', res: '53 facts · 4.2 s' },
+      { tool: 'reg', kind: 'api', m: 'GET', path: 'api.bolagsverket.se/company/559122-1421', res: 'registered 2014 · 180 ms' },
+      { tool: 'credit', kind: 'api', m: 'GET', path: 'api.uc.se/rating/559122-1421', res: '4 of 5 · 240 ms' },
+      { tool: 'sanc', kind: 'api', m: 'GET', path: '/sanctions/screen  Halden Systems', res: 'no matches · 90 ms' },
+      { tool: 'docs', kind: 'llm', m: 'RUN', path: 'checks/insurance  policy.pdf', res: 'expired 31 Mar', flag: true },
+      { tool: 'maria', kind: 'person', m: 'ASK', path: 'Maria · “Request a new certificate?”', res: 'yes · 6 min' },
     ],
-    edges: [{ from: 'inbox', to: 'reader' }, { from: 'reader', to: 'planner' }, { from: 'planner', to: 'anna' }, { from: 'anna', to: 'writer' }, { from: 'writer', to: 'portal' }],
-    order: ['inbox', 'reader', 'planner', 'anna', 'writer', 'portal'] },
-  { title: 'Due diligence · Halden Systems', shape: 'Six readers at once, outside lookups, your checks. Re-checked every Monday.',
-    lines: [
-      { who: 'system', name: 'Data room', text: 'Halden Systems uploaded 6 documents.' },
-      { who: 'agent', name: 'Readers', text: '53 facts extracted, each linked to its page.' },
-      { who: 'agent', name: 'Lookup', text: 'Bolagsverket, UC, sanctions: registered 2014, rating 4 of 5, no matches.' },
-      { who: 'agent', name: 'Checks', text: 'Liability insurance expired 31 Mar. Flagging it.' },
-      { who: 'person', name: 'Maria', text: 'Ask them for a current certificate.' },
-      { who: 'agent', name: 'Writer', text: 'Request sent. Report drafted, waiting for your approval.' },
+    done: '6 calls · draft for approval · logged' },
+  { title: 'Fleet · Truck 12', input: 'Truck 12', output: 'Fleet log',
+    tools: [{ id: 'local', label: 'Local store', who: 'system' }, { id: 'plan', label: 'Plan', who: 'system' }, { id: 'jonas', label: 'Jonas', who: 'person' }, { id: 'sync', label: 'Sync', who: 'system' }],
+    event: { path: 'truck 12 · connection lost', res: '13:02' },
+    calls: [
+      { tool: 'local', kind: 'io', m: 'PUT', path: 'local://events  offline', res: 'queued · 2 ms' },
+      { tool: 'plan', kind: 'api', m: 'GET', path: '/plan/deliveries?truck=12', res: '3 stops · no risk · 70 ms' },
+      { tool: 'jonas', kind: 'person', m: 'PUSH', path: 'Jonas · “Truck 12 offline. No action needed.”', res: 'seen · 13:04' },
+      { tool: 'sync', kind: 'api', m: 'POST', path: '/fleet/sync  412 events', res: 'online 13:40 · 200' },
     ],
-    nodes: [
-      { id: 'room', who: 'system', label: 'Data room', col: 0, row: 0 },
-      { id: 'r1', who: 'agent', label: 'Reader', col: 0, row: 1.6 }, { id: 'r2', who: 'agent', label: 'Reader', col: 0, row: 2.4 }, { id: 'r3', who: 'agent', label: 'Reader ×6', col: 0, row: 3.2 },
-      { id: 'lookup', who: 'agent', label: 'Lookups', col: 1, row: 0 }, { id: 'checks', who: 'agent', label: 'Your checks', col: 1, row: 1.6 }, { id: 'maria', who: 'person', label: 'Maria', col: 1, row: 3.2 },
-      { id: 'writer', who: 'agent', label: 'Writer', col: 2, row: 0 }, { id: 'report', who: 'system', label: 'Report', col: 2, row: 1.6 },
-    ],
-    edges: [{ from: 'room', to: 'r1' }, { from: 'room', to: 'r2' }, { from: 'room', to: 'r3' }, { from: 'r2', to: 'lookup' }, { from: 'lookup', to: 'checks' }, { from: 'checks', to: 'maria' }, { from: 'checks', to: 'writer' }, { from: 'writer', to: 'report' }, { from: 'report', to: 'checks', loop: true }],
-    order: ['room', 'r1', 'r2', 'r3', 'lookup', 'checks', 'maria', 'writer', 'report'] },
-  { title: 'Fleet · Truck 12', shape: 'Works offline. Checks before it tells anyone. Syncs on its own.',
-    lines: [
-      { who: 'system', name: 'Truck 12', text: 'Lost connection 13:02. Recording locally.' },
-      { who: 'agent', name: 'Checker', text: 'Checked the delivery plan. Nothing at risk yet.' },
-      { who: 'agent', name: 'Notifier', text: 'Told Jonas: no action needed.' },
-      { who: 'system', name: 'Truck 12', text: 'Back online 13:40. 38 minutes synced.' },
-      { who: 'system', name: 'Log', text: 'No one was alarmed. Everything on the record.' },
-    ],
-    nodes: [
-      { id: 'truck', who: 'system', label: 'Truck 12', col: 0, row: 0 }, { id: 'local', who: 'system', label: 'Local store', col: 0, row: 2 },
-      { id: 'checker', who: 'agent', label: 'Checker', col: 1, row: 0 }, { id: 'plan', who: 'system', label: 'Delivery plan', col: 1, row: 2 },
-      { id: 'notifier', who: 'agent', label: 'Notifier', col: 2, row: 0 }, { id: 'jonas', who: 'person', label: 'Jonas', col: 2, row: 2 }, { id: 'sync', who: 'system', label: 'Sync', col: 0, row: 3.2 },
-    ],
-    edges: [{ from: 'truck', to: 'local' }, { from: 'truck', to: 'checker' }, { from: 'checker', to: 'plan' }, { from: 'checker', to: 'notifier' }, { from: 'notifier', to: 'jonas' }, { from: 'local', to: 'sync' }, { from: 'sync', to: 'truck', loop: true }],
-    order: ['truck', 'local', 'checker', 'plan', 'notifier', 'jonas', 'sync'] },
+    done: '4 calls · no one alarmed · logged' },
 ]
 
-const TYPING_MS = 750
-const HOLD_CHAT_MS = 1800
-const STEP_MS = 520
-const HOLD_FLOW_MS = 3600
-const readMs = (t: string) => 900 + t.length * 22
+/* ---------- timing ---------- */
+const T = { trigger: 750, think: 650, req: 460, res: 460, gap: 260, act: 750, done: 3400, out: 450 }
+const WORK: Record<Kind, number> = { api: 560, io: 400, llm: 1000, person: 1200 }
+type SegKind = 'trigger' | 'think' | 'req' | 'work' | 'res' | 'gap' | 'act' | 'done' | 'out'
+type Seg = { kind: SegKind; call: number; start: number; dur: number }
+
+function schedule(job: Job): Seg[] {
+  const segs: Seg[] = []
+  let t = 0
+  const add = (kind: SegKind, dur: number, call = -1) => { segs.push({ kind, call, start: t, dur }); t += dur }
+  add('trigger', T.trigger); add('think', T.think)
+  job.calls.forEach((c, i) => { add('req', T.req, i); add('work', WORK[c.kind], i); add('res', T.res, i); add('gap', T.gap, i) })
+  add('act', T.act); add('done', T.done); add('out', T.out)
+  return segs
+}
+
+/* ---------- geometry ---------- */
+const R = 21, RING = 30, NH = 26
+/* Desktop and phone sizes: graph height, top row y, the two tool rows, trace row height.
+ * The phone breakpoint matches the CSS media query; phone rows are two lines tall. */
+const PHONE = '(max-width: 640px)'
+const SIZES = { wide: { H: 220, Y0: 62, YT: [158, 194], lineH: 26 }, compact: { H: 196, Y0: 54, YT: [138, 172], lineH: 42 } }
+type Size = (typeof SIZES)['wide']
+type P = { x: number; y: number }
+type Curve = [P, P, P, P]
+const pillW = (label: string) => Math.max(56, Math.round(label.length * 6.4) + 24)
+const curve = (a: P, b: P, vertical: boolean): Curve => vertical
+  ? [a, { x: a.x, y: a.y + (b.y - a.y) * 0.55 }, { x: b.x, y: b.y - (b.y - a.y) * 0.55 }, b]
+  : [a, { x: a.x + (b.x - a.x) / 3, y: a.y }, { x: b.x - (b.x - a.x) / 3, y: b.y }, b]
+const d = ([a, c1, c2, b]: Curve) => `M${a.x} ${a.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${b.x} ${b.y}`
+const at = ([a, c1, c2, b]: Curve, t: number): P => {
+  const u = 1 - t, w0 = u * u * u, w1 = 3 * u * u * t, w2 = 3 * u * t * t, w3 = t * t * t
+  return { x: w0 * a.x + w1 * c1.x + w2 * c2.x + w3 * b.x, y: w0 * a.y + w1 * c1.y + w2 * c2.y + w3 * b.y }
+}
+const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+
+function layout(job: Job, W: number, { H, Y0, YT }: Size) {
+  const wi = pillW(job.input), wo = pillW(job.output)
+  const input = { x: 12 + wi / 2, y: Y0, w: wi }
+  const output = { x: W - 12 - wo / 2, y: Y0, w: wo }
+  const agent = { x: W / 2, y: Y0 }
+  const n = job.tools.length
+  const span = Math.min(W - 110, (n - 1) * 116)
+  const tools = job.tools.map((t, i) => ({ ...t, x: n === 1 ? W / 2 : W / 2 - span / 2 + (span * i) / (n - 1), y: YT[i % 2], w: pillW(t.label) }))
+  const eIn = curve({ x: input.x + wi / 2, y: Y0 }, { x: agent.x - RING, y: Y0 }, false)
+  const eOut = curve({ x: agent.x + RING, y: Y0 }, { x: output.x - wo / 2, y: Y0 }, false)
+  const eByTool: Record<string, Curve> = {}
+  for (const t of tools) eByTool[t.id] = curve({ x: agent.x, y: Y0 + RING }, { x: t.x, y: t.y - NH / 2 }, true)
+  return { W, H, input, output, agent, tools, eIn, eOut, eByTool }
+}
+type Geo = ReturnType<typeof layout>
+
 const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-type View = 'chat' | 'flow'
+function useMedia(query: string) {
+  const [matches, setMatches] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(query)
+    const on = () => setMatches(mq.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [query])
+  return matches
+}
+
+function useSize<T extends HTMLElement>() {
+  const ref = useRef<T>(null)
+  const [size, setSize] = useState({ w: 0, h: 0 })
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const read = () => setSize({ w: el.clientWidth, h: el.clientHeight })
+    read()
+    const ro = new ResizeObserver(read)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  return [ref, size] as const
+}
 
 export default function AgentTalk() {
   const [still] = useState(reducedMotion)
   const [job, setJob] = useState(0)
-  const [view, setView] = useState<View>('chat')
-  const [shown, setShown] = useState(() => (still ? JOBS[0].lines.length : 0))
-  const [typing, setTyping] = useState(false)
-  const [step, setStep] = useState(() => (still ? JOBS[0].order.length : 0))
-
-  useEffect(() => {
-    if (still) return
-    let t: number
-    const cur = JOBS[job]
-    if (view === 'chat') {
-      if (shown < cur.lines.length) {
-        const prev = shown > 0 ? readMs(cur.lines[shown - 1].text) : 300
-        t = window.setTimeout(() => {
-          setTyping(true)
-          t = window.setTimeout(() => { setTyping(false); setShown(n => n + 1) }, TYPING_MS)
-        }, prev)
-      } else {
-        t = window.setTimeout(() => { setStep(0); setView('flow') }, HOLD_CHAT_MS)
-      }
-    } else if (step < cur.order.length) {
-      t = window.setTimeout(() => setStep(n => n + 1), STEP_MS)
-    } else {
-      t = window.setTimeout(() => { setShown(0); setJob(j => (j + 1) % JOBS.length); setView('chat') }, HOLD_FLOW_MS)
-    }
-    return () => window.clearTimeout(t)
-  }, [job, view, shown, step, still])
+  const [seg, setSeg] = useState(0)
+  const [visible, setVisible] = useState(true)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const packetRef = useRef<SVGGElement>(null)
+  const geoRef = useRef<Geo | null>(null)
+  const elapsed = useRef(0)
+  const [graphRef, graph] = useSize<HTMLDivElement>()
+  const [traceRef, trace] = useSize<HTMLDivElement>()
 
   const cur = JOBS[job]
-  const chatDone = shown >= cur.lines.length
+  const segs = useMemo(() => schedule(cur), [cur])
+  const W = graph.w
+  const size = useMedia(PHONE) ? SIZES.compact : SIZES.wide
+  const geo = useMemo(() => (W > 0 ? layout(cur, W, size) : null), [cur, W, size])
+  useEffect(() => { geoRef.current = geo }, [geo])
+
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.05 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (still || !visible) return
+    const last = segs[segs.length - 1]
+    const total = last.start + last.dur
+    const start = performance.now() - elapsed.current
+    let lastIdx = -1
+    let raf = 0
+    const paint = (sg: Seg, p: number) => {
+      const el = packetRef.current, g = geoRef.current
+      if (!el || !g) return
+      const e = ease(p)
+      let pt: P | null = null
+      if (sg.kind === 'trigger') pt = at(g.eIn, e)
+      else if (sg.kind === 'act') pt = at(g.eOut, e)
+      else if (sg.kind === 'req' || sg.kind === 'res') {
+        const c = g.eByTool[cur.calls[sg.call].tool]
+        pt = at(c, sg.kind === 'req' ? e : 1 - e)
+      }
+      if (!pt) { el.style.opacity = '0'; return }
+      el.setAttribute('transform', `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`)
+      el.style.opacity = String(Math.min(1, Math.min(p, 1 - p) * 7))
+    }
+    const frame = (now: number) => {
+      const t = now - start
+      elapsed.current = t
+      if (t >= total) { elapsed.current = 0; setJob(j => (j + 1) % JOBS.length); setSeg(0); return }
+      let i = 0
+      while (i < segs.length - 1 && t >= segs[i].start + segs[i].dur) i++
+      if (i !== lastIdx) { lastIdx = i; setSeg(i) }
+      const sg = segs[i]
+      paint(sg, Math.min(1, (t - sg.start) / sg.dur))
+      raf = requestAnimationFrame(frame)
+    }
+    raf = requestAnimationFrame(frame)
+    return () => cancelAnimationFrame(raf)
+  }, [cur, segs, still, visible])
+
+  /* Everything below derives from the current segment. */
+  const sg = segs[still ? segs.length - 2 : Math.min(seg, segs.length - 1)]
+  const n = cur.calls.length
+  const inCall = sg.kind === 'req' || sg.kind === 'work' || sg.kind === 'res'
+  const done = sg.kind === 'done' || sg.kind === 'out'
+  const started = sg.call < 0 ? (sg.kind === 'trigger' || sg.kind === 'think' ? 0 : n) : sg.call + 1
+  const resolved = sg.call < 0 ? started : sg.kind === 'gap' ? sg.call + 1 : sg.call
+  const activeTool = inCall ? cur.calls[sg.call].tool : null
+  const visited = new Set(cur.calls.slice(0, started).map(c => c.tool))
+  const packetWho: Who = sg.kind === 'res' ? cur.tools.find(t => t.id === activeTool)?.who ?? 'system' : 'system'
+
+  type Row = { key: string; kind: Kind | 'event' | 'done'; m: string; path: string; res: string; pending?: boolean; flag?: boolean }
+  const rows: Row[] = [{ key: `${job}e`, kind: 'event', m: 'EVENT', path: cur.event.path, res: cur.event.res }]
+  cur.calls.slice(0, started).forEach((c, i) => rows.push({ key: `${job}c${i}`, kind: c.kind, m: c.m, path: c.path, res: c.res, pending: i >= resolved, flag: c.flag }))
+  if (done) rows.push({ key: `${job}d`, kind: 'done', m: 'DONE', path: cur.output === 'Report' ? 'report/draft' : cur.output.toLowerCase(), res: cur.done })
+  const maxRows = Math.max(3, Math.floor((trace.h - 12) / size.lineH))
+  const hidden = Math.max(0, rows.length - maxRows)
+
   return (
-    <div className={s.visual} aria-hidden="true">
+    <div className={s.visual} aria-hidden="true" ref={rootRef}>
       <div className={s.glow} />
       <div className={s.window}>
         <div className={s.bar}>
-          <span /><span /><span />
+          <i className={s.light} /><i className={s.light} /><i className={s.light} />
           <b className={s.jobTitle} key={cur.title}>{cur.title}</b>
-          <div className={s.tabs}>
-            <i className={view === 'chat' ? s.tabOn : ''}>Conversation</i>
-            <i className={view === 'flow' ? s.tabOn : ''}>Flow</i>
-          </div>
+          <span className={[s.status, done ? s.statusDone : ''].join(' ')}><i />{done ? 'Done' : 'Running'}</span>
         </div>
-        <div className={s.body}>
-          {(view === 'chat' || still) && (
-            <ol className={s.feed} key={'c' + job}>
-              {cur.lines.slice(0, shown).map((l, i) => (
-                <li key={i} className={[s.line, s[l.who], still ? s.noAnim : ''].join(' ')}>
-                  <span className={s.chip}>{l.name}</span>
-                  <p className={s.msg}>{l.text}</p>
+        <div className={[s.body, sg.kind === 'out' && !still ? s.bodyOut : ''].join(' ')}>
+          <div className={s.graph} ref={graphRef} style={{ height: size.H }}>
+            {geo && (
+              <svg className={s.svg} width={W} height={geo.H} viewBox={`0 0 ${W} ${geo.H}`}>
+                <defs>
+                  <pattern id="at-dots" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" className={s.dot} /></pattern>
+                </defs>
+                <rect width={W} height={geo.H} fill="url(#at-dots)" />
+                <path d={d(geo.eIn)} className={[s.edge, s.edgeOn, sg.kind === 'trigger' ? s.edgeNow : ''].join(' ')} />
+                <path d={d(geo.eOut)} className={[s.edge, done ? s.edgeOn : '', sg.kind === 'act' ? s.edgeNow : ''].join(' ')} />
+                {geo.tools.map(t => (
+                  <path key={t.id} d={d(geo.eByTool[t.id])} className={[s.edge, visited.has(t.id) ? s.edgeOn : '', t.id === activeTool ? s.edgeNow : ''].join(' ')} />
+                ))}
+                <Pill {...geo.input} label={cur.input} who="system" on now={sg.kind === 'trigger'} />
+                <Pill {...geo.output} label={cur.output} who="system" on={done} now={sg.kind === 'act'} />
+                {geo.tools.map(t => <Pill key={t.id} {...t} on={visited.has(t.id)} now={t.id === activeTool} working={sg.kind === 'work' && t.id === activeTool} />)}
+                <g className={[s.agent, done ? '' : s.agentRun].join(' ')} transform={`translate(${geo.agent.x} ${geo.agent.y})`}>
+                  <circle r={RING} className={s.ring} />
+                  <circle r={RING} className={s.arc} />
+                  <circle r={R} className={s.core} />
+                  <text y={4} textAnchor="middle">Agent</text>
+                </g>
+                <g ref={packetRef} className={[s.packet, packetWho === 'person' ? s.packetPerson : ''].join(' ')}>
+                  <circle r={10} className={s.packetGlow} />
+                  <circle r={3.5} className={s.packetCore} />
+                </g>
+              </svg>
+            )}
+          </div>
+          <div className={[s.trace, hidden > 0 ? s.traceMask : ''].join(' ')} ref={traceRef} style={{ '--row': `${size.lineH}px` } as CSSProperties}>
+            <ol className={s.lines} style={{ transform: `translateY(${-hidden * size.lineH}px)` }}>
+              {rows.map(r => (
+                <li key={r.key} className={[s.row, s['k_' + r.kind], r.pending ? s.pending : '', r.flag ? s.flag : '', still ? s.noAnim : ''].join(' ')}>
+                  <b className={s.m}>{r.m}</b>
+                  <span className={s.path}>{r.path}</span>
+                  <span className={s.res}>{r.pending ? <span className={s.dots}><i /><i /><i /></span> : r.res}</span>
                 </li>
               ))}
-              {typing && !chatDone && (
-                <li className={[s.line, s[cur.lines[shown].who]].join(' ')}>
-                  <span className={s.chip}>{cur.lines[shown].name}</span>
-                  <p className={s.msg + ' ' + s.dots}><i /><i /><i /></p>
-                </li>
-              )}
             </ol>
-          )}
-          {view === 'flow' && !still && <Flow job={cur} step={step} key={'f' + job} />}
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-/* Read / Check / Act frame with this job's nodes lighting up in order. */
-const W = 520, H = 300, NW = 108, NH = 28
-const COLX = [96, 260, 424]
-const rowY = (r: number) => 66 + r * 52
-
-function Flow({ job, step }: { job: Job; step: number }) {
-  const at = new Map(job.nodes.map(n => [n.id, { x: COLX[n.col], y: rowY(n.row) }]))
-  const lit = new Set(job.order.slice(0, step))
-  const path = (e: Edge) => {
-    const a = at.get(e.from)!, b = at.get(e.to)!
-    if (e.loop && a.x === b.x) {
-      const x = a.x - NW / 2, bulge = x - 36
-      return `M${x} ${a.y} C${bulge} ${a.y} ${bulge} ${b.y} ${x} ${b.y}`
-    }
-    if (e.loop) {
-      const y = Math.max(a.y, b.y) + NH / 2 + 26
-      return `M${a.x} ${a.y + NH / 2} C${a.x} ${y} ${b.x} ${y} ${b.x} ${b.y + NH / 2}`
-    }
-    if (a.x === b.x) return `M${a.x} ${a.y + NH / 2} L${b.x} ${b.y - NH / 2}`
-    const x1 = a.x + NW / 2, x2 = b.x - NW / 2, mx = (x1 + x2) / 2
-    return `M${x1} ${a.y} C${mx} ${a.y} ${mx} ${b.y} ${x2} ${b.y}`
-  }
+function Pill({ x, y, w, label, who, on, now, working }: { x: number; y: number; w: number; label: string; who: Who; on?: boolean; now?: boolean; working?: boolean }) {
   return (
-    <div className={s.flow}>
-      <svg viewBox={`0 0 ${W} ${H}`} className={s.svg}>
-        {['Read', 'Check', 'Act'].map((h, i) => (
-          <g key={h}>
-            <text x={COLX[i]} y={26} className={s.colHead} textAnchor="middle">{h.toUpperCase()}</text>
-            {i > 0 && <line x1={COLX[i] - 86} y1={14} x2={COLX[i] - 86} y2={H - 44} className={s.colLine} />}
-          </g>
-        ))}
-        {job.edges.map((e, i) => (
-          <path key={i} d={path(e)} className={[s.edge, e.loop ? s.edgeLoop : '', lit.has(e.from) && lit.has(e.to) ? s.edgeOn : ''].join(' ')} />
-        ))}
-        {job.nodes.map(n => {
-          const p = at.get(n.id)!
-          const on = lit.has(n.id)
-          const now = job.order[step - 1] === n.id
-          return (
-            <g key={n.id} className={[s.node, s['n_' + n.who], on ? s.nodeOn : '', now ? s.nodeNow : ''].join(' ')}>
-              <rect x={p.x - NW / 2} y={p.y - NH / 2} width={NW} height={NH} rx={NH / 2} />
-              <text x={p.x} y={p.y + 4} textAnchor="middle">{n.label}</text>
-            </g>
-          )
-        })}
-        <text x={W / 2} y={H - 18} textAnchor="middle" className={s.shape}>{job.shape}</text>
-      </svg>
-    </div>
+    <g transform={`translate(${x} ${y})`} className={[s.node, s['n_' + who], on ? s.nodeOn : '', now ? s.nodeNow : '', working ? s.nodeWork : ''].join(' ')}>
+      <rect x={-w / 2} y={-NH / 2} width={w} height={NH} rx={NH / 2} />
+      <text y={4} textAnchor="middle">{label}</text>
+    </g>
   )
 }

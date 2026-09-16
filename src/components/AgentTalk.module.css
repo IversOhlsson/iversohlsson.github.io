@@ -1,47 +1,94 @@
-.visual { position: relative; }
+.visual { position: relative; min-width: 0; }
 .glow { position: absolute; inset: -12% -8%; background: radial-gradient(60% 60% at 60% 45%, rgba(31, 91, 255, 0.14), transparent 70%); pointer-events: none; }
 .window { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 24px 60px -24px rgba(21, 23, 26, 0.25), 0 2px 6px rgba(21, 23, 26, 0.04); overflow: hidden; }
+
+/* Title bar */
 .bar { display: flex; align-items: center; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-.bar > span { width: 9px; height: 9px; border-radius: 50%; background: #E3E3DE; }
-.jobTitle { margin-left: 8px; flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: fade 300ms ease; }
-.tabs { margin-left: auto; flex: none; display: inline-flex; gap: 4px; background: #F2F2EE; border-radius: 999px; padding: 3px; }
-.tabs i { font-style: normal; font-size: 11px; font-weight: 600; color: var(--muted); padding: 2px 9px; border-radius: 999px; transition: background 250ms, color 250ms; }
-.tabs .tabOn { color: var(--ink); background: #fff; box-shadow: 0 1px 2px rgba(21, 23, 26, 0.08); }
-.body { position: relative; height: 356px; }
-.feed { list-style: none; margin: 0; padding: 16px 16px 8px; display: grid; align-content: start; gap: 10px; animation: fade 300ms ease; }
-.flow { position: absolute; inset: 0; padding: 6px 10px 4px; animation: fade 350ms ease; }
-.svg { width: 100%; height: 100%; display: block; }
-.colHead { font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; fill: var(--accent); }
-.colLine { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
-.edge { fill: none; stroke: #DEDED9; stroke-width: 1.6; transition: stroke 300ms; }
-.edgeLoop { stroke-dasharray: 4 4; }
-.edgeOn { stroke: var(--accent); }
-.node rect { fill: #fff; stroke: #DEDED9; stroke-width: 1.4; transition: fill 300ms, stroke 300ms; }
-.node text { font-size: 12.5px; font-weight: 500; fill: var(--muted); transition: fill 300ms; }
-.n_agent.nodeOn rect { fill: #EAF0FF; stroke: var(--accent); }
-.n_agent.nodeOn text { fill: var(--accent); }
+.light { width: 9px; height: 9px; border-radius: 50%; background: #E3E3DE; }
+.jobTitle { margin-left: 8px; flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: fade 400ms ease; }
+.status { margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--muted); background: #F2F2EE; border-radius: 999px; padding: 4px 10px 4px 8px; transition: background 350ms, color 350ms; }
+.status i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 1.3s ease-in-out infinite; transition: background 350ms; }
+.statusDone { color: #157347; background: #E6F5EC; }
+.statusDone i { background: #2DB36B; animation: none; }
+
+/* Body: graph on top, trace below. Fades out between runs. */
+.body { display: flex; flex-direction: column; height: 396px; opacity: 1; transition: opacity 420ms ease; }
+.bodyOut { opacity: 0; }
+.graph { position: relative; flex: none; overflow: hidden; }
+.svg { display: block; }
+.dot { fill: #E9E9E4; }
+
+/* Edges and nodes */
+.edge { fill: none; stroke: #E2E2DD; stroke-width: 1.5; transition: stroke 400ms ease, stroke-width 400ms ease; }
+.edgeOn { stroke: #B9CBFF; }
+.edgeNow { stroke: var(--accent); stroke-width: 1.8; }
+.node rect { fill: #fff; stroke: #DEDED9; stroke-width: 1.3; transition: fill 350ms ease, stroke 350ms ease, stroke-width 350ms ease; }
+.node text { font-size: 12px; font-weight: 500; fill: var(--muted); transition: fill 350ms ease; }
+.node { transition: filter 350ms ease; }
+.n_system.nodeOn rect { fill: #F4F6FB; stroke: #B4BCCB; }
+.n_system.nodeOn text { fill: var(--ink); }
 .n_person.nodeOn rect { fill: #E6F5EC; stroke: #2DB36B; }
 .n_person.nodeOn text { fill: #157347; }
-.n_system.nodeOn rect { fill: #F2F2EE; stroke: #B4B8C0; }
-.n_system.nodeOn text { fill: var(--ink); }
-.nodeNow rect { stroke-width: 2.2; }
-.shape { font-size: 12px; fill: var(--muted); }
-.line { display: grid; grid-template-columns: 74px 1fr; gap: 10px; align-items: start; animation: up 320ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.n_system.nodeNow rect { fill: #EAF0FF; stroke: var(--accent); stroke-width: 1.8; }
+.n_system.nodeNow text { fill: var(--accent); }
+.n_person.nodeNow rect { stroke-width: 1.8; }
+.n_system.nodeWork { filter: drop-shadow(0 3px 10px rgba(31, 91, 255, 0.28)); }
+.n_person.nodeWork { filter: drop-shadow(0 3px 10px rgba(45, 179, 107, 0.3)); }
+
+/* The agent: a soft core, a slow dotted ring, and an arc that spins while a run is in progress. */
+.core { fill: #EAF0FF; stroke: var(--accent); stroke-width: 1.5; transition: fill 400ms; }
+.agent text { font-size: 12px; font-weight: 600; fill: var(--accent); }
+.ring { fill: none; stroke: #D6E1FF; stroke-width: 1.3; stroke-dasharray: 3 7; stroke-linecap: round; transform-box: fill-box; transform-origin: center; animation: spin 22s linear infinite; }
+.arc { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 46 150; stroke-linecap: round; opacity: 0; transform-box: fill-box; transform-origin: center; animation: spin 1.5s linear infinite; transition: opacity 400ms ease; }
+.agentRun .arc { opacity: 1; }
+.agentRun .core { fill: #fff; }
+
+/* The packet: moved every frame by the clock, never by React. */
+.packet { opacity: 0; pointer-events: none; }
+.packetGlow { fill: var(--accent); opacity: 0.16; }
+.packetCore { fill: var(--accent); }
+.packetPerson .packetGlow, .packetPerson .packetCore { fill: #2DB36B; }
+
+/* Trace: the run's calls, newest at the bottom, scrolls up when it fills. */
+.trace { flex: 1; min-height: 0; overflow: hidden; padding: 12px 14px 0; border-top: 1px solid var(--line); background: #FBFBF9; --row: 26px; }
+.traceMask { -webkit-mask-image: linear-gradient(to bottom, transparent 12px, #000 30px); mask-image: linear-gradient(to bottom, transparent 12px, #000 30px); }
+.lines { list-style: none; margin: 0; padding: 0; transition: transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1); will-change: transform; }
+.row { display: flex; gap: 10px; align-items: center; height: var(--row); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size: 12px; line-height: var(--row); color: var(--ink); animation: up 380ms cubic-bezier(0.2, 0.7, 0.2, 1); }
 .noAnim { animation: none; }
-.chip { font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 999px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
-.agent .chip { color: var(--accent); background: #EAF0FF; }
-.person .chip { color: #157347; background: #E6F5EC; }
-.system .chip { color: var(--muted); background: #F2F2EE; }
-.msg { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink); background: #F8F8F5; border: 1px solid var(--line); border-radius: 12px; border-top-left-radius: 4px; padding: 8px 12px; }
-.person .msg { background: #fff; border-color: #CFE9DA; }
-.agent .msg { background: #FAFBFF; border-color: #D6E1FF; }
-.dots { display: inline-flex; gap: 4px; align-items: center; padding: 12px 12px; }
-.dots i { width: 6px; height: 6px; border-radius: 50%; background: #B4B8C0; animation: blink 1s ease-in-out infinite; }
+.m { flex: none; width: 42px; font-weight: 600; color: var(--accent); letter-spacing: 0.02em; }
+.path { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.res { flex: none; max-width: 52%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); text-align: right; transition: color 300ms; }
+.k_event .m { color: var(--muted); }
+.k_event .path { color: var(--muted); }
+.k_person .m, .k_person .res { color: #157347; }
+.k_done .m { color: #157347; }
+.k_done .res { color: var(--ink); max-width: 72%; }
+.flag .res { color: #B45309; }
+.pending .res { color: var(--muted); }
+.dots { display: inline-flex; gap: 3px; align-items: center; height: var(--row); }
+.dots i { width: 4px; height: 4px; border-radius: 50%; background: #B4B8C0; animation: blink 1s ease-in-out infinite; }
 .dots i:nth-child(2) { animation-delay: 0.15s; }
 .dots i:nth-child(3) { animation-delay: 0.3s; }
+
 @keyframes up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-@media (max-width: 640px) { .body { height: 320px; } .feed { padding: 12px 12px 6px; } .line { grid-template-columns: 62px 1fr; gap: 8px; } .msg { font-size: 13.5px; } .jobTitle { display: none; } .shape { font-size: 13px; } .colHead { font-size: 11.5px; } }
-@media (prefers-reduced-motion: reduce) { .line, .jobTitle, .feed, .flow, .dots i { animation: none; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Phone: the same scene in a tighter window. Each trace row takes two lines: method and path, then the result.
+ * The breakpoint and the 42px row height are mirrored in the component. */
+@media (max-width: 640px) {
+  .body { height: 400px; }
+  .trace { padding: 12px 12px 0; }
+  .row { display: grid; grid-template-columns: 38px minmax(0, 1fr); grid-template-rows: 1fr 1fr; column-gap: 8px; align-items: center; font-size: 11.5px; line-height: 18px; padding: 3px 0; }
+  .m { grid-row: 1; grid-column: 1; width: auto; }
+  .path { grid-row: 1; grid-column: 2; }
+  .res { grid-row: 2; grid-column: 2; max-width: none; text-align: left; }
+  .dots { height: 18px; }
+  .jobTitle { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jobTitle, .row, .dots i, .ring, .arc, .status i { animation: none; }
+  .body, .lines { transition: none; }
+}
